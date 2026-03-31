@@ -26,3 +26,4 @@ Skeleton project for the coordinator service.
 - Toolchain config and `GET /api/v1/healthz` are in place.
 - SQLite connection helpers and migration runner are in place.
 - Session and agent API basics are in place.
+- Participant and message API basics, plus session event logging, are in place.

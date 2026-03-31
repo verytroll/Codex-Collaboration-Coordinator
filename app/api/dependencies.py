@@ -8,7 +8,10 @@ from fastapi import Depends
 
 from app.core.config import get_config
 from app.repositories.agents import AgentRepository, AgentRuntimeRepository
+from app.repositories.messages import MessageMentionRepository, MessageRepository
+from app.repositories.participants import ParticipantRepository
 from app.repositories.presence import PresenceRepository
+from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRepository
 
 
@@ -43,3 +46,31 @@ def get_presence_repository(
 ) -> PresenceRepository:
     """Provide a presence repository bound to the configured database."""
     return PresenceRepository(database_url)
+
+
+def get_participant_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> ParticipantRepository:
+    """Provide a participant repository bound to the configured database."""
+    return ParticipantRepository(database_url)
+
+
+def get_message_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> MessageRepository:
+    """Provide a message repository bound to the configured database."""
+    return MessageRepository(database_url)
+
+
+def get_message_mention_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> MessageMentionRepository:
+    """Provide a message mention repository bound to the configured database."""
+    return MessageMentionRepository(database_url)
+
+
+def get_session_event_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> SessionEventRepository:
+    """Provide a session event repository bound to the configured database."""
+    return SessionEventRepository(database_url)

@@ -2,15 +2,17 @@
 
 ### Trạng thái hiện tại
 - **Ngày cập nhật:** 2026-03-31
-- **Pha hiện tại:** F09 hoàn thành
-- **Đang tập trung vào:** F10 - Participant API, Message API và event log cơ bản
+- **Pha hiện tại:** F10 hoàn thành
+- **Đang tập trung vào:** F11 - CodexBridge process manager và JSON-RPC client
 - **Người thực hiện:** Codex
 
 ### Đang làm
-- [ ] F10 — Tạo Participant API, Message API và event log cơ bản
-- [ ] PR09 — Participant API, Message API và session event log
+- [ ] F11 — Dựng CodexBridge process manager và JSON-RPC client
+- [ ] PR10 — Dựng CodexBridge process manager và JSON-RPC client
 
 ### Vừa hoàn thành
+- [x] F10 — Tạo Participant API, Message API và event log cơ bản — 2026-03-31
+- [x] PR09 — Participant API, Message API và session event log — 2026-03-31
 - [x] F09 — Tạo Session API và Agent API cơ bản — 2026-03-31
 - [x] PR08 — Session API và Agent API cơ bản — 2026-03-31
 - [x] F08 — Tạo repository layer cho message và job — 2026-03-31
@@ -30,8 +32,8 @@
 - [x] PR01 — Tạo skeleton repo và app chạy được — 2026-03-31
 
 ### Tiếp theo
-- [ ] F10 — participant, message API cơ bản
-- [ ] PR09 — Participant API, Message API và session event log
+- [ ] F11 — CodexBridge process manager và JSON-RPC client
+- [ ] PR10 — Dựng CodexBridge process manager và JSON-RPC client
 
 ### Blockers / Rủi ro
 - Không có
@@ -40,6 +42,9 @@
 - Quyết định: Repository session/agent/runtime/participant dùng async API bọc SQLite sync work trong thread.
 - Lý do: Giữ code không block event loop nhưng vẫn không cần thêm dependency mới.
 - Ảnh hưởng: CRUD tests có thể chạy trực tiếp trên SQLite migration thật.
+- Quyết định: Participant và message API giai đoạn đầu chỉ thực hiện membership check, ghi event log và lưu message chat cơ bản.
+- Lý do: PR09 cần có thể demo session chat trước khi thêm mention routing và relay ở các pha sau.
+- Ảnh hưởng: route message hiện chưa tự sinh job từ mention.
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`

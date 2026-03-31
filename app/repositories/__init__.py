@@ -18,6 +18,7 @@ from app.repositories.messages import (
 from app.repositories.participants import ParticipantRepository, SessionParticipantRecord
 from app.repositories.presence import PresenceHeartbeatRecord, PresenceRepository
 from app.repositories.relay_edges import RelayEdgeRecord, RelayEdgeRepository
+from app.repositories.session_events import SessionEventRecord, SessionEventRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
 
 __all__ = [
@@ -42,6 +43,8 @@ __all__ = [
     "PresenceRepository",
     "RelayEdgeRecord",
     "RelayEdgeRepository",
+    "SessionEventRecord",
+    "SessionEventRepository",
     "SessionParticipantRecord",
     "SessionRecord",
     "SessionRepository",
