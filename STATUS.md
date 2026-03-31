@@ -2,15 +2,17 @@
 
 ### Trạng thái hiện tại
 - **Ngày cập nhật:** 2026-03-31
-- **Pha hiện tại:** F11 hoàn thành
-- **Đang tập trung vào:** F12 - Runtime service và session-thread mapping
+- **Pha hiện tại:** F12 hoàn thành
+- **Đang tập trung vào:** F13 - Message parser, mention router và job creation
 - **Người thực hiện:** Codex
 
 ### Đang làm
-- [ ] F12 — Runtime service và session-thread mapping
-- [ ] PR11 — Runtime service và session-thread mapping
+- [ ] F13 — Message parser, mention router và job creation
+- [ ] PR12 — Message parser, mention detection và job creation
 
 ### Vừa hoàn thành
+- [x] F12 — Runtime service và session-thread mapping — 2026-03-31
+- [x] PR11 — Runtime service và session-thread mapping — 2026-03-31
 - [x] F11 — Dựng CodexBridge process manager và JSON-RPC client — 2026-03-31
 - [x] PR10 — Dựng CodexBridge process manager và JSON-RPC client — 2026-03-31
 - [x] F10 — Tạo Participant API, Message API và event log cơ bản — 2026-03-31
@@ -34,8 +36,8 @@
 - [x] PR01 — Tạo skeleton repo và app chạy được — 2026-03-31
 
 ### Tiếp theo
-- [ ] F12 — Runtime service và session-thread mapping
-- [ ] PR11 — Runtime service và session-thread mapping
+- [ ] F13 — Message parser, mention router và job creation
+- [ ] PR12 — Message parser, mention detection và job creation
 
 ### Blockers / Rủi ro
 - Không có
@@ -50,6 +52,9 @@
 - Quyết định: CodexBridge giai đoạn đầu dùng subprocess stdio + JSON-RPC line protocol với mock smoke test.
 - Lý do: Khớp kiến trúc local-first và đủ để khóa contract bridge trước khi nối runtime thật.
 - Ảnh hưởng: F11 có thể kiểm tra initialize/thread/turn flow mà chưa cần Codex runtime thật.
+- Quyết định: Session-thread mapping giai đoạn đầu dùng state service trong memory, còn runtime status đi qua repository.
+- Lý do: Tránh mở thêm schema/migration trong F12 nhưng vẫn có thể demo create/reuse thread ngay.
+- Ảnh hưởng: F12 khóa được contract `thread/start`/`thread/resume` trước khi sang parser/router.
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`

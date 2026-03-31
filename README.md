@@ -28,3 +28,4 @@ Skeleton project for the coordinator service.
 - Session and agent API basics are in place.
 - Participant and message API basics, plus session event logging, are in place.
 - CodexBridge subprocess manager and JSON-RPC client are in place.
+- Runtime status service and session-thread mapping service are in place.
