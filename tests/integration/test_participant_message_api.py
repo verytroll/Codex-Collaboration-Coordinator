@@ -218,6 +218,7 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
             assert {event.event_type for event in job_events} == {
                 "turn.started",
                 "relay.output.published",
+                "artifact.created",
             }
             relay_edges = asyncio.run(relay_edge_repository.list_by_session(session_id))
             assert len(relay_edges) == 1
@@ -287,6 +288,7 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
                 "relay.output.published",
                 "turn.interrupted",
                 "thread.compact.start",
+                "artifact.created",
             }
             assert sum(event.event_type == "turn.started" for event in job_events_after) == 2
 

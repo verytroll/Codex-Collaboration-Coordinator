@@ -75,6 +75,10 @@ class ThreadMappingStore:
         self._records[(session_id, agent_id)] = updated
         return updated
 
+    def clear(self) -> None:
+        """Remove all mappings from memory."""
+        self._records.clear()
+
 
 class ThreadMappingService:
     """Create or reuse Codex threads for a session-agent pair."""

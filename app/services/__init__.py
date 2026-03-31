@@ -1,7 +1,10 @@
 """Service layer package."""
 
+from app.services.approval_manager import ApprovalDecision, ApprovalManager
+from app.services.artifact_manager import ArtifactBundle, ArtifactManager
 from app.services.command_handler import CommandExecutionResult, CommandHandler
 from app.services.job_service import JobService
+from app.services.loop_guard import LoopGuardDecision, LoopGuardService
 from app.services.mention_router import MentionRouter, ResolvedMention
 from app.services.message_parser import MessageParser, ParsedCommand, ParsedMention, ParsedMessage
 from app.services.message_routing import (
@@ -14,9 +17,12 @@ from app.services.permissions import (
     CommandPermissionError,
     CommandPermissions,
 )
+from app.services.presence import PresenceService, PresenceSnapshot
+from app.services.recovery import RecoveryService, RecoverySummary
 from app.services.relay_engine import CodexRelayBridge, RelayEngine, RelayExecutionResult
 from app.services.runtime_service import RuntimeService
 from app.services.session_events import record_session_event
+from app.services.streaming import StreamingService
 from app.services.thread_mapping import (
     ThreadMappingRecord,
     ThreadMappingService,
@@ -25,12 +31,18 @@ from app.services.thread_mapping import (
 
 __all__ = [
     "CodexRelayBridge",
+    "ApprovalDecision",
+    "ApprovalManager",
     "CommandExecutionResult",
     "CommandHandler",
     "CommandPermissionCheck",
     "CommandPermissionError",
     "CommandPermissions",
+    "ArtifactBundle",
+    "ArtifactManager",
     "JobService",
+    "LoopGuardDecision",
+    "LoopGuardService",
     "MentionRouter",
     "MessageParser",
     "MessageRoutingOutcome",
@@ -39,10 +51,15 @@ __all__ = [
     "ParsedCommand",
     "ParsedMessage",
     "ParsedMention",
+    "PresenceService",
+    "PresenceSnapshot",
+    "RecoveryService",
+    "RecoverySummary",
     "ResolvedMention",
     "RelayEngine",
     "RelayExecutionResult",
     "RuntimeService",
+    "StreamingService",
     "ThreadMappingRecord",
     "ThreadMappingService",
     "ThreadMappingStore",

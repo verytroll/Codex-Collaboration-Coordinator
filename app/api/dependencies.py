@@ -10,6 +10,8 @@ from fastapi import Depends
 from app.codex_bridge import CodexProcessManager, JsonRpcClient
 from app.core.config import get_config
 from app.repositories.agents import AgentRepository, AgentRuntimeRepository
+from app.repositories.approvals import ApprovalRepository
+from app.repositories.artifacts import ArtifactRepository
 from app.repositories.jobs import JobEventRepository, JobRepository
 from app.repositories.messages import MessageMentionRepository, MessageRepository
 from app.repositories.participants import ParticipantRepository
@@ -17,12 +19,18 @@ from app.repositories.presence import PresenceRepository
 from app.repositories.relay_edges import RelayEdgeRepository
 from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRepository
+from app.services.approval_manager import ApprovalManager
+from app.services.artifact_manager import ArtifactManager
 from app.services.command_handler import CommandHandler
 from app.services.job_service import JobService
+from app.services.loop_guard import LoopGuardService
 from app.services.message_routing import MessageRoutingService
 from app.services.permissions import CommandPermissions
+from app.services.presence import PresenceService
+from app.services.recovery import RecoveryService
 from app.services.relay_engine import RelayEngine
 from app.services.runtime_service import RuntimeService
+from app.services.streaming import StreamingService
 from app.services.thread_mapping import ThreadMappingService, ThreadMappingStore
 
 _THREAD_MAPPING_STORE = ThreadMappingStore()
@@ -54,6 +62,20 @@ def get_agent_runtime_repository(
     return AgentRuntimeRepository(database_url)
 
 
+def get_artifact_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> ArtifactRepository:
+    """Provide an artifact repository bound to the configured database."""
+    return ArtifactRepository(database_url)
+
+
+def get_approval_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> ApprovalRepository:
+    """Provide an approval repository bound to the configured database."""
+    return ApprovalRepository(database_url)
+
+
 def get_runtime_service(
     runtime_repository: Annotated[AgentRuntimeRepository, Depends(get_agent_runtime_repository)],
 ) -> RuntimeService:
@@ -66,6 +88,19 @@ def get_presence_repository(
 ) -> PresenceRepository:
     """Provide a presence repository bound to the configured database."""
     return PresenceRepository(database_url)
+
+
+def get_presence_service(
+    presence_repository: Annotated[PresenceRepository, Depends(get_presence_repository)],
+    runtime_repository: Annotated[AgentRuntimeRepository, Depends(get_agent_runtime_repository)],
+    runtime_service: Annotated[RuntimeService, Depends(get_runtime_service)],
+) -> PresenceService:
+    """Provide the presence tracking service."""
+    return PresenceService(
+        presence_repository=presence_repository,
+        runtime_repository=runtime_repository,
+        runtime_service=runtime_service,
+    )
 
 
 def get_participant_repository(
@@ -168,6 +203,9 @@ def get_relay_engine(
     agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
     runtime_service: Annotated[RuntimeService, Depends(get_runtime_service)],
     thread_mapping_service: Annotated[ThreadMappingService, Depends(get_thread_mapping_service)],
+    loop_guard_service: Annotated[LoopGuardService, Depends(get_loop_guard_service)],
+    artifact_manager: Annotated[ArtifactManager, Depends(get_artifact_manager)],
+    approval_manager: Annotated[ApprovalManager, Depends(get_approval_manager)],
     bridge: Annotated[JsonRpcClient, Depends(get_codex_bridge_client)],
 ) -> RelayEngine:
     """Provide the relay engine."""
@@ -181,6 +219,9 @@ def get_relay_engine(
         agent_repository=agent_repository,
         runtime_service=runtime_service,
         thread_mapping_service=thread_mapping_service,
+        loop_guard_service=loop_guard_service,
+        artifact_manager=artifact_manager,
+        approval_manager=approval_manager,
         bridge=bridge,
     )
 
@@ -215,6 +256,102 @@ def get_session_event_repository(
 ) -> SessionEventRepository:
     """Provide a session event repository bound to the configured database."""
     return SessionEventRepository(database_url)
+
+
+def get_artifact_manager(
+    artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
+    job_event_repository: Annotated[JobEventRepository, Depends(get_job_event_repository)],
+) -> ArtifactManager:
+    """Provide the artifact manager."""
+    return ArtifactManager(
+        artifact_repository=artifact_repository,
+        job_event_repository=job_event_repository,
+    )
+
+
+def get_approval_manager(
+    approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    job_event_repository: Annotated[JobEventRepository, Depends(get_job_event_repository)],
+    session_event_repository: Annotated[
+        SessionEventRepository, Depends(get_session_event_repository)
+    ],
+) -> ApprovalManager:
+    """Provide the approval manager."""
+    return ApprovalManager(
+        approval_repository=approval_repository,
+        job_repository=job_repository,
+        job_event_repository=job_event_repository,
+        session_event_repository=session_event_repository,
+    )
+
+
+def get_loop_guard_service(
+    relay_edge_repository: Annotated[RelayEdgeRepository, Depends(get_relay_edge_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    job_event_repository: Annotated[JobEventRepository, Depends(get_job_event_repository)],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    session_event_repository: Annotated[
+        SessionEventRepository, Depends(get_session_event_repository)
+    ],
+) -> LoopGuardService:
+    """Provide the loop guard service."""
+    return LoopGuardService(
+        relay_edge_repository=relay_edge_repository,
+        job_repository=job_repository,
+        job_event_repository=job_event_repository,
+        session_repository=session_repository,
+        session_event_repository=session_event_repository,
+    )
+
+
+def get_streaming_service(
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    job_event_repository: Annotated[JobEventRepository, Depends(get_job_event_repository)],
+    artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    session_event_repository: Annotated[
+        SessionEventRepository, Depends(get_session_event_repository)
+    ],
+    message_repository: Annotated[MessageRepository, Depends(get_message_repository)],
+) -> StreamingService:
+    """Provide the streaming service."""
+    return StreamingService(
+        job_repository=job_repository,
+        job_event_repository=job_event_repository,
+        artifact_repository=artifact_repository,
+        session_repository=session_repository,
+        session_event_repository=session_event_repository,
+        message_repository=message_repository,
+    )
+
+
+def get_recovery_service(
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    runtime_repository: Annotated[AgentRuntimeRepository, Depends(get_agent_runtime_repository)],
+    presence_repository: Annotated[PresenceRepository, Depends(get_presence_repository)],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    session_event_repository: Annotated[
+        SessionEventRepository, Depends(get_session_event_repository)
+    ],
+    runtime_service: Annotated[RuntimeService, Depends(get_runtime_service)],
+    thread_mapping_store: ThreadMappingStore | None = None,
+) -> RecoveryService:
+    """Provide the recovery service."""
+    return RecoveryService(
+        job_repository=job_repository,
+        runtime_repository=runtime_repository,
+        presence_repository=presence_repository,
+        session_repository=session_repository,
+        session_event_repository=session_event_repository,
+        runtime_service=runtime_service,
+        thread_mapping_store=thread_mapping_store or _THREAD_MAPPING_STORE,
+    )
+
+
+def get_thread_mapping_store() -> ThreadMappingStore:
+    """Expose the shared in-memory thread mapping store."""
+    return _THREAD_MAPPING_STORE
 
 
 def get_relay_edge_repository(

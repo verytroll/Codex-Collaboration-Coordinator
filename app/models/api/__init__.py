@@ -7,6 +7,21 @@ from app.models.api.agents import (
     AgentResponse,
     AgentUpdateRequest,
 )
+from app.models.api.jobs import (
+    ApprovalDecisionRequest,
+    ApprovalRequestListEnvelope,
+    ApprovalRequestResponse,
+    ArtifactListEnvelope,
+    ArtifactResponse,
+    JobControlRequest,
+    JobDetailResponse,
+    JobEnvelope,
+    JobEventListEnvelope,
+    JobEventResponse,
+    JobInputRequest,
+    JobListEnvelope,
+    JobResponse,
+)
 from app.models.api.messages import (
     MessageCreateEnvelope,
     MessageCreateRequest,
@@ -20,6 +35,11 @@ from app.models.api.participants import (
     ParticipantEnvelope,
     ParticipantListEnvelope,
     ParticipantResponse,
+)
+from app.models.api.presence import (
+    PresenceEnvelope,
+    PresenceHeartbeatRequest,
+    PresenceHeartbeatResponse,
 )
 from app.models.api.sessions import (
     SessionCreateRequest,
@@ -41,6 +61,22 @@ __all__ = [
     "MessageListEnvelope",
     "MessageResponse",
     "MessageRoutingResponse",
+    "PresenceEnvelope",
+    "PresenceHeartbeatRequest",
+    "PresenceHeartbeatResponse",
+    "ApprovalDecisionRequest",
+    "ApprovalRequestListEnvelope",
+    "ApprovalRequestResponse",
+    "ArtifactListEnvelope",
+    "ArtifactResponse",
+    "JobControlRequest",
+    "JobDetailResponse",
+    "JobEnvelope",
+    "JobEventListEnvelope",
+    "JobEventResponse",
+    "JobInputRequest",
+    "JobListEnvelope",
+    "JobResponse",
     "ParticipantCreateRequest",
     "ParticipantEnvelope",
     "ParticipantListEnvelope",

@@ -31,3 +31,4 @@ Skeleton project for the coordinator service.
 - Runtime status service and session-thread mapping service are in place.
 - Message parser, mention router, and internal job creation are in place.
 - Relay engine and command handlers for `/new`, `/interrupt`, and `/compact` are in place.
+- Presence heartbeat, recovery, loop guard, artifacts, approvals, and SSE job/session streaming are in place.

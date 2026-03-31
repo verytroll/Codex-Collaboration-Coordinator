@@ -14,6 +14,9 @@ from app.repositories.messages import MessageRecord, MessageRepository
 from app.repositories.relay_edges import RelayEdgeRecord, RelayEdgeRepository
 from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
+from app.services.approval_manager import ApprovalManager
+from app.services.artifact_manager import ArtifactManager
+from app.services.loop_guard import LoopGuardService
 from app.services.runtime_service import RuntimeService
 from app.services.session_events import record_session_event
 from app.services.thread_mapping import ThreadMappingService
@@ -103,6 +106,9 @@ class RelayEngine:
         agent_repository: AgentRepository,
         runtime_service: RuntimeService,
         thread_mapping_service: ThreadMappingService,
+        loop_guard_service: LoopGuardService,
+        artifact_manager: ArtifactManager,
+        approval_manager: ApprovalManager,
         bridge: CodexRelayBridge,
     ) -> None:
         self.job_repository = job_repository
@@ -114,6 +120,9 @@ class RelayEngine:
         self.agent_repository = agent_repository
         self.runtime_service = runtime_service
         self.thread_mapping_service = thread_mapping_service
+        self.loop_guard_service = loop_guard_service
+        self.artifact_manager = artifact_manager
+        self.approval_manager = approval_manager
         self.bridge = bridge
 
     async def execute_job(
@@ -126,6 +135,23 @@ class RelayEngine:
         job = await self._get_job(job_id)
         session = await self._get_session(job.session_id)
         agent = await self._get_agent(job.assigned_agent_id)
+
+        loop_guard_decision = await self.loop_guard_service.evaluate(job)
+        if loop_guard_decision.should_pause and loop_guard_decision.reason is not None:
+            paused_job = await self.loop_guard_service.pause_job(
+                job,
+                reason=loop_guard_decision.reason,
+            )
+            return RelayExecutionResult(
+                job_id=paused_job.id,
+                session_id=paused_job.session_id,
+                agent_id=paused_job.assigned_agent_id,
+                thread_id=paused_job.codex_thread_id,
+                turn_id=paused_job.active_turn_id,
+                message_id=None,
+                event_type="job.paused_by_loop_guard",
+            )
+
         mapping, _ = await self.thread_mapping_service.get_or_create_thread(
             session_id=job.session_id,
             agent_id=job.assigned_agent_id,
@@ -147,6 +173,7 @@ class RelayEngine:
         turn_payload = _unwrap_result(turn_response)
         turn_id = _extract_turn_id(turn_payload, fallback=f"turn_{uuid4().hex}")
         output_text = _extract_text(turn_payload, job)
+        turn_status = str(turn_payload.get("status", "running"))
 
         updated_job = replace(
             job,
@@ -154,10 +181,16 @@ class RelayEngine:
             codex_runtime_id=job.codex_runtime_id or mapping.runtime_id,
             codex_thread_id=mapping.codex_thread_id,
             active_turn_id=turn_id,
-            last_known_turn_status=str(turn_payload.get("status", "running")),
-            status="completed" if turn_payload.get("status") == "completed" else "running",
+            last_known_turn_status=turn_status,
+            status=(
+                "completed"
+                if turn_status == "completed"
+                else turn_status
+                if turn_status in {"input_required", "auth_required"}
+                else "running"
+            ),
             started_at=job.started_at or now,
-            completed_at=now if turn_payload.get("status") == "completed" else job.completed_at,
+            completed_at=now if turn_status == "completed" else job.completed_at,
             updated_at=now,
         )
         await self.job_repository.update(updated_job)
@@ -172,22 +205,40 @@ class RelayEngine:
             created_at=now,
         )
 
-        message = await self._publish_output_message(
-            session=session,
+        approval_request = None
+        if turn_status in {"input_required", "auth_required"}:
+            approval_request = await self.approval_manager.create_request(
+                job=updated_job,
+                approval_type=turn_status,
+                request_payload=turn_payload,
+                requested_at=now,
+            )
+
+        artifacts = await self.artifact_manager.create_artifacts_from_turn(
             job=updated_job,
-            agent=agent,
-            content=output_text,
-            reply_to_message_id=job.source_message_id,
+            payload=turn_payload,
             created_at=now,
         )
+        message = None
+        if output_text is not None:
+            message = await self._publish_output_message(
+                session=session,
+                job=updated_job,
+                agent=agent,
+                content=output_text,
+                reply_to_message_id=job.source_message_id,
+                created_at=now,
+            )
         await self._record_job_event(
             job=updated_job,
             event_type="relay.output.published",
             payload={
-                "message_id": message.id,
+                "message_id": message.id if message is not None else None,
                 "thread_id": mapping.codex_thread_id,
                 "turn_id": turn_id,
                 "relay_reason": relay_reason,
+                "artifact_ids": [artifact.id for artifact in artifacts.artifacts],
+                "approval_id": approval_request.id if approval_request is not None else None,
             },
             created_at=now,
         )
@@ -199,10 +250,12 @@ class RelayEngine:
             actor_id=agent.id,
             payload={
                 "job_id": updated_job.id,
-                "message_id": message.id,
+                "message_id": message.id if message is not None else None,
                 "thread_id": mapping.codex_thread_id,
                 "turn_id": turn_id,
                 "relay_reason": relay_reason,
+                "artifact_ids": [artifact.id for artifact in artifacts.artifacts],
+                "approval_id": approval_request.id if approval_request is not None else None,
             },
             created_at=now,
         )
@@ -212,7 +265,7 @@ class RelayEngine:
             agent_id=updated_job.assigned_agent_id,
             thread_id=mapping.codex_thread_id,
             turn_id=turn_id,
-            message_id=message.id,
+            message_id=message.id if message is not None else None,
             event_type="relay.output.published",
         )
 

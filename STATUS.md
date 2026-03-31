@@ -2,15 +2,18 @@
 
 ### Trạng thái hiện tại
 - **Ngày cập nhật:** 2026-03-31
-- **Pha hiện tại:** F14 hoàn thành
-- **Đang tập trung vào:** F15 - Presence, recovery, loop guard, artifacts, approval và streaming
+- **Pha hiện tại:** F15 hoàn thành
+- **Đang tập trung vào:** F16 - Hoàn thiện MVP, tài liệu và bề mặt A2A-ready
 - **Người thực hiện:** Codex
 
 ### Đang làm
-- [ ] F15 — Presence, recovery, loop guard, artifacts, approval và streaming
-- [ ] PR15 — Presence và heartbeat
+- [ ] F16 — Hoàn thiện MVP, tài liệu và bề mặt A2A-ready
 
 ### Vừa hoàn thành
+- [x] F15 — Presence, recovery, loop guard, artifacts, approval và streaming — 2026-03-31
+- [x] PR17 — Artifact manager, approval/input-required và streaming — 2026-03-31
+- [x] PR16 — Recovery và loop guard — 2026-03-31
+- [x] PR15 — Presence và heartbeat — 2026-03-31
 - [x] F14 — Relay engine và command handlers — 2026-03-31
 - [x] PR14 — Command handlers và permissions lead/non-lead — 2026-03-31
 - [x] PR13 — Relay engine thực thi job qua CodexBridge — 2026-03-31
@@ -41,8 +44,7 @@
 - [x] PR01 — Tạo skeleton repo và app chạy được — 2026-03-31
 
 ### Tiếp theo
-- [ ] F15 — Presence, recovery, loop guard, artifacts, approval và streaming
-- [ ] PR15 — Presence và heartbeat
+- [ ] F16 — Hoàn thiện MVP, tài liệu và bề mặt A2A-ready
 
 ### Blockers / Rủi ro
 - Không có
@@ -66,6 +68,9 @@
 - Quyết định: Relay engine giai đoạn đầu publish output agent ngay sau `turn/start`, còn `/interrupt` và `/compact` đi qua command handler với quyền lead/self-target tối thiểu.
 - Lý do: F14 cần khóa được flow relay thật và command control trước khi sang presence/recovery.
 - Ảnh hưởng: Mention relay và command control có thể demo end-to-end mà chưa cần artifact/streaming.
+- Quyết định: F15 tách thành presence, recovery/loop guard, rồi artifact/approval/streaming theo đúng PR15-PR17.
+- Lý do: Giữ từng PR nhỏ và dễ review, nhưng vẫn khóa đủ vòng lặp relay, restart recovery, và surface job/artifact.
+- Ảnh hưởng: `jobs` có snapshot API, presence heartbeat cập nhật runtime, recovery khôi phục thread mapping, và relay phát artifact/sự kiện.
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`
