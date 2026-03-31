@@ -17,8 +17,17 @@ Skeleton project for the coordinator service.
 4. Copy `.env.example` to `.env` when you need local configuration.
 5. Run the helper scripts:
    - `./scripts/run.ps1`
+   - `./scripts/dev.ps1`
+   - `./scripts/seed.ps1`
    - `./scripts/test.ps1`
    - `./scripts/lint.ps1`
+
+## Docs
+
+- [Local setup](docs/LOCAL_SETUP.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [A2A mapping note](docs/A2A_MAPPING.md)
+- [MVP release notes](docs/RELEASE_NOTES_MVP.md)
 
 ## Current status
 
@@ -32,3 +41,4 @@ Skeleton project for the coordinator service.
 - Message parser, mention router, and internal job creation are in place.
 - Relay engine and command handlers for `/new`, `/interrupt`, and `/compact` are in place.
 - Presence heartbeat, recovery, loop guard, artifacts, approvals, and SSE job/session streaming are in place.
+- `GET /.well-known/agent-card.json` is available as an A2A-ready discovery placeholder.

@@ -48,6 +48,12 @@ from app.models.api.sessions import (
     SessionResponse,
     SessionUpdateRequest,
 )
+from app.models.api.system import (
+    A2AAgentCardCapabilities,
+    A2AAgentCardResponse,
+    A2AAgentCardSkill,
+    HealthResponse,
+)
 
 __all__ = [
     "AgentCreateRequest",
@@ -86,4 +92,8 @@ __all__ = [
     "SessionListEnvelope",
     "SessionResponse",
     "SessionUpdateRequest",
+    "A2AAgentCardCapabilities",
+    "A2AAgentCardResponse",
+    "A2AAgentCardSkill",
+    "HealthResponse",
 ]

@@ -2,14 +2,16 @@
 
 ### Trạng thái hiện tại
 - **Ngày cập nhật:** 2026-03-31
-- **Pha hiện tại:** F15 hoàn thành
-- **Đang tập trung vào:** F16 - Hoàn thiện MVP, tài liệu và bề mặt A2A-ready
+- **Pha hiện tại:** F16 hoàn thành
+- **Đang tập trung vào:** Bàn giao MVP
 - **Người thực hiện:** Codex
 
 ### Đang làm
-- [ ] F16 — Hoàn thiện MVP, tài liệu và bề mặt A2A-ready
+- [x] F16 — Hoàn thiện MVP, tài liệu và bề mặt A2A-ready — 2026-03-31
 
 ### Vừa hoàn thành
+- [x] PR18 — Hoàn thiện MVP, docs và A2A-ready surface — 2026-03-31
+- [x] F16 — Hoàn thiện MVP, tài liệu và bề mặt A2A-ready — 2026-03-31
 - [x] F15 — Presence, recovery, loop guard, artifacts, approval và streaming — 2026-03-31
 - [x] PR17 — Artifact manager, approval/input-required và streaming — 2026-03-31
 - [x] PR16 — Recovery và loop guard — 2026-03-31
@@ -44,7 +46,7 @@
 - [x] PR01 — Tạo skeleton repo và app chạy được — 2026-03-31
 
 ### Tiếp theo
-- [ ] F16 — Hoàn thiện MVP, tài liệu và bề mặt A2A-ready
+- [ ] Không còn task nào trong roadmap hiện tại; phase sau sẽ cần kế hoạch mới
 
 ### Blockers / Rủi ro
 - Không có
@@ -71,6 +73,9 @@
 - Quyết định: F15 tách thành presence, recovery/loop guard, rồi artifact/approval/streaming theo đúng PR15-PR17.
 - Lý do: Giữ từng PR nhỏ và dễ review, nhưng vẫn khóa đủ vòng lặp relay, restart recovery, và surface job/artifact.
 - Ảnh hưởng: `jobs` có snapshot API, presence heartbeat cập nhật runtime, recovery khôi phục thread mapping, và relay phát artifact/sự kiện.
+- Quyết định: F16 dùng `/.well-known/agent-card.json` như discovery placeholder thay vì triển khai A2A task API đầy đủ.
+- Lý do: Giữ đúng phạm vi MVP và chừa adapter riêng cho phase sau.
+- Ảnh hưởng: API public có bề mặt A2A-ready tối thiểu, còn mapping chi tiết được ghi trong tài liệu.
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`

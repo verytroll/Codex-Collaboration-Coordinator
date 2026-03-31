@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter
 
+from app.api.a2a_placeholder import router as a2a_placeholder_router
 from app.api.agents import router as agents_router
 from app.api.approvals import router as approvals_router
 from app.api.health import router as health_router
@@ -12,6 +13,7 @@ from app.api.presence import router as presence_router
 from app.api.sessions import router as sessions_router
 
 router = APIRouter()
+router.include_router(a2a_placeholder_router)
 router.include_router(health_router)
 router.include_router(sessions_router)
 router.include_router(agents_router)
