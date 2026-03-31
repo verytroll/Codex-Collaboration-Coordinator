@@ -27,3 +27,4 @@ Skeleton project for the coordinator service.
 - SQLite connection helpers and migration runner are in place.
 - Session and agent API basics are in place.
 - Participant and message API basics, plus session event logging, are in place.
+- CodexBridge subprocess manager and JSON-RPC client are in place.

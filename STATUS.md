@@ -2,15 +2,17 @@
 
 ### Trạng thái hiện tại
 - **Ngày cập nhật:** 2026-03-31
-- **Pha hiện tại:** F10 hoàn thành
-- **Đang tập trung vào:** F11 - CodexBridge process manager và JSON-RPC client
+- **Pha hiện tại:** F11 hoàn thành
+- **Đang tập trung vào:** F12 - Runtime service và session-thread mapping
 - **Người thực hiện:** Codex
 
 ### Đang làm
-- [ ] F11 — Dựng CodexBridge process manager và JSON-RPC client
-- [ ] PR10 — Dựng CodexBridge process manager và JSON-RPC client
+- [ ] F12 — Runtime service và session-thread mapping
+- [ ] PR11 — Runtime service và session-thread mapping
 
 ### Vừa hoàn thành
+- [x] F11 — Dựng CodexBridge process manager và JSON-RPC client — 2026-03-31
+- [x] PR10 — Dựng CodexBridge process manager và JSON-RPC client — 2026-03-31
 - [x] F10 — Tạo Participant API, Message API và event log cơ bản — 2026-03-31
 - [x] PR09 — Participant API, Message API và session event log — 2026-03-31
 - [x] F09 — Tạo Session API và Agent API cơ bản — 2026-03-31
@@ -32,8 +34,8 @@
 - [x] PR01 — Tạo skeleton repo và app chạy được — 2026-03-31
 
 ### Tiếp theo
-- [ ] F11 — CodexBridge process manager và JSON-RPC client
-- [ ] PR10 — Dựng CodexBridge process manager và JSON-RPC client
+- [ ] F12 — Runtime service và session-thread mapping
+- [ ] PR11 — Runtime service và session-thread mapping
 
 ### Blockers / Rủi ro
 - Không có
@@ -45,6 +47,9 @@
 - Quyết định: Participant và message API giai đoạn đầu chỉ thực hiện membership check, ghi event log và lưu message chat cơ bản.
 - Lý do: PR09 cần có thể demo session chat trước khi thêm mention routing và relay ở các pha sau.
 - Ảnh hưởng: route message hiện chưa tự sinh job từ mention.
+- Quyết định: CodexBridge giai đoạn đầu dùng subprocess stdio + JSON-RPC line protocol với mock smoke test.
+- Lý do: Khớp kiến trúc local-first và đủ để khóa contract bridge trước khi nối runtime thật.
+- Ảnh hưởng: F11 có thể kiểm tra initialize/thread/turn flow mà chưa cần Codex runtime thật.
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`
