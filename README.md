@@ -32,10 +32,13 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - [Current status](STATUS.md)
 - [MVP plan](PLAN.md)
 - [Post-MVP plan (V2)](PLAN_V2.md)
+- [V3 plan](PLAN_V3.md)
 - [MVP implementation backlog](IMPLEMENTATION_TASKS.md)
 - [Post-MVP implementation backlog (F17-F24)](IMPLEMENTATION_TASKS_V2.md)
+- [V3 implementation backlog (F25-F31)](IMPLEMENTATION_TASKS_V3.md)
 - [MVP implementation order](IMPLEMENTATION_ORDER.md)
 - [Post-MVP implementation order (PR19-PR26)](IMPLEMENTATION_ORDER_V2.md)
+- [V3 implementation order (PR27-PR33)](IMPLEMENTATION_ORDER_V3.md)
 
 ## Current status
 
@@ -48,4 +51,4 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - Session phase presets and the experimental A2A adapter bridge are implemented.
 - CodexBridge subprocess manager and JSON-RPC client are in place.
 - `GET /.well-known/agent-card.json` remains available as an A2A-ready discovery placeholder.
-- Post-MVP V2 foundation is complete; V3 planning is next.
+- Post-MVP V2 foundation is complete, the V3 backlog is documented, and PR27 A2A public API work is next.

@@ -67,12 +67,13 @@ Naming:
 
 When implementing a feature:
 
-1. Read IMPLEMENTATION_TASKS_V2.md
-2. Follow IMPLEMENTATION_ORDER_V2.md
-3. Implement smallest working unit
-4. Add tests
-5. Run tests
-6. Update docs
+1. Read STATUS.md to confirm the active phase
+2. Read the matching implementation backlog (`IMPLEMENTATION_TASKS_V3.md`)
+3. Follow the matching implementation order document (`IMPLEMENTATION_ORDER_V3.md`)
+4. Implement the smallest working unit
+5. Add tests
+6. Run tests
+7. Update docs
 
 ---
 

@@ -3,13 +3,14 @@
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-03-31
 - Pha hiện tại: V3 planning
-- Đang tập trung vào: Chuẩn bị backlog V3 sau khi hoàn tất foundation V2
+- Đang tập trung vào: Bắt đầu PR27 với A2A public API v1 trên nền adapter bridge của V2
 - Người thực hiện: Codex
 
 ### Đang làm
-- [ ] Chuẩn bị backlog V3
+- [ ] PR27 - A2A public API v1
 
 ### Vừa hoàn thành
+- [x] Chuẩn bị backlog V3 - 2026-03-31
 - [x] F24 - Thêm phase presets và experimental A2A adapter bridge - 2026-03-31
 - [x] F23 - Tạo review mode và structured relay templates - 2026-03-31
 - [x] F22 - Nâng cấp artifacts và transcript export - 2026-03-31
@@ -22,7 +23,9 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] Chuẩn bị backlog V3
+- [ ] PR27 - A2A public API v1
+- [ ] PR28 - Public subscribe/push event surface
+- [ ] PR29 - Session templates và orchestration presets
 
 ### Blockers / Rủi ro
 - Không có blocker hiện tại.
@@ -34,10 +37,13 @@
 ### Liên kết tài liệu liên quan
 - `PLAN.md`
 - `PLAN_V2.md`
+- `PLAN_V3.md`
 - `IMPLEMENTATION_TASKS.md`
 - `IMPLEMENTATION_TASKS_V2.md`
+- `IMPLEMENTATION_TASKS_V3.md`
 - `IMPLEMENTATION_ORDER.md`
 - `IMPLEMENTATION_ORDER_V2.md`
+- `IMPLEMENTATION_ORDER_V3.md`
 - `PRD.md`
 - `ARCHITECTURE.md`
 - `API.md`
