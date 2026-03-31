@@ -30,6 +30,7 @@ from app.models.api.jobs import (
     JobListEnvelope,
     JobResponse,
 )
+from app.models.api.rules import RuleCreateRequest, RuleEnvelope, RuleListEnvelope, RuleResponse
 from app.models.api.messages import (
     MessageCreateEnvelope,
     MessageCreateRequest,
@@ -100,6 +101,10 @@ __all__ = [
     "JobInputRequest",
     "JobListEnvelope",
     "JobResponse",
+    "RuleCreateRequest",
+    "RuleEnvelope",
+    "RuleListEnvelope",
+    "RuleResponse",
     "ParticipantCreateRequest",
     "ParticipantEnvelope",
     "ParticipantListEnvelope",

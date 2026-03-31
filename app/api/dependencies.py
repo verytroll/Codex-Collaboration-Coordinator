@@ -19,6 +19,7 @@ from app.repositories.messages import MessageMentionRepository, MessageRepositor
 from app.repositories.participants import ParticipantRepository
 from app.repositories.presence import PresenceRepository
 from app.repositories.relay_edges import RelayEdgeRepository
+from app.repositories.rules import RuleRepository
 from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRepository
 from app.services.approval_manager import ApprovalManager
@@ -31,6 +32,7 @@ from app.services.offline_queue import OfflineQueueService
 from app.services.participant_policy import ParticipantPolicyService
 from app.services.message_routing import MessageRoutingService
 from app.services.permissions import CommandPermissions
+from app.services.rule_engine import RuleEngineService
 from app.services.presence import PresenceService
 from app.services.recovery import RecoveryService
 from app.services.relay_engine import CodexRelayBridge, RelayEngine
@@ -204,6 +206,20 @@ def get_job_input_repository(
     return JobInputRepository(database_url)
 
 
+def get_rule_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> RuleRepository:
+    """Provide a rule repository bound to the configured database."""
+    return RuleRepository(database_url)
+
+
+def get_rule_engine_service(
+    rule_repository: Annotated[RuleRepository, Depends(get_rule_repository)],
+) -> RuleEngineService:
+    """Provide the basic collaboration rules engine."""
+    return RuleEngineService(rule_repository)
+
+
 def get_job_service(
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     runtime_service: Annotated[RuntimeService, Depends(get_runtime_service)],
@@ -237,6 +253,7 @@ def get_message_routing_service(
     participant_repository: Annotated[ParticipantRepository, Depends(get_participant_repository)],
     agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
     job_service: Annotated[JobService, Depends(get_job_service)],
+    rule_engine_service: Annotated[RuleEngineService, Depends(get_rule_engine_service)],
 ) -> MessageRoutingService:
     """Provide the message routing service."""
     return MessageRoutingService(
@@ -244,6 +261,7 @@ def get_message_routing_service(
         participant_repository=participant_repository,
         agent_repository=agent_repository,
         job_service=job_service,
+        rule_engine_service=rule_engine_service,
     )
 
 
@@ -370,6 +388,7 @@ def get_offline_queue_service(
     job_input_repository: Annotated[JobInputRepository, Depends(get_job_input_repository)],
     runtime_service: Annotated[RuntimeService, Depends(get_runtime_service)],
     relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
+    rule_engine_service: Annotated[RuleEngineService, Depends(get_rule_engine_service)],
 ) -> OfflineQueueService:
     """Provide the offline queue service."""
     return OfflineQueueService(
@@ -377,6 +396,7 @@ def get_offline_queue_service(
         job_input_repository=job_input_repository,
         runtime_service=runtime_service,
         relay_engine=relay_engine,
+        rule_engine_service=rule_engine_service,
     )
 
 

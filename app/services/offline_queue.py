@@ -10,6 +10,7 @@ from uuid import uuid4
 
 from app.repositories.job_inputs import JobInputRecord, JobInputRepository
 from app.repositories.jobs import JobRecord, JobRepository
+from app.services.rule_engine import RuleEngineService
 from app.services.relay_engine import RelayEngine, RelayExecutionResult
 from app.services.runtime_service import RuntimeService
 
@@ -41,11 +42,13 @@ class OfflineQueueService:
         job_input_repository: JobInputRepository,
         runtime_service: RuntimeService,
         relay_engine: RelayEngine,
+        rule_engine_service: RuleEngineService | None = None,
     ) -> None:
         self.job_repository = job_repository
         self.job_input_repository = job_input_repository
         self.runtime_service = runtime_service
         self.relay_engine = relay_engine
+        self.rule_engine_service = rule_engine_service
 
     async def schedule_job(
         self,
@@ -62,6 +65,24 @@ class OfflineQueueService:
             input_type=input_type,
             input_payload=input_payload,
         )
+        dispatch_allowed = True
+        hold_reason: str | None = None
+        if self.rule_engine_service is not None:
+            dispatch_policy = await self.rule_engine_service.resolve_job_dispatch(job)
+            dispatch_allowed = dispatch_policy.dispatch_allowed
+            hold_reason = dispatch_policy.hold_reason
+            if dispatch_policy.channel_key != job.channel_key:
+                job = replace(job, channel_key=dispatch_policy.channel_key)
+                await self.job_repository.update(job)
+        if not dispatch_allowed:
+            blocked_job = replace(
+                job,
+                status="input_required",
+                last_known_turn_status=hold_reason or "rule_review_required",
+                updated_at=_utc_now(),
+            )
+            await self.job_repository.update(blocked_job)
+            return OfflineQueueDispatchResult(job_id=job.id, queued=True, relay_result=None)
         if not await self._is_dispatchable(job.assigned_agent_id):
             return OfflineQueueDispatchResult(job_id=job.id, queued=True, relay_result=None)
         relay_result = await self.relay_engine.execute_job(job.id, relay_reason=relay_reason)

@@ -23,6 +23,7 @@ from app.services.permissions import (
 from app.services.presence import PresenceService, PresenceSnapshot
 from app.services.recovery import RecoveryService, RecoverySummary
 from app.services.relay_engine import CodexRelayBridge, RelayEngine, RelayExecutionResult
+from app.services.rule_engine import RuleEngineService, RuleEvaluationResult
 from app.services.runtime_service import RuntimeService
 from app.services.session_events import record_session_event
 from app.services.streaming import StreamingService
@@ -67,6 +68,8 @@ __all__ = [
     "ResolvedMention",
     "RelayEngine",
     "RelayExecutionResult",
+    "RuleEngineService",
+    "RuleEvaluationResult",
     "RuntimeService",
     "StreamingService",
     "ThreadMappingRecord",

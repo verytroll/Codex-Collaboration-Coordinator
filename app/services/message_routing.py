@@ -14,6 +14,7 @@ from app.repositories.messages import (
 )
 from app.repositories.participants import ParticipantRepository
 from app.services.job_service import JobService
+from app.services.rule_engine import RuleEngineService
 from app.services.mention_router import MentionRouter, ResolvedMention
 from app.services.message_parser import MessageParser, ParsedCommand
 
@@ -48,6 +49,7 @@ class MessageRoutingService:
         participant_repository: ParticipantRepository,
         agent_repository: AgentRepository,
         job_service: JobService,
+        rule_engine_service: RuleEngineService | None = None,
         parser: MessageParser | None = None,
         mention_router: MentionRouter | None = None,
     ) -> None:
@@ -55,6 +57,7 @@ class MessageRoutingService:
         self.participant_repository = participant_repository
         self.agent_repository = agent_repository
         self.job_service = job_service
+        self.rule_engine_service = rule_engine_service
         self.parser = parser or MessageParser()
         self.mention_router = mention_router or MentionRouter()
 
@@ -89,6 +92,14 @@ class MessageRoutingService:
             return MessageRoutingOutcome(detected_mentions=[], created_jobs=[])
 
         created_at = _utc_now()
+        effective_channel_key = message.channel_key
+        if self.rule_engine_service is not None:
+            effective_channel_key = await self.rule_engine_service.resolve_routing_channel(
+                session_id=message.session_id,
+                channel_key=message.channel_key,
+                agent_id=message.sender_id,
+                content=message.content,
+            )
         for mention in plan.resolved_mentions:
             await self.message_mention_repository.create(
                 MessageMentionRecord(
@@ -104,6 +115,7 @@ class MessageRoutingService:
         created_jobs = await self.job_service.create_jobs_for_mentions(
             message=message,
             mentions=plan.resolved_mentions,
+            channel_key=effective_channel_key,
         )
         detected_mentions: list[str] = []
         seen_mentions: set[str] = set()

@@ -13,6 +13,7 @@ from app.repositories.agents import (
 )
 from app.repositories.channels import SessionChannelRecord, SessionChannelRepository
 from app.repositories.participants import ParticipantRepository, SessionParticipantRecord
+from app.repositories.rules import RuleRecord, RuleRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
 
 
@@ -318,3 +319,57 @@ def test_participant_repository_crud_and_lookup(tmp_path) -> None:
     assert asyncio.run(runtime_repository.delete(runtime.id)) is True
     assert asyncio.run(session_repository.delete(session.id)) is True
     assert asyncio.run(agent_repository.delete(agent.id)) is True
+
+
+def test_rule_repository_crud(tmp_path) -> None:
+    database_url = _database_url(tmp_path)
+    _migrate(database_url)
+    session_repository = SessionRepository(database_url)
+    rule_repository = RuleRepository(database_url)
+
+    session = SessionRecord(
+        id="ses_rule",
+        title="Rule session",
+        goal=None,
+        status="active",
+        lead_agent_id=None,
+        active_phase_id=None,
+        loop_guard_status="normal",
+        loop_guard_reason=None,
+        last_message_at=None,
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:00:00Z",
+    )
+    rule = RuleRecord(
+        id="rul_001",
+        session_id=session.id,
+        rule_type="review_required",
+        name="Hold review",
+        description="Require manual activation",
+        is_active=0,
+        priority=10,
+        conditions_json='{"channel_key":"general"}',
+        actions_json='{"hold":true}',
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:00:00Z",
+    )
+
+    asyncio.run(session_repository.create(session))
+    created_rule = asyncio.run(rule_repository.create(rule))
+    fetched_rule = asyncio.run(rule_repository.get(rule.id))
+    listed_rules = asyncio.run(rule_repository.list_by_session(session.id))
+    activated_rule = replace(created_rule, is_active=1)
+
+    assert created_rule == rule
+    assert fetched_rule == rule
+    assert listed_rules == [rule]
+
+    saved_rule = asyncio.run(rule_repository.update(activated_rule))
+    active_rules = asyncio.run(rule_repository.list_active_by_session(session.id))
+    deleted_rule = asyncio.run(rule_repository.delete(rule.id))
+
+    assert saved_rule.is_active == 1
+    assert active_rules == [saved_rule]
+    assert deleted_rule is True
+    assert asyncio.run(rule_repository.get(rule.id)) is None
+    assert asyncio.run(session_repository.delete(session.id)) is True

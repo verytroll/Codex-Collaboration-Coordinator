@@ -31,6 +31,7 @@ class JobService:
         *,
         message: MessageRecord,
         mentions: list[ResolvedMention],
+        channel_key: str | None = None,
     ) -> list[JobRecord]:
         """Create at most one job per mentioned agent."""
         created_jobs: list[JobRecord] = []
@@ -42,6 +43,7 @@ class JobService:
                 await self.create_job_for_mention(
                     message=message,
                     mention=mention,
+                    channel_key=channel_key,
                 )
             )
             seen_agents.add(mention.mentioned_agent_id)
@@ -99,11 +101,12 @@ class JobService:
         *,
         message: MessageRecord,
         mention: ResolvedMention,
+        channel_key: str | None = None,
     ) -> JobRecord:
         """Create a single queued job for a mention."""
         return await self.create_job_for_agent(
             session_id=message.session_id,
-            channel_key=message.channel_key,
+            channel_key=channel_key or message.channel_key,
             agent_id=mention.mentioned_agent_id,
             title=self._build_title(message.content, mention.mention_text),
             instructions=message.content,
