@@ -17,7 +17,7 @@ Skeleton project for the coordinator service.
 4. Copy `.env.example` to `.env` when you need local configuration.
 5. Run the helper scripts:
    - `./scripts/run.ps1`
-   - `./scripts/dev.ps1`
+   - `./scripts/dev.ps1` auto-applies migrations, then starts uvicorn
    - `./scripts/seed.ps1`
    - `./scripts/test.ps1`
    - `./scripts/lint.ps1`

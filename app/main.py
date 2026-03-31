@@ -12,6 +12,7 @@ from app.core.config import AppConfig, get_config
 from app.core.errors import install_error_handlers
 from app.core.logging import configure_logging
 from app.core.middleware import RequestIdMiddleware
+from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
 from app.repositories.agents import AgentRuntimeRepository
 from app.repositories.jobs import JobRepository
 from app.repositories.presence import PresenceRepository
@@ -26,6 +27,7 @@ APP_VERSION = "0.1.0"
 
 async def _recover_state(settings: AppConfig) -> None:
     database_url = settings.database_url
+    await migrate_sqlite(database_url, migrations_dir=DEFAULT_MIGRATIONS_DIR)
     runtime_repository = AgentRuntimeRepository(database_url)
     recovery_service = RecoveryService(
         job_repository=JobRepository(database_url),

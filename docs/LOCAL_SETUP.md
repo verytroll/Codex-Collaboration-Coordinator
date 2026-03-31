@@ -24,6 +24,8 @@ pip install -e .[dev]
 .\scripts\dev.ps1
 ```
 
+`dev.ps1` applies migrations before starting uvicorn, so it works on a fresh SQLite file.
+
 ## Seed demo data
 
 ```powershell
