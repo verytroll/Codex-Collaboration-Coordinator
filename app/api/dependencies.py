@@ -26,6 +26,7 @@ from app.services.channel_service import ChannelService
 from app.services.command_handler import CommandHandler
 from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardService
+from app.services.participant_policy import ParticipantPolicyService
 from app.services.message_routing import MessageRoutingService
 from app.services.permissions import CommandPermissions
 from app.services.presence import PresenceService
@@ -161,6 +162,11 @@ def get_participant_repository(
     return ParticipantRepository(database_url)
 
 
+def get_participant_policy_service() -> ParticipantPolicyService:
+    """Provide the participant role and policy service."""
+    return ParticipantPolicyService()
+
+
 def get_message_repository(
     database_url: Annotated[str, Depends(get_database_url)],
 ) -> MessageRepository:
@@ -234,9 +240,16 @@ def get_message_routing_service(
 
 def get_command_permissions(
     participant_repository: Annotated[ParticipantRepository, Depends(get_participant_repository)],
+    participant_policy_service: Annotated[
+        ParticipantPolicyService,
+        Depends(get_participant_policy_service),
+    ],
 ) -> CommandPermissions:
     """Provide command permission checks."""
-    return CommandPermissions(participant_repository)
+    return CommandPermissions(
+        participant_repository,
+        participant_policy_service=participant_policy_service,
+    )
 
 
 def get_relay_engine(

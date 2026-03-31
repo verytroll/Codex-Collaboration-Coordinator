@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from dataclasses import replace
 
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
@@ -273,6 +274,18 @@ def test_participant_repository_crud_and_lookup(tmp_path) -> None:
         left_at=None,
         created_at="2026-03-31T00:00:00Z",
         updated_at="2026-03-31T00:00:00Z",
+        role="planner",
+        policy_json=json.dumps(
+            {
+                "can_relay": True,
+                "can_create_job": True,
+                "can_interrupt": True,
+                "can_compact": True,
+                "review_only_actions": False,
+                "can_target_other_agents": True,
+            },
+            sort_keys=True,
+        ),
     )
 
     asyncio.run(agent_repository.create(agent))

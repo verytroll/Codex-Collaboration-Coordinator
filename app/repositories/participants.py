@@ -24,6 +24,8 @@ class SessionParticipantRecord:
     left_at: str | None
     created_at: str
     updated_at: str
+    role: str = "builder"
+    policy_json: str | None = None
 
     @classmethod
     def from_row(cls, row: sqlite3.Row) -> "SessionParticipantRecord":
@@ -40,6 +42,8 @@ class SessionParticipantRecord:
             left_at=row["left_at"],
             created_at=row["created_at"],
             updated_at=row["updated_at"],
+            role=row["role"],
+            policy_json=row["policy_json"],
         )
 
 
@@ -83,11 +87,11 @@ class ParticipantRepository(SQLiteRepositoryBase):
                 INSERT INTO session_participants (
                     id, session_id, agent_id, runtime_id, is_lead,
                     read_scope, write_scope, participant_status, joined_at,
-                    left_at, created_at, updated_at
+                    left_at, created_at, updated_at, role, policy_json
                 ) VALUES (
                     :id, :session_id, :agent_id, :runtime_id, :is_lead,
                     :read_scope, :write_scope, :participant_status, :joined_at,
-                    :left_at, :created_at, :updated_at
+                    :left_at, :created_at, :updated_at, :role, :policy_json
                 )
                 """,
                 asdict(participant),
@@ -154,7 +158,9 @@ class ParticipantRepository(SQLiteRepositoryBase):
                     joined_at = :joined_at,
                     left_at = :left_at,
                     created_at = :created_at,
-                    updated_at = :updated_at
+                    updated_at = :updated_at,
+                    role = :role,
+                    policy_json = :policy_json
                 WHERE id = :id
                 """,
                 asdict(participant),

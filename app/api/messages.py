@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.api.dependencies import (
     get_agent_repository,
     get_command_handler,
+    get_command_permissions,
     get_channel_service,
     get_message_mention_repository,
     get_message_repository,
@@ -38,6 +39,7 @@ from app.repositories.sessions import SessionRecord, SessionRepository
 from app.services.channel_service import ChannelService
 from app.services.command_handler import CommandHandler
 from app.services.message_routing import MessageRoutingService
+from app.services.permissions import CommandPermissions
 from app.services.relay_engine import RelayEngine
 from app.services.session_events import record_session_event
 
@@ -161,6 +163,7 @@ async def create_message(
     routing_service: Annotated[MessageRoutingService, Depends(get_message_routing_service)],
     relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
     command_handler: Annotated[CommandHandler, Depends(get_command_handler)],
+    command_permissions: Annotated[CommandPermissions, Depends(get_command_permissions)],
 ) -> MessageCreateEnvelope:
     session = await _ensure_session_exists(session_repository, session_id)
     await channel_service.ensure_channel_exists(
@@ -192,6 +195,33 @@ async def create_message(
         routing_plan = await routing_service.preview(session_id=session_id, content=payload.content)
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    sender_check = None
+    if payload.sender_type == "agent" and payload.sender_id is not None:
+        sender_check = await command_permissions.resolve_sender(
+            session_id=session_id,
+            sender_type=payload.sender_type,
+            sender_id=payload.sender_id,
+        )
+        if routing_plan.resolved_mentions and sender_check.participant is not None:
+            if not sender_check.policy or not sender_check.policy.can_relay:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=(
+                        f"Agent {payload.sender_id} cannot relay mention-based jobs in session "
+                        f"{session_id}"
+                    ),
+                )
+            if any(
+                mention.mentioned_agent_id != sender_check.participant.agent_id
+                for mention in routing_plan.resolved_mentions
+            ) and not sender_check.policy.can_target_other_agents:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=(
+                        f"Agent {payload.sender_id} cannot target other agents in session "
+                        f"{session_id}"
+                    ),
+                )
 
     created_at = _utc_now()
     message = MessageRecord(

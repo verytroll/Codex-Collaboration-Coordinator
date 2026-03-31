@@ -40,7 +40,10 @@ from app.models.api.participants import (
     ParticipantCreateRequest,
     ParticipantEnvelope,
     ParticipantListEnvelope,
+    ParticipantPolicyRequest,
+    ParticipantPolicyResponse,
     ParticipantResponse,
+    ParticipantUpdateRequest,
 )
 from app.models.api.presence import (
     PresenceEnvelope,
@@ -96,7 +99,10 @@ __all__ = [
     "ParticipantCreateRequest",
     "ParticipantEnvelope",
     "ParticipantListEnvelope",
+    "ParticipantPolicyRequest",
+    "ParticipantPolicyResponse",
     "ParticipantResponse",
+    "ParticipantUpdateRequest",
     "SessionCreateRequest",
     "SessionEnvelope",
     "SessionListEnvelope",

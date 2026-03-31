@@ -109,6 +109,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "004_jobs.sql",
         "005_presence_relay_session.sql",
         "006_session_channels.sql",
+        "007_session_participant_policy.sql",
     ]
     assert second_run == []
 
@@ -151,5 +152,6 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "idx_relay_edges_target_agent_id",
         "idx_session_events_event_type",
         "idx_session_channels_session_id_sort_order",
+        "idx_session_participants_session_id_role",
     }.issubset(indexes)
-    assert version_count == 6
+    assert version_count == 7

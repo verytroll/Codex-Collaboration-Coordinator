@@ -181,7 +181,12 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
             participant_body = add_participant_response.json()["participant"]
             assert participant_body["session_id"] == session_id
             assert participant_body["agent_id"] == builder_agent_id
+            assert participant_body["agent_role"] == "builder"
+            assert participant_body["role"] == "builder"
+            assert participant_body["is_lead"] is False
             assert participant_body["read_scope"] == "shared_history"
+            assert participant_body["policy"]["can_relay"] is True
+            assert participant_body["policy"]["can_target_other_agents"] is False
 
             list_participants_response = client.get(f"/api/v1/sessions/{session_id}/participants")
             assert list_participants_response.status_code == 200
@@ -331,6 +336,62 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
                 "manual_relay",
             }
 
+            reviewer_participant_response = client.post(
+                f"/api/v1/sessions/{session_id}/participants",
+                json={
+                    "agent_id": rogue_agent_id,
+                    "role": "reviewer",
+                },
+            )
+            assert reviewer_participant_response.status_code == 201
+            reviewer_participant = reviewer_participant_response.json()["participant"]
+            assert reviewer_participant["role"] == "reviewer"
+            assert reviewer_participant["agent_role"] == "reviewer"
+            assert reviewer_participant["policy"]["can_relay"] is False
+            assert reviewer_participant["policy"]["review_only_actions"] is True
+
+            reviewer_blocked_response = client.post(
+                f"/api/v1/sessions/{session_id}/messages",
+                json={
+                    "sender_type": "agent",
+                    "sender_id": rogue_agent_id,
+                    "content": "#builder please review this",
+                    "reply_to_message_id": None,
+                    "channel_key": "research",
+                },
+            )
+            assert reviewer_blocked_response.status_code == 403
+
+            reviewer_patch_response = client.patch(
+                f"/api/v1/sessions/{session_id}/participants/{rogue_agent_id}",
+                json={
+                    "policy": {
+                        "can_relay": True,
+                        "can_target_other_agents": True,
+                    }
+                },
+            )
+            assert reviewer_patch_response.status_code == 200
+            reviewer_patched = reviewer_patch_response.json()["participant"]
+            assert reviewer_patched["role"] == "reviewer"
+            assert reviewer_patched["policy"]["can_relay"] is True
+            assert reviewer_patched["policy"]["can_target_other_agents"] is True
+            assert reviewer_patched["policy"]["can_create_job"] is False
+
+            reviewer_message_response = client.post(
+                f"/api/v1/sessions/{session_id}/messages",
+                json={
+                    "sender_type": "agent",
+                    "sender_id": rogue_agent_id,
+                    "content": "#builder please review this",
+                    "reply_to_message_id": None,
+                    "channel_key": "research",
+                },
+            )
+            assert reviewer_message_response.status_code == 202
+            reviewer_message_envelope = reviewer_message_response.json()
+            assert len(reviewer_message_envelope["routing"]["created_jobs"]) == 1
+
             get_message_response = client.get(f"/api/v1/messages/{message_id}")
             assert get_message_response.status_code == 200
             assert get_message_response.json()["message"]["content"] == "#builder fix this bug"
@@ -353,12 +414,17 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
             )
             assert filtered_messages_response.status_code == 200
             filtered_messages = filtered_messages_response.json()["messages"]
-            assert len(filtered_messages) == 6
+            assert len(filtered_messages) == 7
             assert all(message["channel_key"] == "research" for message in filtered_messages)
 
             list_messages_response = client.get(f"/api/v1/sessions/{session_id}/messages")
             assert list_messages_response.status_code == 200
             assert list_messages_response.json()["messages"][0]["id"] == message_id
+
+            delete_reviewer_response = client.delete(
+                f"/api/v1/sessions/{session_id}/participants/{rogue_agent_id}"
+            )
+            assert delete_reviewer_response.status_code == 204
 
             delete_participant_response = client.delete(
                 f"/api/v1/sessions/{session_id}/participants/{builder_agent_id}"
@@ -373,14 +439,16 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
             events = asyncio.run(event_repository.list_by_session(session_id))
             assert {event.event_type for event in events} == {
                 "participant.added",
+                "participant.updated",
                 "message.created",
                 "relay.output.published",
                 "command.interrupt",
                 "command.compact",
                 "command.new",
+                "loop_guard_triggered",
                 "participant.removed",
             }
-            assert sum(event.event_type == "message.created" for event in events) == 7
+            assert sum(event.event_type == "message.created" for event in events) == 8
 
             session_repository = SessionRepository(database_url)
             stored_session = asyncio.run(session_repository.get(session_id))

@@ -13,6 +13,7 @@ from app.services.message_routing import (
     MessageRoutingPlan,
     MessageRoutingService,
 )
+from app.services.participant_policy import ParticipantPolicy, ParticipantPolicyService
 from app.services.permissions import (
     CommandPermissionCheck,
     CommandPermissionError,
@@ -50,6 +51,8 @@ __all__ = [
     "MessageRoutingOutcome",
     "MessageRoutingPlan",
     "MessageRoutingService",
+    "ParticipantPolicy",
+    "ParticipantPolicyService",
     "ParsedCommand",
     "ParsedMessage",
     "ParsedMention",
