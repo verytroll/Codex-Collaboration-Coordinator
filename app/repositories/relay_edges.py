@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import sqlite3
+from dataclasses import asdict, dataclass
 
 from app.repositories._base import SQLiteRepositoryBase
 
@@ -50,7 +50,9 @@ class RelayEdgeRepository(SQLiteRepositoryBase):
         return await self._run(self._list_sync)
 
     async def list_by_session(self, session_id: str) -> list[RelayEdgeRecord]:
-        return await self._run(lambda connection: self._list_by_session_sync(connection, session_id))
+        return await self._run(
+            lambda connection: self._list_by_session_sync(connection, session_id)
+        )
 
     async def update(self, edge: RelayEdgeRecord) -> RelayEdgeRecord:
         return await self._run(lambda connection: self._update_sync(connection, edge))
@@ -58,7 +60,9 @@ class RelayEdgeRepository(SQLiteRepositoryBase):
     async def delete(self, edge_id: str) -> bool:
         return await self._run(lambda connection: self._delete_sync(connection, edge_id))
 
-    def _create_sync(self, connection: sqlite3.Connection, edge: RelayEdgeRecord) -> RelayEdgeRecord:
+    def _create_sync(
+        self, connection: sqlite3.Connection, edge: RelayEdgeRecord
+    ) -> RelayEdgeRecord:
         with connection:
             connection.execute(
                 """
@@ -93,7 +97,9 @@ class RelayEdgeRepository(SQLiteRepositoryBase):
         ).fetchall()
         return [RelayEdgeRecord.from_row(row) for row in rows]
 
-    def _update_sync(self, connection: sqlite3.Connection, edge: RelayEdgeRecord) -> RelayEdgeRecord:
+    def _update_sync(
+        self, connection: sqlite3.Connection, edge: RelayEdgeRecord
+    ) -> RelayEdgeRecord:
         with connection:
             result = connection.execute(
                 """

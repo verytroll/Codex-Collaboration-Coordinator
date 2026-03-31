@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import sqlite3
+from dataclasses import asdict, dataclass
 
 from app.repositories._base import SQLiteRepositoryBase
 
@@ -62,7 +62,9 @@ class ParticipantRepository(SQLiteRepositoryBase):
         )
 
     async def list_by_session(self, session_id: str) -> list[SessionParticipantRecord]:
-        return await self._run(lambda connection: self._list_by_session_sync(connection, session_id))
+        return await self._run(
+            lambda connection: self._list_by_session_sync(connection, session_id)
+        )
 
     async def update(self, participant: SessionParticipantRecord) -> SessionParticipantRecord:
         return await self._run(lambda connection: self._update_sync(connection, participant))

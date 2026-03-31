@@ -4,9 +4,9 @@ import asyncio
 from dataclasses import replace
 
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
+from app.repositories.agents import AgentRecord, AgentRepository
 from app.repositories.approvals import ApprovalRepository, ApprovalRequestRecord
 from app.repositories.artifacts import ArtifactRecord, ArtifactRepository
-from app.repositories.agents import AgentRecord, AgentRepository
 from app.repositories.jobs import JobEventRecord, JobEventRepository, JobRecord, JobRepository
 from app.repositories.messages import (
     MessageMentionRecord,
@@ -274,7 +274,9 @@ def test_artifact_and_approval_repository_crud(tmp_path) -> None:
     fetched_artifact = asyncio.run(artifact_repository.get(artifact.id))
     fetched_approvals = asyncio.run(approval_repository.list_by_job(job.id))
     updated_artifact = replace(created_artifact, title="Updated result")
-    updated_approval = replace(created_approval, status="accepted", resolved_at="2026-03-31T00:05:00Z")
+    updated_approval = replace(
+        created_approval, status="accepted", resolved_at="2026-03-31T00:05:00Z"
+    )
 
     assert created_artifact == artifact
     assert created_approval == approval

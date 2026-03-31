@@ -5,11 +5,10 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable
 from uuid import uuid4
 
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp
-
-from fastapi import Request
 
 from app.core.logging import reset_request_id, set_request_id
 

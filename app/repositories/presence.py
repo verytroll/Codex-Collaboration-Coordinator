@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import sqlite3
+from dataclasses import asdict, dataclass
 
 from app.repositories._base import SQLiteRepositoryBase
 
@@ -49,7 +49,9 @@ class PresenceRepository(SQLiteRepositoryBase):
         return await self._run(lambda connection: self._list_by_agent_sync(connection, agent_id))
 
     async def list_by_runtime(self, runtime_id: str) -> list[PresenceHeartbeatRecord]:
-        return await self._run(lambda connection: self._list_by_runtime_sync(connection, runtime_id))
+        return await self._run(
+            lambda connection: self._list_by_runtime_sync(connection, runtime_id)
+        )
 
     async def update(self, heartbeat: PresenceHeartbeatRecord) -> PresenceHeartbeatRecord:
         return await self._run(lambda connection: self._update_sync(connection, heartbeat))
@@ -89,7 +91,9 @@ class PresenceRepository(SQLiteRepositoryBase):
         return PresenceHeartbeatRecord.from_row(row) if row else None
 
     def _list_sync(self, connection: sqlite3.Connection) -> list[PresenceHeartbeatRecord]:
-        rows = connection.execute("SELECT * FROM presence_heartbeats ORDER BY created_at, id").fetchall()
+        rows = connection.execute(
+            "SELECT * FROM presence_heartbeats ORDER BY created_at, id"
+        ).fetchall()
         return [PresenceHeartbeatRecord.from_row(row) for row in rows]
 
     def _list_by_agent_sync(

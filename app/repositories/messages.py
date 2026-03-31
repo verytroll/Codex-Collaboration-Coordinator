@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import sqlite3
+from dataclasses import asdict, dataclass
 
 from app.repositories._base import SQLiteRepositoryBase
 
@@ -79,7 +79,9 @@ class MessageRepository(SQLiteRepositoryBase):
         return await self._run(self._list_sync)
 
     async def list_by_session(self, session_id: str) -> list[MessageRecord]:
-        return await self._run(lambda connection: self._list_by_session_sync(connection, session_id))
+        return await self._run(
+            lambda connection: self._list_by_session_sync(connection, session_id)
+        )
 
     async def update(self, message: MessageRecord) -> MessageRecord:
         return await self._run(lambda connection: self._update_sync(connection, message))
@@ -167,7 +169,9 @@ class MessageMentionRepository(SQLiteRepositoryBase):
         return await self._run(self._list_sync)
 
     async def list_by_message(self, message_id: str) -> list[MessageMentionRecord]:
-        return await self._run(lambda connection: self._list_by_message_sync(connection, message_id))
+        return await self._run(
+            lambda connection: self._list_by_message_sync(connection, message_id)
+        )
 
     async def list_by_mentioned_agent(self, agent_id: str) -> list[MessageMentionRecord]:
         return await self._run(
@@ -212,7 +216,9 @@ class MessageMentionRepository(SQLiteRepositoryBase):
         return MessageMentionRecord.from_row(row) if row else None
 
     def _list_sync(self, connection: sqlite3.Connection) -> list[MessageMentionRecord]:
-        rows = connection.execute("SELECT * FROM message_mentions ORDER BY created_at, id").fetchall()
+        rows = connection.execute(
+            "SELECT * FROM message_mentions ORDER BY created_at, id"
+        ).fetchall()
         return [MessageMentionRecord.from_row(row) for row in rows]
 
     def _list_by_message_sync(

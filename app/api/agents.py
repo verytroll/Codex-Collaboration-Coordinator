@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
-from typing import cast
+from typing import Annotated, cast
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -19,8 +19,8 @@ from app.models.api.agents import (
     AgentEnvelope,
     AgentListEnvelope,
     AgentResponse,
-    PresenceStatus,
     AgentUpdateRequest,
+    PresenceStatus,
 )
 from app.repositories.agents import (
     AgentRecord,
@@ -116,8 +116,11 @@ async def _ensure_agent_exists(agent_repository: AgentRepository, agent_id: str)
 @router.post("/agents", response_model=AgentEnvelope, status_code=status.HTTP_201_CREATED)
 async def create_agent(
     payload: AgentCreateRequest,
-    agent_repository: AgentRepository = Depends(get_agent_repository),
-    runtime_repository: AgentRuntimeRepository = Depends(get_agent_runtime_repository),
+    agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
+    runtime_repository: Annotated[
+        AgentRuntimeRepository,
+        Depends(get_agent_runtime_repository),
+    ],
 ) -> AgentEnvelope:
     created_at = _utc_now()
     agent_id = f"agt_{uuid4().hex}"
@@ -159,9 +162,12 @@ async def create_agent(
 
 @router.get("/agents", response_model=AgentListEnvelope)
 async def list_agents(
-    agent_repository: AgentRepository = Depends(get_agent_repository),
-    runtime_repository: AgentRuntimeRepository = Depends(get_agent_runtime_repository),
-    presence_repository: PresenceRepository = Depends(get_presence_repository),
+    agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
+    runtime_repository: Annotated[
+        AgentRuntimeRepository,
+        Depends(get_agent_runtime_repository),
+    ],
+    presence_repository: Annotated[PresenceRepository, Depends(get_presence_repository)],
 ) -> AgentListEnvelope:
     agents = await agent_repository.list()
     runtimes = await runtime_repository.list()
@@ -182,9 +188,12 @@ async def list_agents(
 @router.get("/agents/{agent_id}", response_model=AgentEnvelope)
 async def get_agent(
     agent_id: str,
-    agent_repository: AgentRepository = Depends(get_agent_repository),
-    runtime_repository: AgentRuntimeRepository = Depends(get_agent_runtime_repository),
-    presence_repository: PresenceRepository = Depends(get_presence_repository),
+    agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
+    runtime_repository: Annotated[
+        AgentRuntimeRepository,
+        Depends(get_agent_runtime_repository),
+    ],
+    presence_repository: Annotated[PresenceRepository, Depends(get_presence_repository)],
 ) -> AgentEnvelope:
     agent = await _ensure_agent_exists(agent_repository, agent_id)
     return AgentEnvelope(
@@ -196,15 +205,20 @@ async def get_agent(
 async def update_agent(
     agent_id: str,
     payload: AgentUpdateRequest,
-    agent_repository: AgentRepository = Depends(get_agent_repository),
-    runtime_repository: AgentRuntimeRepository = Depends(get_agent_runtime_repository),
-    presence_repository: PresenceRepository = Depends(get_presence_repository),
+    agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
+    runtime_repository: Annotated[
+        AgentRuntimeRepository,
+        Depends(get_agent_runtime_repository),
+    ],
+    presence_repository: Annotated[PresenceRepository, Depends(get_presence_repository)],
 ) -> AgentEnvelope:
     agent = await _ensure_agent_exists(agent_repository, agent_id)
     updated_role = payload.role if payload.role is not None else agent.role
     updated = AgentRecord(
         id=agent.id,
-        display_name=payload.display_name if payload.display_name is not None else agent.display_name,
+        display_name=(
+            payload.display_name if payload.display_name is not None else agent.display_name
+        ),
         role=updated_role,
         is_lead_default=(
             int(payload.is_lead) if payload.is_lead is not None else agent.is_lead_default

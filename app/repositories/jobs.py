@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import sqlite3
+from dataclasses import asdict, dataclass
 
 from app.repositories._base import SQLiteRepositoryBase
 
@@ -99,7 +99,9 @@ class JobRepository(SQLiteRepositoryBase):
         return await self._run(self._list_sync)
 
     async def list_by_session(self, session_id: str) -> list[JobRecord]:
-        return await self._run(lambda connection: self._list_by_session_sync(connection, session_id))
+        return await self._run(
+            lambda connection: self._list_by_session_sync(connection, session_id)
+        )
 
     async def update(self, job: JobRecord) -> JobRecord:
         return await self._run(lambda connection: self._update_sync(connection, job))
@@ -204,7 +206,9 @@ class JobEventRepository(SQLiteRepositoryBase):
         return await self._run(lambda connection: self._list_by_job_sync(connection, job_id))
 
     async def list_by_session(self, session_id: str) -> list[JobEventRecord]:
-        return await self._run(lambda connection: self._list_by_session_sync(connection, session_id))
+        return await self._run(
+            lambda connection: self._list_by_session_sync(connection, session_id)
+        )
 
     async def update(self, event: JobEventRecord) -> JobEventRecord:
         return await self._run(lambda connection: self._update_sync(connection, event))

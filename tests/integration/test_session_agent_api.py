@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import asyncio
 
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 
 import app.main as app_main
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite

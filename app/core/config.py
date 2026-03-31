@@ -6,7 +6,6 @@ import os
 from dataclasses import dataclass
 from functools import lru_cache
 
-
 DEFAULT_APP_NAME = "codex-collaboration-coordinator"
 DEFAULT_APP_ENV = "development"
 DEFAULT_LOG_LEVEL = "INFO"

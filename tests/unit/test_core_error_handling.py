@@ -7,9 +7,9 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 
+from app.core.errors import install_error_handlers
 from app.core.logging import RequestIdFilter, get_logger, reset_request_id, set_request_id
 from app.core.middleware import RequestIdMiddleware
-from app.core.errors import install_error_handlers
 
 
 def build_test_app() -> FastAPI:

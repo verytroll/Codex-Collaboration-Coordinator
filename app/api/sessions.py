@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import cast
+from typing import Annotated, cast
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -54,8 +54,8 @@ async def _ensure_agent_exists(
 @router.post("/sessions", response_model=SessionEnvelope, status_code=status.HTTP_201_CREATED)
 async def create_session(
     payload: SessionCreateRequest,
-    session_repository: SessionRepository = Depends(get_session_repository),
-    agent_repository: AgentRepository = Depends(get_agent_repository),
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
 ) -> SessionEnvelope:
     if payload.lead_agent_id is not None:
         await _ensure_agent_exists(agent_repository, payload.lead_agent_id)
@@ -80,7 +80,7 @@ async def create_session(
 
 @router.get("/sessions", response_model=SessionListEnvelope)
 async def list_sessions(
-    session_repository: SessionRepository = Depends(get_session_repository),
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
 ) -> SessionListEnvelope:
     sessions = await session_repository.list()
     return SessionListEnvelope(sessions=[_session_response(session) for session in sessions])
@@ -89,7 +89,7 @@ async def list_sessions(
 @router.get("/sessions/{session_id}", response_model=SessionEnvelope)
 async def get_session(
     session_id: str,
-    session_repository: SessionRepository = Depends(get_session_repository),
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
 ) -> SessionEnvelope:
     session = await session_repository.get(session_id)
     if session is None:
@@ -104,8 +104,8 @@ async def get_session(
 async def update_session(
     session_id: str,
     payload: SessionUpdateRequest,
-    session_repository: SessionRepository = Depends(get_session_repository),
-    agent_repository: AgentRepository = Depends(get_agent_repository),
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
 ) -> SessionEnvelope:
     session = await session_repository.get(session_id)
     if session is None:

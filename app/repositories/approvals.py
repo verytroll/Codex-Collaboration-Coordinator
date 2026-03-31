@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import sqlite3
+from dataclasses import asdict, dataclass
 
 from app.repositories._base import SQLiteRepositoryBase
 
@@ -99,7 +99,9 @@ class ApprovalRepository(SQLiteRepositoryBase):
         return ApprovalRequestRecord.from_row(row) if row else None
 
     def _list_sync(self, connection: sqlite3.Connection) -> list[ApprovalRequestRecord]:
-        rows = connection.execute("SELECT * FROM approval_requests ORDER BY created_at, id").fetchall()
+        rows = connection.execute(
+            "SELECT * FROM approval_requests ORDER BY created_at, id"
+        ).fetchall()
         return [ApprovalRequestRecord.from_row(row) for row in rows]
 
     def _list_by_job_sync(
@@ -153,5 +155,7 @@ class ApprovalRepository(SQLiteRepositoryBase):
 
     def _delete_sync(self, connection: sqlite3.Connection, approval_id: str) -> bool:
         with connection:
-            result = connection.execute("DELETE FROM approval_requests WHERE id = ?", (approval_id,))
+            result = connection.execute(
+                "DELETE FROM approval_requests WHERE id = ?", (approval_id,)
+            )
         return result.rowcount > 0

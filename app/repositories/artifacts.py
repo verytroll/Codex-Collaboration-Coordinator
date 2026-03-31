@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import sqlite3
+from dataclasses import asdict, dataclass
 
 from app.repositories._base import SQLiteRepositoryBase
 
@@ -65,7 +65,9 @@ class ArtifactRepository(SQLiteRepositoryBase):
         return await self._run(lambda connection: self._list_by_job_sync(connection, job_id))
 
     async def list_by_session(self, session_id: str) -> list[ArtifactRecord]:
-        return await self._run(lambda connection: self._list_by_session_sync(connection, session_id))
+        return await self._run(
+            lambda connection: self._list_by_session_sync(connection, session_id)
+        )
 
     async def update(self, artifact: ArtifactRecord) -> ArtifactRecord:
         return await self._run(lambda connection: self._update_sync(connection, artifact))
@@ -73,7 +75,9 @@ class ArtifactRepository(SQLiteRepositoryBase):
     async def delete(self, artifact_id: str) -> bool:
         return await self._run(lambda connection: self._delete_sync(connection, artifact_id))
 
-    def _create_sync(self, connection: sqlite3.Connection, artifact: ArtifactRecord) -> ArtifactRecord:
+    def _create_sync(
+        self, connection: sqlite3.Connection, artifact: ArtifactRecord
+    ) -> ArtifactRecord:
         with connection:
             connection.execute(
                 """
@@ -121,7 +125,9 @@ class ArtifactRepository(SQLiteRepositoryBase):
         ).fetchall()
         return [ArtifactRecord.from_row(row) for row in rows]
 
-    def _update_sync(self, connection: sqlite3.Connection, artifact: ArtifactRecord) -> ArtifactRecord:
+    def _update_sync(
+        self, connection: sqlite3.Connection, artifact: ArtifactRecord
+    ) -> ArtifactRecord:
         with connection:
             result = connection.execute(
                 """

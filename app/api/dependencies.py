@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Annotated
+
 from fastapi import Depends
 
 from app.core.config import get_config
@@ -16,28 +18,28 @@ def get_database_url() -> str:
 
 
 def get_session_repository(
-    database_url: str = Depends(get_database_url),
+    database_url: Annotated[str, Depends(get_database_url)],
 ) -> SessionRepository:
     """Provide a session repository bound to the configured database."""
     return SessionRepository(database_url)
 
 
 def get_agent_repository(
-    database_url: str = Depends(get_database_url),
+    database_url: Annotated[str, Depends(get_database_url)],
 ) -> AgentRepository:
     """Provide an agent repository bound to the configured database."""
     return AgentRepository(database_url)
 
 
 def get_agent_runtime_repository(
-    database_url: str = Depends(get_database_url),
+    database_url: Annotated[str, Depends(get_database_url)],
 ) -> AgentRuntimeRepository:
     """Provide an agent runtime repository bound to the configured database."""
     return AgentRuntimeRepository(database_url)
 
 
 def get_presence_repository(
-    database_url: str = Depends(get_database_url),
+    database_url: Annotated[str, Depends(get_database_url)],
 ) -> PresenceRepository:
     """Provide a presence repository bound to the configured database."""
     return PresenceRepository(database_url)

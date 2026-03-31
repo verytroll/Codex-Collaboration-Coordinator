@@ -99,12 +99,8 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
     database_path = tmp_path / "full.db"
     database_url = f"sqlite:///{database_path.as_posix()}"
 
-    first_run = asyncio.run(
-        migrate_sqlite(database_url, migrations_dir=DEFAULT_MIGRATIONS_DIR)
-    )
-    second_run = asyncio.run(
-        migrate_sqlite(database_url, migrations_dir=DEFAULT_MIGRATIONS_DIR)
-    )
+    first_run = asyncio.run(migrate_sqlite(database_url, migrations_dir=DEFAULT_MIGRATIONS_DIR))
+    second_run = asyncio.run(migrate_sqlite(database_url, migrations_dir=DEFAULT_MIGRATIONS_DIR))
 
     assert first_run == [
         "001_baseline_tables.sql",
