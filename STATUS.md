@@ -3,11 +3,11 @@
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-03-31
 - Pha hiện tại: V2 implementation
-- Đang tập trung vào: F20 - nâng cấp advanced jobs và offline queue tối thiểu
+- Đang tập trung vào: F21 - Tạo rules engine cơ bản và manual activation flow
 - Người thực hiện: Codex
 
 ### Đang làm
-- [ ] F20 - Nâng cấp advanced jobs và offline queue tối thiểu
+- [x] F20 - Nâng cấp advanced jobs và offline queue tối thiểu - 2026-03-31
 
 ### Vừa hoàn thành
 - [x] F19 - Bổ sung roles, permissions và participant policy rõ hơn - 2026-03-31
@@ -27,7 +27,7 @@
 - CodexBridge health trong `system/status` phản ánh trạng thái aggregate, chưa phải telemetry live dài hạn.
 
 ### Kiểm chứng gần nhất
-- `pytest` - 47 passed - 2026-03-31
+- `pytest` - 51 passed - 2026-03-31
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`

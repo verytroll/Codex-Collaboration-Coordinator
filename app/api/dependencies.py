@@ -13,6 +13,7 @@ from app.repositories.agents import AgentRepository, AgentRuntimeRepository
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.artifacts import ArtifactRepository
 from app.repositories.channels import SessionChannelRepository
+from app.repositories.job_inputs import JobInputRepository
 from app.repositories.jobs import JobEventRepository, JobRepository
 from app.repositories.messages import MessageMentionRepository, MessageRepository
 from app.repositories.participants import ParticipantRepository
@@ -26,6 +27,7 @@ from app.services.channel_service import ChannelService
 from app.services.command_handler import CommandHandler
 from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardService
+from app.services.offline_queue import OfflineQueueService
 from app.services.participant_policy import ParticipantPolicyService
 from app.services.message_routing import MessageRoutingService
 from app.services.permissions import CommandPermissions
@@ -195,6 +197,13 @@ def get_job_event_repository(
     return JobEventRepository(database_url)
 
 
+def get_job_input_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> JobInputRepository:
+    """Provide a job input repository bound to the configured database."""
+    return JobInputRepository(database_url)
+
+
 def get_job_service(
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     runtime_service: Annotated[RuntimeService, Depends(get_runtime_service)],
@@ -298,6 +307,7 @@ def get_command_handler(
     ],
     permissions: Annotated[CommandPermissions, Depends(get_command_permissions)],
     relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
+    offline_queue_service: Annotated[OfflineQueueService, Depends(get_offline_queue_service)],
 ) -> CommandHandler:
     """Provide the command handler."""
     return CommandHandler(
@@ -309,6 +319,7 @@ def get_command_handler(
         session_event_repository=session_event_repository,
         permissions=permissions,
         relay_engine=relay_engine,
+        offline_queue_service=offline_queue_service,
     )
 
 
@@ -351,6 +362,21 @@ def get_approval_manager(
         job_repository=job_repository,
         job_event_repository=job_event_repository,
         session_event_repository=session_event_repository,
+    )
+
+
+def get_offline_queue_service(
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    job_input_repository: Annotated[JobInputRepository, Depends(get_job_input_repository)],
+    runtime_service: Annotated[RuntimeService, Depends(get_runtime_service)],
+    relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
+) -> OfflineQueueService:
+    """Provide the offline queue service."""
+    return OfflineQueueService(
+        job_repository=job_repository,
+        job_input_repository=job_input_repository,
+        runtime_service=runtime_service,
+        relay_engine=relay_engine,
     )
 
 

@@ -14,6 +14,7 @@ from app.repositories.sessions import SessionRepository
 from app.services.job_service import JobService
 from app.services.mention_router import MentionRouter, ResolvedMention
 from app.services.message_parser import MessageParser, ParsedCommand, ParsedMessage
+from app.services.offline_queue import OfflineQueueService
 from app.services.permissions import CommandPermissions
 from app.services.relay_engine import RelayEngine
 
@@ -46,6 +47,7 @@ class CommandHandler:
         session_event_repository: SessionEventRepository,
         permissions: CommandPermissions,
         relay_engine: RelayEngine,
+        offline_queue_service: OfflineQueueService,
         parser: MessageParser | None = None,
     ) -> None:
         self.job_service = job_service
@@ -56,6 +58,7 @@ class CommandHandler:
         self.session_event_repository = session_event_repository
         self.permissions = permissions
         self.relay_engine = relay_engine
+        self.offline_queue_service = offline_queue_service
         self.parser = parser or MessageParser()
         self.mention_router = MentionRouter()
 
@@ -103,15 +106,25 @@ class CommandHandler:
                 target_agent_id=target_agent_id,
                 target_job_id=job.id,
             )
-            relay_result = await self.relay_engine.execute_job(
+            dispatch_result = await self.offline_queue_service.schedule_job(
                 job.id,
+                input_type="command.new",
+                input_payload={
+                    "command_name": "new",
+                    "arguments": command.arguments,
+                    "source_message_id": message.id,
+                },
                 relay_reason="manual_relay",
             )
             return CommandExecutionResult(
                 command_name="new",
                 target_agent_id=target_agent_id,
                 target_job_id=job.id,
-                relay_result=relay_result.event_type,
+                relay_result=(
+                    dispatch_result.relay_result.event_type
+                    if dispatch_result.relay_result is not None
+                    else "job.queued_offline"
+                ),
             )
 
         target_job = await self._resolve_target_job(session_id, target_agent_id)

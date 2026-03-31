@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import (
     get_agent_repository,
+    get_offline_queue_service,
     get_presence_repository,
     get_presence_service,
 )
@@ -20,6 +21,7 @@ from app.models.api.presence import (
 )
 from app.repositories.agents import AgentRepository
 from app.repositories.presence import PresenceRepository
+from app.services.offline_queue import OfflineQueueService
 from app.services.presence import PresenceService, PresenceSnapshot
 
 router = APIRouter(prefix="/api/v1", tags=["presence"])
@@ -80,6 +82,7 @@ async def post_heartbeat(
     payload: PresenceHeartbeatRequest,
     agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
     presence_service: Annotated[PresenceService, Depends(get_presence_service)],
+    offline_queue_service: Annotated[OfflineQueueService, Depends(get_offline_queue_service)],
 ) -> PresenceEnvelope:
     await _ensure_agent(agent_repository, agent_id)
     heartbeat = await presence_service.record_heartbeat(
@@ -89,6 +92,11 @@ async def post_heartbeat(
         details=payload.details,
         heartbeat_at=payload.heartbeat_at,
     )
+    if heartbeat.presence in {"online", "busy"}:
+        try:
+            await offline_queue_service.dispatch_pending_for_agent(agent_id)
+        except Exception:
+            pass
     return PresenceEnvelope(
         presence=_heartbeat_response(
             agent_id=heartbeat.agent_id,

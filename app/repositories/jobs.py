@@ -105,6 +105,9 @@ class JobRepository(SQLiteRepositoryBase):
             lambda connection: self._list_by_session_sync(connection, session_id)
         )
 
+    async def list_by_agent(self, agent_id: str) -> list[JobRecord]:
+        return await self._run(lambda connection: self._list_by_agent_sync(connection, agent_id))
+
     async def update(self, job: JobRecord) -> JobRecord:
         return await self._run(lambda connection: self._update_sync(connection, job))
 
@@ -149,6 +152,17 @@ class JobRepository(SQLiteRepositoryBase):
         rows = connection.execute(
             "SELECT * FROM jobs WHERE session_id = ? ORDER BY created_at, id",
             (session_id,),
+        ).fetchall()
+        return [JobRecord.from_row(row) for row in rows]
+
+    def _list_by_agent_sync(
+        self,
+        connection: sqlite3.Connection,
+        agent_id: str,
+    ) -> list[JobRecord]:
+        rows = connection.execute(
+            "SELECT * FROM jobs WHERE assigned_agent_id = ? ORDER BY created_at, id",
+            (agent_id,),
         ).fetchall()
         return [JobRecord.from_row(row) for row in rows]
 

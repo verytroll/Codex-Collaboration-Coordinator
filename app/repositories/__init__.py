@@ -9,6 +9,7 @@ from app.repositories.agents import (
 from app.repositories.approvals import ApprovalRepository, ApprovalRequestRecord
 from app.repositories.artifacts import ArtifactRecord, ArtifactRepository
 from app.repositories.channels import SessionChannelRecord, SessionChannelRepository
+from app.repositories.job_inputs import JobInputRecord, JobInputRepository
 from app.repositories.jobs import JobEventRecord, JobEventRepository, JobRecord, JobRepository
 from app.repositories.messages import (
     MessageMentionRecord,
@@ -35,6 +36,8 @@ __all__ = [
     "AgentRuntimeRepository",
     "JobEventRecord",
     "JobEventRepository",
+    "JobInputRecord",
+    "JobInputRepository",
     "JobRecord",
     "JobRepository",
     "MessageMentionRecord",

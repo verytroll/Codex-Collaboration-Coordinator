@@ -16,8 +16,8 @@ from app.api.dependencies import (
     get_message_mention_repository,
     get_message_repository,
     get_message_routing_service,
+    get_offline_queue_service,
     get_participant_repository,
-    get_relay_engine,
     get_session_event_repository,
     get_session_repository,
 )
@@ -39,8 +39,8 @@ from app.repositories.sessions import SessionRecord, SessionRepository
 from app.services.channel_service import ChannelService
 from app.services.command_handler import CommandHandler
 from app.services.message_routing import MessageRoutingService
+from app.services.offline_queue import OfflineQueueService
 from app.services.permissions import CommandPermissions
-from app.services.relay_engine import RelayEngine
 from app.services.session_events import record_session_event
 
 router = APIRouter(prefix="/api/v1", tags=["messages"])
@@ -161,7 +161,7 @@ async def create_message(
     event_repository: Annotated[SessionEventRepository, Depends(get_session_event_repository)],
     channel_service: Annotated[ChannelService, Depends(get_channel_service)],
     routing_service: Annotated[MessageRoutingService, Depends(get_message_routing_service)],
-    relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
+    offline_queue_service: Annotated[OfflineQueueService, Depends(get_offline_queue_service)],
     command_handler: Annotated[CommandHandler, Depends(get_command_handler)],
     command_permissions: Annotated[CommandPermissions, Depends(get_command_permissions)],
 ) -> MessageCreateEnvelope:
@@ -284,7 +284,16 @@ async def create_message(
     else:
         for job_id in routing.created_jobs:
             try:
-                await relay_engine.execute_job(job_id)
+                await offline_queue_service.schedule_job(
+                    job_id,
+                    input_type="mention",
+                    input_payload={
+                        "message_id": created.id,
+                        "sender_id": payload.sender_id,
+                        "channel_key": payload.channel_key,
+                    },
+                    relay_reason="mention",
+                )
             except LookupError as exc:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     mentions = await _load_mentions(mention_repository, created.id)

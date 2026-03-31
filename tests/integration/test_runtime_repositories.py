@@ -7,6 +7,7 @@ from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
 from app.repositories.agents import AgentRecord, AgentRepository
 from app.repositories.approvals import ApprovalRepository, ApprovalRequestRecord
 from app.repositories.artifacts import ArtifactRecord, ArtifactRepository
+from app.repositories.job_inputs import JobInputRecord, JobInputRepository
 from app.repositories.jobs import JobEventRecord, JobEventRepository, JobRecord, JobRepository
 from app.repositories.messages import (
     MessageMentionRecord,
@@ -199,6 +200,77 @@ def test_job_and_job_event_repository_crud(tmp_path) -> None:
     assert asyncio.run(job_repository.get(job.id)) is None
     assert asyncio.run(session_repository.delete("ses_job")) is True
     assert asyncio.run(agent_repository.delete("agt_job")) is True
+
+
+def test_job_input_repository_crud(tmp_path) -> None:
+    database_url = _database_url(tmp_path)
+    _migrate(database_url)
+    session_repository, agent_repository = _bootstrap_session_and_agent(
+        database_url,
+        "ses_input",
+        "agt_input",
+    )
+    job_repository = JobRepository(database_url)
+    job_input_repository = JobInputRepository(database_url)
+
+    job = JobRecord(
+        id="job_input",
+        session_id="ses_input",
+        assigned_agent_id="agt_input",
+        runtime_id=None,
+        source_message_id=None,
+        parent_job_id=None,
+        title="Track input",
+        instructions="Capture input history",
+        status="queued",
+        hop_count=0,
+        priority="normal",
+        codex_runtime_id=None,
+        codex_thread_id=None,
+        active_turn_id=None,
+        last_known_turn_status=None,
+        result_summary=None,
+        error_code=None,
+        error_message=None,
+        started_at=None,
+        completed_at=None,
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:00:00Z",
+    )
+    job_input = JobInputRecord(
+        id="jni_001",
+        job_id=job.id,
+        session_id=job.session_id,
+        input_type="create",
+        input_payload_json='{"title":"Track input"}',
+        created_at="2026-03-31T00:00:00Z",
+    )
+
+    asyncio.run(job_repository.create(job))
+    created_input = asyncio.run(job_input_repository.create(job_input))
+    fetched_input = asyncio.run(job_input_repository.get(job_input.id))
+    listed_inputs = asyncio.run(job_input_repository.list_by_job(job.id))
+    updated_input = replace(
+        created_input,
+        input_type="retry",
+        input_payload_json='{"reason":"retry"}',
+    )
+
+    assert created_input == job_input
+    assert fetched_input == job_input
+    assert listed_inputs == [job_input]
+
+    saved_input = asyncio.run(job_input_repository.update(updated_input))
+    listed_all = asyncio.run(job_input_repository.list())
+    deleted_input = asyncio.run(job_input_repository.delete(job_input.id))
+
+    assert saved_input.input_type == "retry"
+    assert len(listed_all) == 1
+    assert deleted_input is True
+    assert asyncio.run(job_input_repository.get(job_input.id)) is None
+    assert asyncio.run(job_repository.delete(job.id)) is True
+    assert asyncio.run(session_repository.delete("ses_input")) is True
+    assert asyncio.run(agent_repository.delete("agt_input")) is True
 
 
 def test_artifact_and_approval_repository_crud(tmp_path) -> None:

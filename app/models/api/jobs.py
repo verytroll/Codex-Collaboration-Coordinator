@@ -49,6 +49,21 @@ class JobResponse(BaseModel):
     updated_at: str
 
 
+class JobCreateRequest(BaseModel):
+    """Payload for creating a direct job."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    session_id: str
+    assigned_agent_id: str
+    title: str
+    instructions: str | None = None
+    channel_key: str = "general"
+    source_message_id: str | None = None
+    parent_job_id: str | None = None
+    priority: JobPriority = "normal"
+
+
 class JobEventResponse(BaseModel):
     """Job event payload."""
 
@@ -59,6 +74,19 @@ class JobEventResponse(BaseModel):
     session_id: str
     event_type: str
     event_payload: dict[str, Any] | None = None
+    created_at: str
+
+
+class JobInputResponse(BaseModel):
+    """Normalized job input payload."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    job_id: str
+    session_id: str
+    input_type: str
+    input_payload: dict[str, Any] | None = None
     created_at: str
 
 
@@ -109,6 +137,7 @@ class JobDetailResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     job: JobResponse
+    inputs: list[JobInputResponse] = Field(default_factory=list)
     events: list[JobEventResponse] = Field(default_factory=list)
     artifacts: list[ArtifactResponse] = Field(default_factory=list)
     approvals: list[ApprovalRequestResponse] = Field(default_factory=list)

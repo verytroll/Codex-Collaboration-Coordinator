@@ -15,8 +15,13 @@ from app.api.dependencies import (
     get_approval_manager,
     get_approval_repository,
     get_artifact_repository,
+    get_channel_service,
     get_job_event_repository,
+    get_job_input_repository,
     get_job_repository,
+    get_job_service,
+    get_offline_queue_service,
+    get_participant_repository,
     get_relay_engine,
     get_session_repository,
     get_streaming_service,
@@ -25,19 +30,27 @@ from app.models.api.jobs import (
     ApprovalRequestResponse,
     ArtifactListEnvelope,
     ArtifactResponse,
+    JobCreateRequest,
     JobControlRequest,
     JobDetailResponse,
     JobEnvelope,
     JobEventListEnvelope,
     JobEventResponse,
+    JobInputResponse,
     JobInputRequest,
     JobResponse,
+    JobListEnvelope,
 )
 from app.repositories.approvals import ApprovalRepository, ApprovalRequestRecord
 from app.repositories.artifacts import ArtifactRecord, ArtifactRepository
+from app.repositories.job_inputs import JobInputRecord, JobInputRepository
 from app.repositories.jobs import JobEventRecord, JobEventRepository, JobRecord, JobRepository
+from app.repositories.participants import ParticipantRepository
 from app.repositories.sessions import SessionRepository
 from app.services.approval_manager import ApprovalManager
+from app.services.channel_service import ChannelService
+from app.services.job_service import JobService
+from app.services.offline_queue import OfflineQueueService
 from app.services.relay_engine import RelayEngine
 from app.services.streaming import StreamingService
 
@@ -97,6 +110,17 @@ def _event_response(event: JobEventRecord) -> JobEventResponse:
     )
 
 
+def _job_input_response(job_input: JobInputRecord) -> JobInputResponse:
+    return JobInputResponse(
+        id=job_input.id,
+        job_id=job_input.job_id,
+        session_id=job_input.session_id,
+        input_type=job_input.input_type,
+        input_payload=_parse_json(job_input.input_payload_json),
+        created_at=job_input.created_at,
+    )
+
+
 def _artifact_response(artifact: ArtifactRecord) -> ArtifactResponse:
     return ArtifactResponse(
         id=artifact.id,
@@ -147,9 +171,44 @@ async def _ensure_job(
     return job
 
 
+async def _ensure_session(
+    session_repository: SessionRepository,
+    session_id: str,
+) -> None:
+    if await session_repository.get(session_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session not found: {session_id}",
+        )
+
+
+async def _ensure_agent_participant_or_lead(
+    *,
+    session_repository: SessionRepository,
+    participant_repository: ParticipantRepository,
+    session_id: str,
+    agent_id: str,
+) -> None:
+    session = await session_repository.get(session_id)
+    if session is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session not found: {session_id}",
+        )
+    if session.lead_agent_id == agent_id:
+        return
+    participant = await participant_repository.get_by_session_and_agent(session_id, agent_id)
+    if participant is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Agent {agent_id} is not a participant of session {session_id}",
+        )
+
+
 async def _load_job_detail(
     job_id: str,
     job_repository: JobRepository,
+    job_input_repository: JobInputRepository,
     job_event_repository: JobEventRepository,
     artifact_repository: ArtifactRepository,
     approval_repository: ApprovalRepository,
@@ -157,6 +216,10 @@ async def _load_job_detail(
     job = await _ensure_job(job_repository, job_id)
     return JobDetailResponse(
         job=_job_response(job),
+        inputs=[
+            _job_input_response(job_input)
+            for job_input in await job_input_repository.list_by_job(job_id)
+        ],
         events=[_event_response(event) for event in await job_event_repository.list_by_job(job_id)],
         artifacts=[
             _artifact_response(artifact)
@@ -169,10 +232,105 @@ async def _load_job_detail(
     )
 
 
+def _filter_jobs(
+    jobs: list[JobRecord],
+    *,
+    session_id: str | None,
+    agent_id: str | None,
+    channel_key: str | None,
+    job_status: str | None,
+) -> list[JobRecord]:
+    filtered = jobs
+    if session_id is not None:
+        filtered = [job for job in filtered if job.session_id == session_id]
+    if agent_id is not None:
+        filtered = [job for job in filtered if job.assigned_agent_id == agent_id]
+    if channel_key is not None:
+        filtered = [job for job in filtered if job.channel_key == channel_key]
+    if job_status is not None:
+        filtered = [job for job in filtered if job.status == job_status]
+    return filtered
+
+
+@router.get("/jobs", response_model=JobListEnvelope)
+async def list_jobs(
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    session_id: str | None = None,
+    agent_id: str | None = None,
+    channel_key: str | None = None,
+    job_status: str | None = None,
+) -> JobListEnvelope:
+    jobs = _filter_jobs(
+        await job_repository.list(),
+        session_id=session_id,
+        agent_id=agent_id,
+        channel_key=channel_key,
+        job_status=job_status,
+    )
+    return JobListEnvelope(jobs=[_job_response(job) for job in jobs])
+
+
+@router.post("/jobs", response_model=JobEnvelope, status_code=status.HTTP_201_CREATED)
+async def create_job(
+    payload: JobCreateRequest,
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    participant_repository: Annotated[ParticipantRepository, Depends(get_participant_repository)],
+    channel_service: Annotated[ChannelService, Depends(get_channel_service)],
+    job_service: Annotated[JobService, Depends(get_job_service)],
+    offline_queue_service: Annotated[OfflineQueueService, Depends(get_offline_queue_service)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    job_input_repository: Annotated[JobInputRepository, Depends(get_job_input_repository)],
+    job_event_repository: Annotated[JobEventRepository, Depends(get_job_event_repository)],
+    artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
+    approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
+) -> JobEnvelope:
+    await _ensure_session(session_repository, payload.session_id)
+    await _ensure_agent_participant_or_lead(
+        session_repository=session_repository,
+        participant_repository=participant_repository,
+        session_id=payload.session_id,
+        agent_id=payload.assigned_agent_id,
+    )
+    await channel_service.ensure_channel_exists(
+        session_id=payload.session_id,
+        channel_key=payload.channel_key,
+    )
+    job = await job_service.create_job_for_agent(
+        session_id=payload.session_id,
+        agent_id=payload.assigned_agent_id,
+        title=payload.title,
+        instructions=payload.instructions,
+        channel_key=payload.channel_key,
+        priority=payload.priority,
+        source_message_id=payload.source_message_id,
+        parent_job_id=payload.parent_job_id,
+    )
+    try:
+        await offline_queue_service.schedule_job(
+            job.id,
+            input_type="create",
+            input_payload=payload.model_dump(mode="json"),
+            relay_reason="manual_relay",
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    return JobEnvelope(
+        job=await _load_job_detail(
+            job.id,
+            job_repository,
+            job_input_repository,
+            job_event_repository,
+            artifact_repository,
+            approval_repository,
+        )
+    )
+
+
 @router.get("/jobs/{job_id}", response_model=JobEnvelope)
 async def get_job(
     job_id: str,
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    job_input_repository: Annotated[JobInputRepository, Depends(get_job_input_repository)],
     job_event_repository: Annotated[JobEventRepository, Depends(get_job_event_repository)],
     artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
     approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
@@ -181,6 +339,7 @@ async def get_job(
         job=await _load_job_detail(
             job_id,
             job_repository,
+            job_input_repository,
             job_event_repository,
             artifact_repository,
             approval_repository,
@@ -220,6 +379,7 @@ async def cancel_job(
     job_id: str,
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
+    job_input_repository: Annotated[JobInputRepository, Depends(get_job_input_repository)],
     job_event_repository: Annotated[JobEventRepository, Depends(get_job_event_repository)],
     artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
     approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
@@ -234,6 +394,7 @@ async def cancel_job(
         job=await _load_job_detail(
             job_id,
             job_repository,
+            job_input_repository,
             job_event_repository,
             artifact_repository,
             approval_repository,
@@ -245,32 +406,59 @@ async def cancel_job(
 async def resume_job(
     job_id: str,
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
-    relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
+    offline_queue_service: Annotated[OfflineQueueService, Depends(get_offline_queue_service)],
+    job_input_repository: Annotated[JobInputRepository, Depends(get_job_input_repository)],
     job_event_repository: Annotated[JobEventRepository, Depends(get_job_event_repository)],
     artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
     approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
     payload: JobControlRequest | None = None,
 ) -> JobEnvelope:
-    job = await _ensure_job(job_repository, job_id)
-    resumed_job = replace(
-        job,
-        status="queued",
-        last_known_turn_status="resumed",
-        completed_at=None,
-        updated_at=_utc_now(),
-    )
-    await job_repository.update(resumed_job)
     try:
-        await relay_engine.execute_job(
+        await offline_queue_service.resume_job(
             job_id,
-            relay_reason=(payload.reason if payload and payload.reason else "manual_relay"),
+            reason=payload.reason if payload else None,
         )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     return JobEnvelope(
         job=await _load_job_detail(
             job_id,
             job_repository,
+            job_input_repository,
+            job_event_repository,
+            artifact_repository,
+            approval_repository,
+        )
+    )
+
+
+@router.post("/jobs/{job_id}/retry", response_model=JobEnvelope)
+async def retry_job(
+    job_id: str,
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    offline_queue_service: Annotated[OfflineQueueService, Depends(get_offline_queue_service)],
+    job_input_repository: Annotated[JobInputRepository, Depends(get_job_input_repository)],
+    job_event_repository: Annotated[JobEventRepository, Depends(get_job_event_repository)],
+    artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
+    approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
+    payload: JobControlRequest | None = None,
+) -> JobEnvelope:
+    try:
+        await offline_queue_service.retry_job(
+            job_id,
+            reason=payload.reason if payload else None,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    return JobEnvelope(
+        job=await _load_job_detail(
+            job_id,
+            job_repository,
+            job_input_repository,
             job_event_repository,
             artifact_repository,
             approval_repository,
@@ -283,8 +471,9 @@ async def provide_job_input(
     job_id: str,
     payload: JobInputRequest,
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    job_input_repository: Annotated[JobInputRepository, Depends(get_job_input_repository)],
     approval_manager: Annotated[ApprovalManager, Depends(get_approval_manager)],
-    relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
+    offline_queue_service: Annotated[OfflineQueueService, Depends(get_offline_queue_service)],
     job_event_repository: Annotated[JobEventRepository, Depends(get_job_event_repository)],
     artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
     approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
@@ -299,7 +488,15 @@ async def provide_job_input(
         except LookupError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
         try:
-            await relay_engine.execute_job(job_id, relay_reason="manual_relay")
+            await offline_queue_service.schedule_job(
+                job_id,
+                input_type="approval_accept",
+                input_payload={
+                    "approval_id": payload.approval_id,
+                    "input_text": payload.input_text,
+                },
+                relay_reason="manual_relay",
+            )
         except LookupError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     else:
@@ -327,7 +524,12 @@ async def provide_job_input(
         )
         if job.status in {"input_required", "auth_required"}:
             try:
-                await relay_engine.execute_job(job_id, relay_reason="manual_relay")
+                await offline_queue_service.schedule_job(
+                    job_id,
+                    input_type="manual_input",
+                    input_payload={"input_text": payload.input_text},
+                    relay_reason="manual_relay",
+                )
             except LookupError as exc:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
@@ -335,6 +537,7 @@ async def provide_job_input(
         job=await _load_job_detail(
             job_id,
             job_repository,
+            job_input_repository,
             job_event_repository,
             artifact_repository,
             approval_repository,

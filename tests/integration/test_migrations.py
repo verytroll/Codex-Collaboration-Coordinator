@@ -110,6 +110,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "005_presence_relay_session.sql",
         "006_session_channels.sql",
         "007_session_participant_policy.sql",
+        "008_job_inputs.sql",
     ]
     assert second_run == []
 
@@ -131,6 +132,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "message_mentions",
         "jobs",
         "job_events",
+        "job_inputs",
         "artifacts",
         "approval_requests",
         "presence_heartbeats",
@@ -153,5 +155,8 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "idx_session_events_event_type",
         "idx_session_channels_session_id_sort_order",
         "idx_session_participants_session_id_role",
+        "idx_job_inputs_job_id_created_at",
+        "idx_job_inputs_session_id_created_at",
+        "idx_jobs_assigned_agent_id_status",
     }.issubset(indexes)
-    assert version_count == 7
+    assert version_count == 8
