@@ -7,7 +7,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.codex_bridge import CodexProcessManager, JsonRpcClient
+from app.codex_bridge import CodexProcessManager, LazyCodexBridgeClient
 from app.core.config import get_config
 from app.repositories.agents import AgentRepository, AgentRuntimeRepository
 from app.repositories.approvals import ApprovalRepository
@@ -28,7 +28,7 @@ from app.services.message_routing import MessageRoutingService
 from app.services.permissions import CommandPermissions
 from app.services.presence import PresenceService
 from app.services.recovery import RecoveryService
-from app.services.relay_engine import RelayEngine
+from app.services.relay_engine import CodexRelayBridge, RelayEngine
 from app.services.runtime_service import RuntimeService
 from app.services.streaming import StreamingService
 from app.services.thread_mapping import ThreadMappingService, ThreadMappingStore
@@ -153,17 +153,14 @@ def get_thread_mapping_service(
     return ThreadMappingService(runtime_service, store=_THREAD_MAPPING_STORE)
 
 
-async def get_codex_bridge_client() -> AsyncIterator[JsonRpcClient]:
-    """Provide a Codex JSON-RPC client for the current request."""
+async def get_codex_bridge_client() -> AsyncIterator[CodexRelayBridge]:
+    """Provide a lazily started Codex JSON-RPC client for the current request."""
     manager = CodexProcessManager()
-    process = await manager.start()
-    client = JsonRpcClient(process)
+    client = LazyCodexBridgeClient(manager)
     try:
-        await client.initialize({"transport": "stdio"})
         yield client
     finally:
         await client.aclose()
-        await manager.stop()
 
 
 def get_message_routing_service(
@@ -206,7 +203,7 @@ def get_relay_engine(
     loop_guard_service: Annotated[LoopGuardService, Depends(get_loop_guard_service)],
     artifact_manager: Annotated[ArtifactManager, Depends(get_artifact_manager)],
     approval_manager: Annotated[ApprovalManager, Depends(get_approval_manager)],
-    bridge: Annotated[JsonRpcClient, Depends(get_codex_bridge_client)],
+    bridge: Annotated[CodexRelayBridge, Depends(get_codex_bridge_client)],
 ) -> RelayEngine:
     """Provide the relay engine."""
     return RelayEngine(

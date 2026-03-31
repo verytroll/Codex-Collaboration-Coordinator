@@ -158,7 +158,16 @@ class ThreadMappingService:
         else:
             result = getattr(response, "result", response)
         if isinstance(result, dict):
-            thread_id = result.get("thread_id") or result.get("codex_thread_id")
+            thread = result.get("thread")
+            if isinstance(thread, dict):
+                thread_id = thread.get("id") or thread.get("thread_id")
+                if thread_id is not None:
+                    return str(thread_id)
+            thread_id = (
+                result.get("thread_id")
+                or result.get("threadId")
+                or result.get("codex_thread_id")
+            )
             if thread_id is not None:
                 return str(thread_id)
         raise ValueError("Bridge response did not include a thread id")

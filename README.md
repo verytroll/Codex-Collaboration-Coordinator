@@ -19,6 +19,7 @@ Skeleton project for the coordinator service.
    - `./scripts/run.ps1`
    - `./scripts/dev.ps1` auto-applies migrations, then starts uvicorn
    - `./scripts/seed.ps1`
+   - `./scripts/smoke.ps1` waits for the app to become ready, then runs a smoke test
    - `./scripts/test.ps1`
    - `./scripts/lint.ps1`
 

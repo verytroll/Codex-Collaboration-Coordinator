@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import shlex
+import shutil
+import subprocess
+import threading
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
@@ -23,14 +27,19 @@ class CodexProcessManager:
         self.cwd = Path(cwd) if cwd is not None else None
         self.env = dict(env) if env is not None else None
         self.startup_timeout_seconds = startup_timeout_seconds
-        self.process: asyncio.subprocess.Process | None = None
+        self.process: subprocess.Popen[bytes] | None = None
         self.stderr_lines: list[str] = []
-        self._stderr_task: asyncio.Task[None] | None = None
+        self._stderr_thread: threading.Thread | None = None
 
     @staticmethod
     def _normalize_command(command: Sequence[str] | str | None) -> list[str]:
         """Normalize a command definition into a subprocess argument list."""
         if command is None:
+            resolved = shutil.which("codex")
+            if resolved is not None:
+                return [resolved, "app-server"]
+            if os.name == "nt":
+                return ["codex", "app-server"]
             return ["codex", "app-server"]
         if isinstance(command, str):
             return shlex.split(command)
@@ -38,22 +47,14 @@ class CodexProcessManager:
 
     def is_running(self) -> bool:
         """Return whether the process is currently alive."""
-        return self.process is not None and self.process.returncode is None
+        return self.process is not None and self.process.poll() is None
 
-    async def start(self) -> asyncio.subprocess.Process:
+    async def start(self) -> subprocess.Popen[bytes]:
         """Start the Codex app-server subprocess if needed."""
         if self.is_running():
             return self.process  # type: ignore[return-value]
 
-        self.process = await asyncio.create_subprocess_exec(
-            *self.command,
-            cwd=str(self.cwd) if self.cwd is not None else None,
-            env=self.env,
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        self._stderr_task = asyncio.create_task(self._drain_stderr())
+        self.process = await asyncio.to_thread(self._start_sync)
         return self.process
 
     async def stop(self) -> None:
@@ -62,39 +63,55 @@ class CodexProcessManager:
         if process is None:
             return
 
-        if process.returncode is None:
-            process.terminate()
+        if process.poll() is None:
+            await asyncio.to_thread(process.terminate)
             try:
-                await asyncio.wait_for(process.wait(), timeout=self.startup_timeout_seconds)
+                await asyncio.wait_for(
+                    asyncio.to_thread(process.wait),
+                    timeout=self.startup_timeout_seconds,
+                )
             except TimeoutError:
-                process.kill()
-                await process.wait()
+                await asyncio.to_thread(process.kill)
+                await asyncio.to_thread(process.wait)
 
-        await self._cancel_stderr_task()
+        await self._join_stderr_thread()
         self.process = None
 
-    async def _drain_stderr(self) -> None:
+    def _start_sync(self) -> subprocess.Popen[bytes]:
+        """Start the subprocess in a worker thread."""
+        process = subprocess.Popen(
+            self.command,
+            cwd=str(self.cwd) if self.cwd is not None else None,
+            env=self.env,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        self._stderr_thread = threading.Thread(
+            target=self._drain_stderr_sync,
+            args=(process,),
+            name="codex-bridge-stderr",
+            daemon=True,
+        )
+        self._stderr_thread.start()
+        return process
+
+    def _drain_stderr_sync(self, process: subprocess.Popen[bytes]) -> None:
         """Collect stderr lines so the subprocess cannot block on output."""
-        process = self.process
-        if process is None or process.stderr is None:
+        if process.stderr is None:
             return
 
         while True:
-            line = await process.stderr.readline()
+            line = process.stderr.readline()
             if line == b"":
                 return
             self.stderr_lines.append(line.decode("utf-8", errors="replace").rstrip())
 
-    async def _cancel_stderr_task(self) -> None:
-        """Cancel the stderr drainer if it exists."""
-        task = self._stderr_task
-        if task is None:
+    async def _join_stderr_thread(self) -> None:
+        """Wait for the stderr drainer thread to finish."""
+        thread = self._stderr_thread
+        if thread is None:
             return
 
-        task.cancel()
-        try:
-            await task
-        except asyncio.CancelledError:
-            pass
-        finally:
-            self._stderr_task = None
+        await asyncio.to_thread(thread.join, self.startup_timeout_seconds)
+        self._stderr_thread = None

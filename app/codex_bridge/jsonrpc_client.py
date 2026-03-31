@@ -8,7 +8,11 @@ from collections.abc import Mapping
 from itertools import count
 from typing import Any
 
-from app.codex_bridge.models import JsonRpcRequest, JsonRpcResponse
+from app.codex_bridge.models import (
+    JsonRpcNotification,
+    JsonRpcRequest,
+    JsonRpcResponse,
+)
 
 
 class JsonRpcClient:
@@ -16,7 +20,7 @@ class JsonRpcClient:
 
     def __init__(
         self,
-        process: asyncio.subprocess.Process,
+        process: Any,
         *,
         default_timeout_seconds: float = 30.0,
     ) -> None:
@@ -28,10 +32,35 @@ class JsonRpcClient:
         self._reader_task: asyncio.Task[None] | None = None
         self._write_lock = asyncio.Lock()
         self._closed = False
+        self._async_process = isinstance(process, asyncio.subprocess.Process)
 
     async def initialize(self, params: Mapping[str, Any] | None = None) -> JsonRpcResponse:
         """Call the `initialize` primitive."""
-        return await self.call("initialize", params)
+        self._ensure_reader_task()
+        if self.process.stdin is None:
+            raise RuntimeError("JSON-RPC process stdin is not available")
+
+        request_id = next(self._request_ids)
+        request = JsonRpcRequest(
+            method="initialize",
+            params=dict(params) if params is not None else None,
+            request_id=request_id,
+        )
+        response_future: asyncio.Future[JsonRpcResponse] = (
+            asyncio.get_running_loop().create_future()
+        )
+        self._pending[request_id] = response_future
+
+        try:
+            await self._send_request(request)
+            await self.notify("initialized", {})
+            return await asyncio.wait_for(
+                response_future,
+                self.default_timeout_seconds,
+            )
+        except Exception:
+            self._pending.pop(request_id, None)
+            raise
 
     async def thread_start(self, params: Mapping[str, Any] | None = None) -> JsonRpcResponse:
         """Call the `thread/start` primitive."""
@@ -93,6 +122,16 @@ class JsonRpcClient:
             self._pending.pop(request_id, None)
             raise
 
+    async def notify(self, method: str, params: Mapping[str, Any] | None = None) -> None:
+        """Send a JSON-RPC notification without waiting for a response."""
+        self._ensure_reader_task()
+
+        notification = JsonRpcNotification(
+            method=method,
+            params=dict(params) if params is not None else None,
+        )
+        await self._write_message(notification.to_dict())
+
     async def notifications(self) -> list[dict[str, Any]]:
         """Drain queued notifications emitted by the server."""
         notifications: list[dict[str, Any]] = []
@@ -107,10 +146,20 @@ class JsonRpcClient:
 
     async def _send_request(self, request: JsonRpcRequest) -> None:
         """Write a JSON-RPC request to the subprocess stdin."""
-        raw_payload = json.dumps(request.to_dict(), separators=(",", ":")) + "\n"
+        await self._write_message(request.to_dict())
+
+    async def _write_message(self, payload: dict[str, Any]) -> None:
+        """Write a JSON-RPC payload to the subprocess stdin."""
+        if self.process.stdin is None:
+            raise RuntimeError("JSON-RPC process stdin is not available")
+
+        raw_payload = json.dumps(payload, separators=(",", ":")) + "\n"
         async with self._write_lock:
-            self.process.stdin.write(raw_payload.encode("utf-8"))
-            await self.process.stdin.drain()
+            if self._async_process:
+                self.process.stdin.write(raw_payload.encode("utf-8"))
+                await self.process.stdin.drain()
+            else:
+                await asyncio.to_thread(self._write_sync, raw_payload)
 
     def _ensure_reader_task(self) -> None:
         """Start the response reader task if necessary."""
@@ -124,7 +173,7 @@ class JsonRpcClient:
 
         try:
             while True:
-                raw_line = await self.process.stdout.readline()
+                raw_line = await self._readline()
                 if raw_line == b"":
                     break
 
@@ -175,3 +224,22 @@ class JsonRpcClient:
             pass
         finally:
             self._reader_task = None
+
+    async def _readline(self) -> bytes:
+        """Read one line from stdout in async or sync process mode."""
+        if self._async_process:
+            return await self.process.stdout.readline()  # type: ignore[union-attr]
+        return await asyncio.to_thread(self._readline_sync)
+
+    def _readline_sync(self) -> bytes:
+        """Read one line from a synchronous subprocess stdout pipe."""
+        if self.process.stdout is None:
+            return b""
+        return self.process.stdout.readline()
+
+    def _write_sync(self, raw_payload: str) -> None:
+        """Write one payload to a synchronous subprocess stdin pipe."""
+        if self.process.stdin is None:
+            raise RuntimeError("JSON-RPC process stdin is not available")
+        self.process.stdin.write(raw_payload.encode("utf-8"))
+        self.process.stdin.flush()

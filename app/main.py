@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+import sys
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -23,6 +25,9 @@ from app.services.runtime_service import RuntimeService
 
 APP_NAME = "codex-collaboration-coordinator"
 APP_VERSION = "0.1.0"
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 
 async def _recover_state(settings: AppConfig) -> None:

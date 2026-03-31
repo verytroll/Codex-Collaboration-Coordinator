@@ -26,4 +26,9 @@
 ```powershell
 .\scripts\lint.ps1
 .\scripts\test.ps1
+.\scripts\smoke.ps1
 ```
+
+If `smoke.ps1` reports that it cannot connect to the server, make sure `.\scripts\dev.ps1`
+is running in another terminal and let it finish startup. The smoke script waits up to
+60 seconds for the health endpoint before failing.

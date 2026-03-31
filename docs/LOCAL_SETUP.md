@@ -26,6 +26,16 @@ pip install -e .[dev]
 
 `dev.ps1` applies migrations before starting uvicorn, so it works on a fresh SQLite file.
 
+To run a quick end-to-end smoke check against the running app:
+
+```powershell
+.\scripts\smoke.ps1
+```
+
+Use `-IncludeRelay` if you want to try the CodexBridge mention flow too.
+The smoke script waits up to 60 seconds for the app to become ready, so it can be
+run while `dev.ps1` is still starting.
+
 ## Seed demo data
 
 ```powershell

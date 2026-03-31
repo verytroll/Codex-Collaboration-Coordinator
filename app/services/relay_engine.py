@@ -85,6 +85,11 @@ def _extract_text(payload: dict[str, Any], job: JobRecord) -> str:
 
 def _extract_turn_id(payload: dict[str, Any], fallback: str) -> str:
     """Extract or synthesize a turn identifier."""
+    turn = payload.get("turn")
+    if isinstance(turn, dict):
+        nested_turn_id = turn.get("id") or turn.get("turn_id")
+        if nested_turn_id is not None:
+            return str(nested_turn_id)
     turn_id = payload.get("turn_id") or payload.get("active_turn_id")
     if turn_id is not None:
         return str(turn_id)
