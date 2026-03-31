@@ -199,6 +199,7 @@ class ApprovalManager:
             updated = JobRecord(
                 id=job.id,
                 session_id=job.session_id,
+                channel_key=job.channel_key,
                 assigned_agent_id=job.assigned_agent_id,
                 runtime_id=job.runtime_id,
                 source_message_id=job.source_message_id,
@@ -224,6 +225,7 @@ class ApprovalManager:
             updated = JobRecord(
                 id=job.id,
                 session_id=job.session_id,
+                channel_key=job.channel_key,
                 assigned_agent_id=job.assigned_agent_id,
                 runtime_id=job.runtime_id,
                 source_message_id=job.source_message_id,

@@ -62,6 +62,7 @@ def _job_response(job: JobRecord) -> JobResponse:
     return JobResponse(
         id=job.id,
         session_id=job.session_id,
+        channel_key=job.channel_key,
         assigned_agent_id=job.assigned_agent_id,
         runtime_id=job.runtime_id,
         source_message_id=job.source_message_id,
@@ -101,6 +102,7 @@ def _artifact_response(artifact: ArtifactRecord) -> ArtifactResponse:
         id=artifact.id,
         job_id=artifact.job_id,
         session_id=artifact.session_id,
+        channel_key=artifact.channel_key,
         source_message_id=artifact.source_message_id,
         artifact_type=artifact.artifact_type,
         title=artifact.title,

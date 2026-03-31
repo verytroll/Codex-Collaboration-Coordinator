@@ -92,6 +92,7 @@ class StreamingService:
                 "message",
                 {
                     "id": message.id,
+                    "channel_key": message.channel_key,
                     "message_type": message.message_type,
                     "sender_type": message.sender_type,
                     "sender_id": message.sender_id,

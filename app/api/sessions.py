@@ -8,7 +8,11 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.dependencies import get_agent_repository, get_session_repository
+from app.api.dependencies import (
+    get_agent_repository,
+    get_channel_service,
+    get_session_repository,
+)
 from app.models.api.sessions import (
     SessionCreateRequest,
     SessionEnvelope,
@@ -19,6 +23,7 @@ from app.models.api.sessions import (
 )
 from app.repositories.agents import AgentRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
+from app.services.channel_service import ChannelService
 
 router = APIRouter(prefix="/api/v1", tags=["sessions"])
 
@@ -56,6 +61,7 @@ async def create_session(
     payload: SessionCreateRequest,
     session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
     agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
+    channel_service: Annotated[ChannelService, Depends(get_channel_service)],
 ) -> SessionEnvelope:
     if payload.lead_agent_id is not None:
         await _ensure_agent_exists(agent_repository, payload.lead_agent_id)
@@ -75,6 +81,7 @@ async def create_session(
         updated_at=created_at,
     )
     created = await session_repository.create(session)
+    await channel_service.ensure_default_channels(created.id)
     return SessionEnvelope(session=_session_response(created))
 
 

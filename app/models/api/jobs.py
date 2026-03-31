@@ -26,6 +26,7 @@ class JobResponse(BaseModel):
 
     id: str
     session_id: str
+    channel_key: str
     assigned_agent_id: str
     runtime_id: str | None
     source_message_id: str | None
@@ -69,6 +70,7 @@ class ArtifactResponse(BaseModel):
     id: str
     job_id: str
     session_id: str
+    channel_key: str
     source_message_id: str | None
     artifact_type: str
     title: str

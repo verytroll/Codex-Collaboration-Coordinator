@@ -160,6 +160,7 @@ class ArtifactManager:
             id=f"art_{uuid4().hex}",
             job_id=job.id,
             session_id=job.session_id,
+            channel_key=job.channel_key,
             source_message_id=job.source_message_id,
             artifact_type=artifact_type,
             title=title[:120],

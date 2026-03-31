@@ -34,6 +34,7 @@ class JobRecord:
     completed_at: str | None
     created_at: str
     updated_at: str
+    channel_key: str = "general"
 
     @classmethod
     def from_row(cls, row: sqlite3.Row) -> "JobRecord":
@@ -60,6 +61,7 @@ class JobRecord:
             completed_at=row["completed_at"],
             created_at=row["created_at"],
             updated_at=row["updated_at"],
+            channel_key=row["channel_key"],
         )
 
 
@@ -114,13 +116,13 @@ class JobRepository(SQLiteRepositoryBase):
             connection.execute(
                 """
                 INSERT INTO jobs (
-                    id, session_id, assigned_agent_id, runtime_id, source_message_id,
+                    id, session_id, channel_key, assigned_agent_id, runtime_id, source_message_id,
                     parent_job_id, title, instructions, status, hop_count, priority,
                     codex_runtime_id, codex_thread_id, active_turn_id,
                     last_known_turn_status, result_summary, error_code, error_message,
                     started_at, completed_at, created_at, updated_at
                 ) VALUES (
-                    :id, :session_id, :assigned_agent_id, :runtime_id, :source_message_id,
+                    :id, :session_id, :channel_key, :assigned_agent_id, :runtime_id, :source_message_id,
                     :parent_job_id, :title, :instructions, :status, :hop_count, :priority,
                     :codex_runtime_id, :codex_thread_id, :active_turn_id,
                     :last_known_turn_status, :result_summary, :error_code, :error_message,
@@ -156,6 +158,7 @@ class JobRepository(SQLiteRepositoryBase):
                 """
                 UPDATE jobs SET
                     session_id = :session_id,
+                    channel_key = :channel_key,
                     assigned_agent_id = :assigned_agent_id,
                     runtime_id = :runtime_id,
                     source_message_id = :source_message_id,

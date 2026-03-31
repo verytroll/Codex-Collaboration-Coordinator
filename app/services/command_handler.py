@@ -89,6 +89,7 @@ class CommandHandler:
         if command.command_name == "new":
             job = await self.job_service.create_job_for_agent(
                 session_id=session_id,
+                channel_key=message.channel_key,
                 agent_id=target_agent_id,
                 title=self._build_title(command),
                 instructions=command.arguments or message.content,

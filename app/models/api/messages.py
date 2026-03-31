@@ -28,6 +28,7 @@ class MessageCreateRequest(BaseModel):
     content: str = Field(min_length=1)
     reply_to_message_id: str | None = None
     message_type: MessageType = "chat"
+    channel_key: str = "general"
 
 
 class MessageResponse(BaseModel):
@@ -37,6 +38,7 @@ class MessageResponse(BaseModel):
 
     id: str
     session_id: str
+    channel_key: str
     sender_type: MessageSenderType
     sender_id: str | None
     content: str

@@ -10,6 +10,7 @@ from app.repositories.agents import (
     AgentRuntimeRecord,
     AgentRuntimeRepository,
 )
+from app.repositories.channels import SessionChannelRecord, SessionChannelRepository
 from app.repositories.participants import ParticipantRepository, SessionParticipantRecord
 from app.repositories.sessions import SessionRecord, SessionRepository
 
@@ -72,6 +73,58 @@ def test_session_repository_crud(tmp_path) -> None:
     assert deleted is True
     assert asyncio.run(session_repository.get(session.id)) is None
     assert asyncio.run(agent_repository.delete(lead_agent.id)) is True
+
+
+def test_session_channel_repository_crud(tmp_path) -> None:
+    database_url = _database_url(tmp_path)
+    _migrate(database_url)
+    session_repository = SessionRepository(database_url)
+    channel_repository = SessionChannelRepository(database_url)
+
+    session = SessionRecord(
+        id="ses_channel",
+        title="Channel session",
+        goal=None,
+        status="active",
+        lead_agent_id=None,
+        active_phase_id=None,
+        loop_guard_status="normal",
+        loop_guard_reason=None,
+        last_message_at=None,
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:00:00Z",
+    )
+    channel = SessionChannelRecord(
+        id="chn_001",
+        session_id=session.id,
+        channel_key="planning",
+        display_name="Planning",
+        description="Planning channel",
+        is_default=False,
+        sort_order=20,
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:00:00Z",
+    )
+
+    asyncio.run(session_repository.create(session))
+    created_channel = asyncio.run(channel_repository.create(channel))
+    fetched_channel = asyncio.run(channel_repository.get(channel.id))
+    fetched_by_key = asyncio.run(channel_repository.get_by_session_and_key(session.id, "planning"))
+    updated_channel = replace(created_channel, display_name="Planning v2")
+
+    assert created_channel == channel
+    assert fetched_channel == channel
+    assert fetched_by_key == channel
+
+    saved_channel = asyncio.run(channel_repository.update(updated_channel))
+    listed_channels = asyncio.run(channel_repository.list_by_session(session.id))
+    deleted = asyncio.run(channel_repository.delete(channel.id))
+
+    assert saved_channel.display_name == "Planning v2"
+    assert len(listed_channels) == 1
+    assert deleted is True
+    assert asyncio.run(channel_repository.get(channel.id)) is None
+    assert asyncio.run(session_repository.delete(session.id)) is True
 
 
 def test_agent_repository_crud(tmp_path) -> None:

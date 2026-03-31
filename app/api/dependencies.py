@@ -12,6 +12,7 @@ from app.core.config import get_config
 from app.repositories.agents import AgentRepository, AgentRuntimeRepository
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.artifacts import ArtifactRepository
+from app.repositories.channels import SessionChannelRepository
 from app.repositories.jobs import JobEventRepository, JobRepository
 from app.repositories.messages import MessageMentionRepository, MessageRepository
 from app.repositories.participants import ParticipantRepository
@@ -21,6 +22,7 @@ from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRepository
 from app.services.approval_manager import ApprovalManager
 from app.services.artifact_manager import ArtifactManager
+from app.services.channel_service import ChannelService
 from app.services.command_handler import CommandHandler
 from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardService
@@ -69,6 +71,13 @@ def get_artifact_repository(
 ) -> ArtifactRepository:
     """Provide an artifact repository bound to the configured database."""
     return ArtifactRepository(database_url)
+
+
+def get_channel_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> SessionChannelRepository:
+    """Provide a channel repository bound to the configured database."""
+    return SessionChannelRepository(database_url)
 
 
 def get_approval_repository(
@@ -306,6 +315,13 @@ def get_artifact_manager(
         artifact_repository=artifact_repository,
         job_event_repository=job_event_repository,
     )
+
+
+def get_channel_service(
+    channel_repository: Annotated[SessionChannelRepository, Depends(get_channel_repository)],
+) -> ChannelService:
+    """Provide the session channel orchestration service."""
+    return ChannelService(channel_repository)
 
 
 def get_approval_manager(

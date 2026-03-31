@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 import app.main as app_main
 from app.api.dependencies import get_codex_bridge_client
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
+from app.repositories.artifacts import ArtifactRepository
 from app.repositories.jobs import JobEventRepository, JobRepository
 from app.repositories.messages import MessageMentionRepository, MessageRepository
 from app.repositories.relay_edges import RelayEdgeRepository
@@ -144,6 +145,23 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
             assert session_response.status_code == 201
             session_id = session_response.json()["session"]["id"]
 
+            channels_response = client.get(f"/api/v1/sessions/{session_id}/channels")
+            assert channels_response.status_code == 200
+            assert [
+                channel["channel_key"] for channel in channels_response.json()["channels"]
+            ] == ["general", "planning", "review", "debug"]
+
+            create_channel_response = client.post(
+                f"/api/v1/sessions/{session_id}/channels",
+                json={
+                    "channel_key": "research",
+                    "display_name": "Research",
+                    "description": "Research notes",
+                },
+            )
+            assert create_channel_response.status_code == 201
+            assert create_channel_response.json()["channel"]["channel_key"] == "research"
+
             forbidden_message = client.post(
                 f"/api/v1/sessions/{session_id}/messages",
                 json={
@@ -176,6 +194,7 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
                     "sender_id": builder_agent_id,
                     "content": "#builder fix this bug",
                     "reply_to_message_id": None,
+                    "channel_key": "research",
                 },
             )
             assert create_message_response.status_code == 202
@@ -183,6 +202,7 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
             message_body = message_envelope["message"]
             message_id = message_body["id"]
             assert message_body["session_id"] == session_id
+            assert message_body["channel_key"] == "research"
             assert message_body["sender_id"] == builder_agent_id
             assert message_body["message_type"] == "chat"
             assert message_body["mentions"] == [builder_agent_id]
@@ -201,16 +221,23 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
             job_repository = JobRepository(database_url)
             jobs = asyncio.run(job_repository.list_by_session(session_id))
             assert len(jobs) == 1
+            assert jobs[0].channel_key == "research"
             assert jobs[0].assigned_agent_id == builder_agent_id
             assert jobs[0].source_message_id == message_id
             assert jobs[0].status == "running"
             assert jobs[0].codex_thread_id == "thr_1"
             assert jobs[0].active_turn_id == "turn_1"
 
+            artifact_repository = ArtifactRepository(database_url)
+            artifacts = asyncio.run(artifact_repository.list_by_job(jobs[0].id))
+            assert artifacts[0].channel_key == "research"
+
             session_messages = asyncio.run(message_repository.list_by_session(session_id))
             assert len(session_messages) == 2
             assert session_messages[0].id == message_id
+            assert session_messages[0].channel_key == "research"
             assert session_messages[1].sender_type == "agent"
+            assert session_messages[1].channel_key == "research"
             assert session_messages[1].message_type == "relay"
             assert session_messages[1].content == "Relay output 1"
 
@@ -231,6 +258,7 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
                     "sender_id": builder_agent_id,
                     "content": "/interrupt #builder",
                     "reply_to_message_id": None,
+                    "channel_key": "research",
                 },
             )
             assert command_message_response.status_code == 202
@@ -250,6 +278,7 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
                     "sender_id": builder_agent_id,
                     "content": "/compact #builder",
                     "reply_to_message_id": None,
+                    "channel_key": "research",
                 },
             )
             assert compact_message_response.status_code == 202
@@ -264,6 +293,7 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
                     "sender_id": "usr_local",
                     "content": "/new #builder continue from here",
                     "reply_to_message_id": None,
+                    "channel_key": "research",
                 },
             )
             assert new_message_response.status_code == 202
@@ -274,11 +304,13 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
             jobs_after_new = asyncio.run(job_repository.list_by_session(session_id))
             assert len(jobs_after_new) == 2
             assert jobs_after_new[-1].status == "running"
+            assert jobs_after_new[-1].channel_key == "research"
             assert jobs_after_new[-1].codex_thread_id == "thr_1"
             assert jobs_after_new[-1].active_turn_id == "turn_2"
 
             session_messages_after = asyncio.run(message_repository.list_by_session(session_id))
             assert len(session_messages_after) == 6
+            assert all(message.channel_key == "research" for message in session_messages_after)
             assert session_messages_after[-1].message_type == "relay"
             assert session_messages_after[-1].content == "Relay output 2"
 
@@ -302,6 +334,27 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
             get_message_response = client.get(f"/api/v1/messages/{message_id}")
             assert get_message_response.status_code == 200
             assert get_message_response.json()["message"]["content"] == "#builder fix this bug"
+
+            general_message_response = client.post(
+                f"/api/v1/sessions/{session_id}/messages",
+                json={
+                    "sender_type": "user",
+                    "sender_id": "usr_local",
+                    "content": "General note",
+                    "reply_to_message_id": None,
+                },
+            )
+            assert general_message_response.status_code == 202
+            assert general_message_response.json()["message"]["channel_key"] == "general"
+
+            filtered_messages_response = client.get(
+                f"/api/v1/sessions/{session_id}/messages",
+                params={"channel_key": "research"},
+            )
+            assert filtered_messages_response.status_code == 200
+            filtered_messages = filtered_messages_response.json()["messages"]
+            assert len(filtered_messages) == 6
+            assert all(message["channel_key"] == "research" for message in filtered_messages)
 
             list_messages_response = client.get(f"/api/v1/sessions/{session_id}/messages")
             assert list_messages_response.status_code == 200
@@ -327,12 +380,14 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
                 "command.new",
                 "participant.removed",
             }
-            assert sum(event.event_type == "message.created" for event in events) == 6
+            assert sum(event.event_type == "message.created" for event in events) == 7
 
             session_repository = SessionRepository(database_url)
             stored_session = asyncio.run(session_repository.get(session_id))
             assert stored_session is not None
-            assert stored_session.last_message_at == session_messages_after[-1].created_at
+            assert stored_session.last_message_at == general_message_response.json()["message"][
+                "created_at"
+            ]
             assert len(fake_bridge.thread_start_calls) == 1
             assert len(fake_bridge.thread_resume_calls) == 1
             assert len(fake_bridge.turn_start_calls) == 2

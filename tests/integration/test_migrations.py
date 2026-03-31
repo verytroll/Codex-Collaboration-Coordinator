@@ -108,6 +108,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "003_messages.sql",
         "004_jobs.sql",
         "005_presence_relay_session.sql",
+        "006_session_channels.sql",
     ]
     assert second_run == []
 
@@ -134,16 +135,21 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "presence_heartbeats",
         "relay_edges",
         "session_events",
+        "session_channels",
     }.issubset(tables)
     assert {
         "idx_messages_session_id_created_at",
+        "idx_messages_session_id_channel_key_created_at",
         "idx_message_mentions_message_id",
         "idx_jobs_codex_thread_id",
+        "idx_jobs_session_id_channel_key",
         "idx_job_events_job_id_created_at",
         "idx_artifacts_artifact_type",
+        "idx_artifacts_session_id_channel_key",
         "idx_approval_requests_status",
         "idx_presence_heartbeats_agent_id_heartbeat_at",
         "idx_relay_edges_target_agent_id",
         "idx_session_events_event_type",
+        "idx_session_channels_session_id_sort_order",
     }.issubset(indexes)
-    assert version_count == 5
+    assert version_count == 6

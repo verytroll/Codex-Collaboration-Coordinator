@@ -1,4 +1,4 @@
-# Codex Collaboration Coordinator
+﻿# Codex Collaboration Coordinator
 
 Skeleton project for the coordinator service.
 
@@ -29,6 +29,13 @@ Skeleton project for the coordinator service.
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [A2A mapping note](docs/A2A_MAPPING.md)
 - [MVP release notes](docs/RELEASE_NOTES_MVP.md)
+- [Current status](STATUS.md)
+- [MVP plan](PLAN.md)
+- [Post-MVP plan (V2)](PLAN_V2.md)
+- [MVP implementation backlog](IMPLEMENTATION_TASKS.md)
+- [Post-MVP implementation backlog (F17-F24)](IMPLEMENTATION_TASKS_V2.md)
+- [MVP implementation order](IMPLEMENTATION_ORDER.md)
+- [Post-MVP implementation order (PR19-PR26)](IMPLEMENTATION_ORDER_V2.md)
 
 ## Current status
 
@@ -43,3 +50,4 @@ Skeleton project for the coordinator service.
 - Relay engine and command handlers for `/new`, `/interrupt`, and `/compact` are in place.
 - Presence heartbeat, recovery, loop guard, artifacts, approvals, and SSE job/session streaming are in place.
 - `GET /.well-known/agent-card.json` is available as an A2A-ready discovery placeholder.
+- Post-MVP planning docs for V2 are in place.

@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.api.dependencies import (
     get_agent_repository,
     get_command_handler,
+    get_channel_service,
     get_message_mention_repository,
     get_message_repository,
     get_message_routing_service,
@@ -34,6 +35,7 @@ from app.repositories.messages import MessageMentionRepository, MessageRecord, M
 from app.repositories.participants import ParticipantRepository
 from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
+from app.services.channel_service import ChannelService
 from app.services.command_handler import CommandHandler
 from app.services.message_routing import MessageRoutingService
 from app.services.relay_engine import RelayEngine
@@ -53,6 +55,7 @@ def _message_response(
     return MessageResponse(
         id=message.id,
         session_id=message.session_id,
+        channel_key=message.channel_key,
         sender_type=cast(MessageSenderType, message.sender_type),
         sender_id=message.sender_id,
         content=message.content,
@@ -154,11 +157,16 @@ async def create_message(
         Depends(get_message_mention_repository),
     ],
     event_repository: Annotated[SessionEventRepository, Depends(get_session_event_repository)],
+    channel_service: Annotated[ChannelService, Depends(get_channel_service)],
     routing_service: Annotated[MessageRoutingService, Depends(get_message_routing_service)],
     relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
     command_handler: Annotated[CommandHandler, Depends(get_command_handler)],
 ) -> MessageCreateEnvelope:
     session = await _ensure_session_exists(session_repository, session_id)
+    await channel_service.ensure_channel_exists(
+        session_id=session_id,
+        channel_key=payload.channel_key,
+    )
     if payload.sender_type == "agent":
         if payload.sender_id is None:
             raise HTTPException(
@@ -189,6 +197,7 @@ async def create_message(
     message = MessageRecord(
         id=f"msg_{uuid4().hex}",
         session_id=session_id,
+        channel_key=payload.channel_key,
         sender_type=payload.sender_type,
         sender_id=payload.sender_id,
         message_type="command" if routing_plan.commands else payload.message_type,
@@ -266,12 +275,19 @@ async def list_messages(
     mention_repository: Annotated[
         MessageMentionRepository, Depends(get_message_mention_repository)
     ],
+    channel_service: Annotated[ChannelService, Depends(get_channel_service)],
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     before: str | None = None,
     after: str | None = None,
+    channel_key: str | None = None,
 ) -> MessageListEnvelope:
     await _ensure_session_exists(session_repository, session_id)
-    messages = await message_repository.list_by_session(session_id)
+    if channel_key is not None:
+        await channel_service.ensure_channel_exists(session_id=session_id, channel_key=channel_key)
+        messages = await message_repository.list_by_session_and_channel(session_id, channel_key)
+    else:
+        await channel_service.ensure_default_channels(session_id)
+        messages = await message_repository.list_by_session(session_id)
     messages = _apply_cursor_filter(messages, after, is_before=False)
     messages = _apply_cursor_filter(messages, before, is_before=True)
     messages = messages[:limit]

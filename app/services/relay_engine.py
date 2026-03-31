@@ -420,6 +420,7 @@ class RelayEngine:
         message = MessageRecord(
             id=f"msg_{uuid4().hex}",
             session_id=session.id,
+            channel_key=job.channel_key,
             sender_type="agent",
             sender_id=job.assigned_agent_id,
             message_type="relay",

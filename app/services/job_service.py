@@ -54,6 +54,7 @@ class JobService:
         agent_id: str,
         title: str,
         instructions: str | None,
+        channel_key: str = "general",
         source_message_id: str | None = None,
         parent_job_id: str | None = None,
         runtime_id: str | None = None,
@@ -68,6 +69,7 @@ class JobService:
         job = JobRecord(
             id=f"job_{uuid4().hex}",
             session_id=session_id,
+            channel_key=channel_key,
             assigned_agent_id=agent_id,
             runtime_id=resolved_runtime_id,
             source_message_id=source_message_id,
@@ -100,6 +102,7 @@ class JobService:
         """Create a single queued job for a mention."""
         return await self.create_job_for_agent(
             session_id=message.session_id,
+            channel_key=message.channel_key,
             agent_id=mention.mentioned_agent_id,
             title=self._build_title(message.content, mention.mention_text),
             instructions=message.content,

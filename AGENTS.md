@@ -67,8 +67,8 @@ Naming:
 
 When implementing a feature:
 
-1. Read IMPLEMENTATION_TASKS.md
-2. Follow IMPLEMENTATION_ORDER.md
+1. Read IMPLEMENTATION_TASKS_V2.md
+2. Follow IMPLEMENTATION_ORDER_V2.md
 3. Implement smallest working unit
 4. Add tests
 5. Run tests

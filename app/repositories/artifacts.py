@@ -27,6 +27,7 @@ class ArtifactRecord:
     metadata_json: str | None
     created_at: str
     updated_at: str
+    channel_key: str = "general"
 
     @classmethod
     def from_row(cls, row: sqlite3.Row) -> "ArtifactRecord":
@@ -46,6 +47,7 @@ class ArtifactRecord:
             metadata_json=row["metadata_json"],
             created_at=row["created_at"],
             updated_at=row["updated_at"],
+            channel_key=row["channel_key"],
         )
 
 
@@ -82,11 +84,11 @@ class ArtifactRepository(SQLiteRepositoryBase):
             connection.execute(
                 """
                 INSERT INTO artifacts (
-                    id, job_id, session_id, source_message_id, artifact_type,
+                    id, job_id, session_id, channel_key, source_message_id, artifact_type,
                     title, content_text, file_path, file_name, mime_type, size_bytes,
                     checksum_sha256, metadata_json, created_at, updated_at
                 ) VALUES (
-                    :id, :job_id, :session_id, :source_message_id, :artifact_type,
+                    :id, :job_id, :session_id, :channel_key, :source_message_id, :artifact_type,
                     :title, :content_text, :file_path, :file_name, :mime_type, :size_bytes,
                     :checksum_sha256, :metadata_json, :created_at, :updated_at
                 )
@@ -134,6 +136,7 @@ class ArtifactRepository(SQLiteRepositoryBase):
                 UPDATE artifacts SET
                     job_id = :job_id,
                     session_id = :session_id,
+                    channel_key = :channel_key,
                     source_message_id = :source_message_id,
                     artifact_type = :artifact_type,
                     title = :title,

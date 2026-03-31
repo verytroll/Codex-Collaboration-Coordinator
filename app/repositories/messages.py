@@ -24,6 +24,7 @@ class MessageRecord:
     visibility: str
     created_at: str
     updated_at: str
+    channel_key: str = "general"
 
     @classmethod
     def from_row(cls, row: sqlite3.Row) -> "MessageRecord":
@@ -40,6 +41,7 @@ class MessageRecord:
             visibility=row["visibility"],
             created_at=row["created_at"],
             updated_at=row["updated_at"],
+            channel_key=row["channel_key"],
         )
 
 
@@ -83,6 +85,19 @@ class MessageRepository(SQLiteRepositoryBase):
             lambda connection: self._list_by_session_sync(connection, session_id)
         )
 
+    async def list_by_session_and_channel(
+        self,
+        session_id: str,
+        channel_key: str,
+    ) -> list[MessageRecord]:
+        return await self._run(
+            lambda connection: self._list_by_session_and_channel_sync(
+                connection,
+                session_id,
+                channel_key,
+            )
+        )
+
     async def update(self, message: MessageRecord) -> MessageRecord:
         return await self._run(lambda connection: self._update_sync(connection, message))
 
@@ -94,11 +109,11 @@ class MessageRepository(SQLiteRepositoryBase):
             connection.execute(
                 """
                 INSERT INTO messages (
-                    id, session_id, sender_type, sender_id, message_type, content,
+                    id, session_id, channel_key, sender_type, sender_id, message_type, content,
                     content_format, reply_to_message_id, source_message_id,
                     visibility, created_at, updated_at
                 ) VALUES (
-                    :id, :session_id, :sender_type, :sender_id, :message_type, :content,
+                    :id, :session_id, :channel_key, :sender_type, :sender_id, :message_type, :content,
                     :content_format, :reply_to_message_id, :source_message_id,
                     :visibility, :created_at, :updated_at
                 )
@@ -126,12 +141,29 @@ class MessageRepository(SQLiteRepositoryBase):
         ).fetchall()
         return [MessageRecord.from_row(row) for row in rows]
 
+    def _list_by_session_and_channel_sync(
+        self,
+        connection: sqlite3.Connection,
+        session_id: str,
+        channel_key: str,
+    ) -> list[MessageRecord]:
+        rows = connection.execute(
+            """
+            SELECT * FROM messages
+            WHERE session_id = ? AND channel_key = ?
+            ORDER BY created_at, id
+            """,
+            (session_id, channel_key),
+        ).fetchall()
+        return [MessageRecord.from_row(row) for row in rows]
+
     def _update_sync(self, connection: sqlite3.Connection, message: MessageRecord) -> MessageRecord:
         with connection:
             result = connection.execute(
                 """
                 UPDATE messages SET
                     session_id = :session_id,
+                    channel_key = :channel_key,
                     sender_type = :sender_type,
                     sender_id = :sender_id,
                     message_type = :message_type,

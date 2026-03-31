@@ -2,6 +2,7 @@
 
 from app.services.approval_manager import ApprovalDecision, ApprovalManager
 from app.services.artifact_manager import ArtifactBundle, ArtifactManager
+from app.services.channel_service import ChannelService, DEFAULT_CHANNELS
 from app.services.command_handler import CommandExecutionResult, CommandHandler
 from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardDecision, LoopGuardService
@@ -35,6 +36,7 @@ __all__ = [
     "ApprovalManager",
     "CommandExecutionResult",
     "CommandHandler",
+    "ChannelService",
     "CommandPermissionCheck",
     "CommandPermissionError",
     "CommandPermissions",
@@ -55,6 +57,7 @@ __all__ = [
     "PresenceSnapshot",
     "RecoveryService",
     "RecoverySummary",
+    "DEFAULT_CHANNELS",
     "ResolvedMention",
     "RelayEngine",
     "RelayExecutionResult",

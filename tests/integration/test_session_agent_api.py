@@ -67,6 +67,13 @@ def test_session_api_crud(tmp_path, monkeypatch) -> None:
             assert session_body["status"] == "active"
             assert session_body["lead_agent_id"] == agent_id
 
+            channels_response = client.get(f"/api/v1/sessions/{session_id}/channels")
+            assert channels_response.status_code == 200
+            channel_keys = [
+                channel["channel_key"] for channel in channels_response.json()["channels"]
+            ]
+            assert channel_keys == ["general", "planning", "review", "debug"]
+
             list_response = client.get("/api/v1/sessions")
             assert list_response.status_code == 200
             assert list_response.json()["sessions"][0]["id"] == session_id
