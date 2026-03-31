@@ -2,24 +2,24 @@
 
 ### Trạng thái hiện tại
 - **Ngày cập nhật:** 2026-03-31
-- **Pha hiện tại:** F03 hoàn thành
-- **Đang tập trung vào:** F04 - thiết lập migration framework
+- **Pha hiện tại:** F04 hoàn thành
+- **Đang tập trung vào:** F05 - schema nhóm bảng nền
 - **Người thực hiện:** Codex
 
 ### Đang làm
-- [ ] F04 — Thiết lập migration framework
-- [ ] PR03 — Thiết lập kết nối DB và migration framework
+- [ ] F05 — Tạo migration cho nhóm bảng nền
+- [ ] PR04 — Tạo schema nhóm bảng nền
 
 ### Vừa hoàn thành
+- [x] F04 — Thiết lập migration framework — 2026-03-31
 - [x] F03 — Tạo core app modules — 2026-03-31
 - [x] F02 — Cấu hình toolchain và chất lượng mã nguồn — 2026-03-31
 - [x] F01 — Tạo skeleton dự án — 2026-03-31
 - [x] PR01 — Tạo skeleton repo và app chạy được — 2026-03-31
 
 ### Tiếp theo
-- [ ] F04 — DB connection factory và migration runner
-- [ ] F05 — Schema nhóm bảng nền
-- [ ] PR04 — Tạo schema nhóm bảng nền
+- [ ] F05 — sessions, agents, agent_runtimes, session_participants
+- [ ] PR05 — Tạo schema nhóm bảng runtime và lịch sử
 
 ### Blockers / Rủi ro
 - Không có

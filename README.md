@@ -24,3 +24,4 @@ Skeleton project for the coordinator service.
 
 - Project skeleton is in place.
 - Toolchain config and `GET /api/v1/healthz` are in place.
+- SQLite connection helpers and migration runner are in place.
