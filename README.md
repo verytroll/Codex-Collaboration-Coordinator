@@ -12,10 +12,15 @@ Skeleton project for the coordinator service.
 
 1. Use Python 3.11 or newer.
 2. Create and activate a virtual environment.
-3. Copy `.env.example` to `.env` when you need local configuration.
-4. Run `pytest` after the toolchain is added in the next implementation step.
+3. Install the project in editable mode with dev dependencies when you are ready:
+   `pip install -e .[dev]`
+4. Copy `.env.example` to `.env` when you need local configuration.
+5. Run the helper scripts:
+   - `./scripts/run.ps1`
+   - `./scripts/test.ps1`
+   - `./scripts/lint.ps1`
 
 ## Current status
 
 - Project skeleton is in place.
-- Runtime dependencies and API routes will be added in later tasks.
+- Toolchain config and `GET /api/v1/healthz` are in place.

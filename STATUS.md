@@ -1,28 +1,28 @@
-# STATUS.md
+﻿# STATUS.md
 
 ### Trạng thái hiện tại
 - **Ngày cập nhật:** 2026-03-31
-- **Pha hiện tại:** F01 hoàn thành
-- **Đang tập trung vào:** F02 - cấu hình toolchain và chất lượng mã nguồn
+- **Pha hiện tại:** F03 hoàn thành
+- **Đang tập trung vào:** F04 - thiết lập migration framework
 - **Người thực hiện:** Codex
 
 ### Đang làm
-- [ ] F02 — Cấu hình toolchain và chất lượng mã nguồn
-- [ ] F03 — Tạo core app modules
-- [ ] PR02 — Hoàn thiện toolchain và core app modules
+- [ ] F04 — Thiết lập migration framework
+- [ ] PR03 — Thiết lập kết nối DB và migration framework
 
 ### Vừa hoàn thành
+- [x] F03 — Tạo core app modules — 2026-03-31
+- [x] F02 — Cấu hình toolchain và chất lượng mã nguồn — 2026-03-31
 - [x] F01 — Tạo skeleton dự án — 2026-03-31
 - [x] PR01 — Tạo skeleton repo và app chạy được — 2026-03-31
 
 ### Tiếp theo
-- [ ] F02 — Cấu hình pytest, lint/format, healthz
-- [ ] F03 — Config, logging, error model, middleware
-- [ ] PR03 — Thiết lập kết nối DB và migration framework
+- [ ] F04 — DB connection factory và migration runner
+- [ ] F05 — Schema nhóm bảng nền
+- [ ] PR04 — Tạo schema nhóm bảng nền
 
 ### Blockers / Rủi ro
 - Không có
-- Hoặc: mô tả ngắn blocker, ảnh hưởng, hướng xử lý
 
 ### Ghi chú quyết định gần đây
 - Quyết định: Dựng skeleton tối thiểu trước khi thêm toolchain và business logic.
