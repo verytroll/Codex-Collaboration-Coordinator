@@ -112,6 +112,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "007_session_participant_policy.sql",
         "008_job_inputs.sql",
         "009_rules.sql",
+        "010_transcript_exports.sql",
     ]
     assert second_run == []
 
@@ -162,5 +163,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "idx_rules_session_id_priority",
         "idx_rules_session_id_is_active",
         "idx_rules_rule_type",
+        "idx_transcript_exports_session_id_created_at",
+        "idx_transcript_exports_export_kind",
     }.issubset(indexes)
-    assert version_count == 9
+    assert version_count == 10

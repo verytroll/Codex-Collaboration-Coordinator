@@ -18,6 +18,10 @@ from app.repositories.messages import (
 from app.repositories.presence import PresenceHeartbeatRecord, PresenceRepository
 from app.repositories.relay_edges import RelayEdgeRecord, RelayEdgeRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
+from app.repositories.transcript_exports import (
+    TranscriptExportRecord,
+    TranscriptExportRepository,
+)
 
 
 def _database_url(tmp_path) -> str:
@@ -371,6 +375,98 @@ def test_artifact_and_approval_repository_crud(tmp_path) -> None:
     assert asyncio.run(job_repository.delete(job.id)) is True
     assert asyncio.run(session_repository.delete("ses_art")) is True
     assert asyncio.run(agent_repository.delete("agt_art")) is True
+
+
+def test_transcript_export_repository_crud(tmp_path) -> None:
+    database_url = _database_url(tmp_path)
+    _migrate(database_url)
+    session_repository, agent_repository = _bootstrap_session_and_agent(
+        database_url,
+        "ses_export",
+        "agt_export",
+    )
+    job_repository = JobRepository(database_url)
+    artifact_repository = ArtifactRepository(database_url)
+    transcript_export_repository = TranscriptExportRepository(database_url)
+
+    job = JobRecord(
+        id="job_export",
+        session_id="ses_export",
+        assigned_agent_id="agt_export",
+        runtime_id=None,
+        source_message_id=None,
+        parent_job_id=None,
+        title="Export source",
+        instructions=None,
+        status="completed",
+        hop_count=0,
+        priority="normal",
+        codex_runtime_id=None,
+        codex_thread_id=None,
+        active_turn_id=None,
+        last_known_turn_status=None,
+        result_summary="Done",
+        error_code=None,
+        error_message=None,
+        started_at="2026-03-31T00:00:00Z",
+        completed_at="2026-03-31T00:01:00Z",
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:01:00Z",
+    )
+    artifact = ArtifactRecord(
+        id="art_export",
+        job_id=job.id,
+        session_id=job.session_id,
+        source_message_id=None,
+        artifact_type="json",
+        title="Export summary",
+        content_text='{"ok": true}',
+        file_path=None,
+        file_name="export.json",
+        mime_type="application/json",
+        size_bytes=12,
+        checksum_sha256="checksum",
+        metadata_json='{"kind":"export"}',
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:00:00Z",
+    )
+    transcript_export = TranscriptExportRecord(
+        id="tex_001",
+        session_id=job.session_id,
+        export_kind="transcript",
+        export_format="json",
+        title="Transcript export",
+        file_name="ses_export-transcript.json",
+        mime_type="application/json",
+        content_text='{"session":"ses_export"}',
+        size_bytes=24,
+        checksum_sha256="checksum-export",
+        metadata_json='{"schema_version":1}',
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:00:00Z",
+    )
+
+    asyncio.run(job_repository.create(job))
+    asyncio.run(artifact_repository.create(artifact))
+    created_export = asyncio.run(transcript_export_repository.create(transcript_export))
+    fetched_export = asyncio.run(transcript_export_repository.get(transcript_export.id))
+    updated_export = replace(created_export, title="Updated transcript export")
+
+    assert created_export == transcript_export
+    assert fetched_export == transcript_export
+
+    saved_export = asyncio.run(transcript_export_repository.update(updated_export))
+    listed_exports = asyncio.run(transcript_export_repository.list_by_session(job.session_id))
+    deleted_export = asyncio.run(transcript_export_repository.delete(transcript_export.id))
+
+    assert saved_export.title == "Updated transcript export"
+    assert len(listed_exports) == 1
+    assert deleted_export is True
+    assert asyncio.run(transcript_export_repository.get(transcript_export.id)) is None
+    assert asyncio.run(artifact_repository.delete(artifact.id)) is True
+    assert asyncio.run(job_repository.delete(job.id)) is True
+    assert asyncio.run(session_repository.delete("ses_export")) is True
+    assert asyncio.run(agent_repository.delete("agt_export")) is True
 
 
 def test_presence_and_relay_repository_crud(tmp_path) -> None:

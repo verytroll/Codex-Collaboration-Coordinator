@@ -7,6 +7,12 @@ from app.models.api.agents import (
     AgentResponse,
     AgentUpdateRequest,
 )
+from app.models.api.artifacts import (
+    SessionArtifactEnvelope,
+    TranscriptExportEnvelope,
+    TranscriptExportListEnvelope,
+    TranscriptExportResponse,
+)
 from app.models.api.channels import (
     ChannelCreateRequest,
     ChannelEnvelope,
@@ -73,6 +79,7 @@ __all__ = [
     "AgentListEnvelope",
     "AgentResponse",
     "AgentUpdateRequest",
+    "SessionArtifactEnvelope",
     "ChannelCreateRequest",
     "ChannelEnvelope",
     "ChannelListEnvelope",
@@ -91,6 +98,9 @@ __all__ = [
     "ApprovalRequestResponse",
     "ArtifactListEnvelope",
     "ArtifactResponse",
+    "TranscriptExportEnvelope",
+    "TranscriptExportListEnvelope",
+    "TranscriptExportResponse",
     "JobCreateRequest",
     "JobControlRequest",
     "JobDetailResponse",

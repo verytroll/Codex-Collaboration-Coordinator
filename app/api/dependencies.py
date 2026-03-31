@@ -22,6 +22,7 @@ from app.repositories.relay_edges import RelayEdgeRepository
 from app.repositories.rules import RuleRepository
 from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRepository
+from app.repositories.transcript_exports import TranscriptExportRepository
 from app.services.approval_manager import ApprovalManager
 from app.services.artifact_manager import ArtifactManager
 from app.services.channel_service import ChannelService
@@ -36,6 +37,7 @@ from app.services.rule_engine import RuleEngineService
 from app.services.presence import PresenceService
 from app.services.recovery import RecoveryService
 from app.services.relay_engine import CodexRelayBridge, RelayEngine
+from app.services.transcript_export import TranscriptExportService
 from app.services.runtime_service import RuntimeService
 from app.services.streaming import StreamingService
 from app.services.system_status import SystemStatusService
@@ -76,6 +78,13 @@ def get_artifact_repository(
 ) -> ArtifactRepository:
     """Provide an artifact repository bound to the configured database."""
     return ArtifactRepository(database_url)
+
+
+def get_transcript_export_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> TranscriptExportRepository:
+    """Provide a transcript export repository bound to the configured database."""
+    return TranscriptExportRepository(database_url)
 
 
 def get_channel_repository(
@@ -364,6 +373,36 @@ def get_channel_service(
 ) -> ChannelService:
     """Provide the session channel orchestration service."""
     return ChannelService(channel_repository)
+
+
+def get_transcript_export_service(
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    message_repository: Annotated[MessageRepository, Depends(get_message_repository)],
+    message_mention_repository: Annotated[
+        MessageMentionRepository,
+        Depends(get_message_mention_repository),
+    ],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
+    transcript_export_repository: Annotated[
+        TranscriptExportRepository,
+        Depends(get_transcript_export_repository),
+    ],
+    session_event_repository: Annotated[
+        SessionEventRepository,
+        Depends(get_session_event_repository),
+    ],
+) -> TranscriptExportService:
+    """Provide the transcript export service."""
+    return TranscriptExportService(
+        session_repository=session_repository,
+        message_repository=message_repository,
+        message_mention_repository=message_mention_repository,
+        job_repository=job_repository,
+        artifact_repository=artifact_repository,
+        transcript_export_repository=transcript_export_repository,
+        session_event_repository=session_event_repository,
+    )
 
 
 def get_approval_manager(

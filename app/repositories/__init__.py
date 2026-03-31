@@ -23,6 +23,10 @@ from app.repositories.relay_edges import RelayEdgeRecord, RelayEdgeRepository
 from app.repositories.rules import RuleRecord, RuleRepository
 from app.repositories.session_events import SessionEventRecord, SessionEventRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
+from app.repositories.transcript_exports import (
+    TranscriptExportRecord,
+    TranscriptExportRepository,
+)
 
 __all__ = [
     "ApprovalRepository",
@@ -57,4 +61,6 @@ __all__ = [
     "SessionParticipantRecord",
     "SessionRecord",
     "SessionRepository",
+    "TranscriptExportRecord",
+    "TranscriptExportRepository",
 ]

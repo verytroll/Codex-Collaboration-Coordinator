@@ -26,6 +26,7 @@ from app.services.relay_engine import CodexRelayBridge, RelayEngine, RelayExecut
 from app.services.rule_engine import RuleEngineService, RuleEvaluationResult
 from app.services.runtime_service import RuntimeService
 from app.services.session_events import record_session_event
+from app.services.transcript_export import TranscriptExportBundle, TranscriptExportService
 from app.services.streaming import StreamingService
 from app.services.thread_mapping import (
     ThreadMappingRecord,
@@ -71,6 +72,8 @@ __all__ = [
     "RuleEngineService",
     "RuleEvaluationResult",
     "RuntimeService",
+    "TranscriptExportBundle",
+    "TranscriptExportService",
     "StreamingService",
     "ThreadMappingRecord",
     "ThreadMappingService",

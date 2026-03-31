@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -13,6 +14,10 @@ from app.repositories.jobs import JobEventRecord, JobEventRepository, JobRecord
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _sha256_hex(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
 def _extract_text(payload: dict[str, object], job: JobRecord) -> str | None:
@@ -63,29 +68,46 @@ class ArtifactManager:
                     title=f"{job.title} output",
                     content_text=text,
                     file_path=None,
-                    file_name=None,
+                    file_name=f"{job.id}-output.txt",
                     mime_type="text/plain",
                     size_bytes=len(text.encode("utf-8")),
-                    checksum_sha256=None,
-                    metadata_json=None,
+                    checksum_sha256=_sha256_hex(text),
+                    metadata_json=json.dumps(
+                        {
+                            "source": "turn_output",
+                            "artifact_kind": "final_text",
+                            "job_id": job.id,
+                            "session_id": job.session_id,
+                        },
+                        sort_keys=True,
+                    ),
                     created_at=now,
                 )
             )
 
         diff_text = payload.get("diff")
         if isinstance(diff_text, str) and diff_text.strip():
+            diff_content = diff_text.strip()
             artifacts.append(
                 await self._create_artifact(
                     job=job,
                     artifact_type="diff",
                     title=f"{job.title} diff",
-                    content_text=diff_text.strip(),
+                    content_text=diff_content,
                     file_path=None,
-                    file_name=None,
+                    file_name=f"{job.id}.diff",
                     mime_type="text/x-diff",
-                    size_bytes=len(diff_text.encode("utf-8")),
-                    checksum_sha256=None,
-                    metadata_json=None,
+                    size_bytes=len(diff_content.encode("utf-8")),
+                    checksum_sha256=_sha256_hex(diff_content),
+                    metadata_json=json.dumps(
+                        {
+                            "source": "turn_output",
+                            "artifact_kind": "diff",
+                            "job_id": job.id,
+                            "session_id": job.session_id,
+                        },
+                        sort_keys=True,
+                    ),
                     created_at=now,
                 )
             )
