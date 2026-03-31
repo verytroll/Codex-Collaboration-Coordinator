@@ -114,6 +114,8 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "009_rules.sql",
         "010_transcript_exports.sql",
         "011_review_mode.sql",
+        "012_phases.sql",
+        "013_a2a_tasks.sql",
     ]
     assert second_run == []
 
@@ -143,6 +145,8 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "session_events",
         "session_channels",
         "session_reviews",
+        "phases",
+        "a2a_tasks",
     }.issubset(tables)
     assert {
         "idx_messages_session_id_created_at",
@@ -171,5 +175,11 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "idx_session_reviews_source_job_id",
         "idx_session_reviews_reviewer_agent_id",
         "idx_session_reviews_review_status",
+        "idx_phases_session_id_sort_order",
+        "idx_phases_session_id_is_default",
+        "idx_a2a_tasks_session_id",
+        "idx_a2a_tasks_task_id",
+        "idx_a2a_tasks_context_id",
+        "idx_a2a_tasks_task_status",
     }.issubset(indexes)
-    assert version_count == 11
+    assert version_count == 13

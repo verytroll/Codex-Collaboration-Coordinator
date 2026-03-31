@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 
 from app.api.a2a_placeholder import router as a2a_placeholder_router
+from app.api.a2a_adapter import router as a2a_adapter_router
 from app.api.artifacts import router as artifacts_router
 from app.api.rules import router as rules_router
 from app.api.review import router as review_router
@@ -14,14 +15,17 @@ from app.api.jobs import router as jobs_router
 from app.api.messages import router as messages_router
 from app.api.participants import router as participants_router
 from app.api.presence import router as presence_router
+from app.api.phases import router as phases_router
 from app.api.sessions import router as sessions_router
 from app.api.system import router as system_router
 
 router = APIRouter()
 router.include_router(a2a_placeholder_router)
+router.include_router(a2a_adapter_router)
 router.include_router(health_router)
 router.include_router(system_router)
 router.include_router(sessions_router)
+router.include_router(phases_router)
 router.include_router(artifacts_router)
 router.include_router(channels_router)
 router.include_router(rules_router)

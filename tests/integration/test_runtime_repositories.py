@@ -5,6 +5,7 @@ from dataclasses import replace
 
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
 from app.repositories.agents import AgentRecord, AgentRepository
+from app.repositories.a2a_tasks import A2ATaskRecord, A2ATaskRepository
 from app.repositories.approvals import ApprovalRepository, ApprovalRequestRecord
 from app.repositories.artifacts import ArtifactRecord, ArtifactRepository
 from app.repositories.job_inputs import JobInputRecord, JobInputRepository
@@ -15,6 +16,7 @@ from app.repositories.messages import (
     MessageRecord,
     MessageRepository,
 )
+from app.repositories.phases import PhaseRecord, PhaseRepository
 from app.repositories.presence import PresenceHeartbeatRecord, PresenceRepository
 from app.repositories.relay_edges import RelayEdgeRecord, RelayEdgeRepository
 from app.repositories.reviews import ReviewRecord, ReviewRepository
@@ -552,6 +554,127 @@ def test_review_repository_crud(tmp_path) -> None:
     assert asyncio.run(job_repository.delete(job.id)) is True
     assert asyncio.run(session_repository.delete("ses_review")) is True
     assert asyncio.run(agent_repository.delete("agt_review")) is True
+
+
+def test_phase_repository_crud(tmp_path) -> None:
+    database_url = _database_url(tmp_path)
+    _migrate(database_url)
+    session_repository, agent_repository = _bootstrap_session_and_agent(
+        database_url,
+        "ses_phase",
+        "agt_phase",
+    )
+    phase_repository = PhaseRepository(database_url)
+
+    phase = PhaseRecord(
+        id="ph_001",
+        session_id="ses_phase",
+        phase_key="planning",
+        title="Planning",
+        description="Plan the work",
+        relay_template_key="planner_to_builder",
+        default_channel_key="planning",
+        sort_order=10,
+        is_default=1,
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:00:00Z",
+    )
+
+    created_phase = asyncio.run(phase_repository.create(phase))
+    fetched_phase = asyncio.run(phase_repository.get(phase.id))
+    fetched_by_key = asyncio.run(
+        phase_repository.get_by_session_and_key(phase.session_id, phase.phase_key)
+    )
+    listed_phases = asyncio.run(phase_repository.list_by_session(phase.session_id))
+    updated_phase = replace(created_phase, title="Planning v2")
+
+    assert created_phase == phase
+    assert fetched_phase == phase
+    assert fetched_by_key == phase
+    assert listed_phases == [phase]
+
+    saved_phase = asyncio.run(phase_repository.update(updated_phase))
+    deleted_phase = asyncio.run(phase_repository.delete(phase.id))
+
+    assert saved_phase.title == "Planning v2"
+    assert deleted_phase is True
+    assert asyncio.run(phase_repository.get(phase.id)) is None
+    assert asyncio.run(session_repository.delete("ses_phase")) is True
+    assert asyncio.run(agent_repository.delete("agt_phase")) is True
+
+
+def test_a2a_task_repository_crud(tmp_path) -> None:
+    database_url = _database_url(tmp_path)
+    _migrate(database_url)
+    session_repository, agent_repository = _bootstrap_session_and_agent(
+        database_url,
+        "ses_a2a",
+        "agt_a2a",
+    )
+    job_repository = JobRepository(database_url)
+    a2a_task_repository = A2ATaskRepository(database_url)
+
+    job = JobRecord(
+        id="job_a2a",
+        session_id="ses_a2a",
+        assigned_agent_id="agt_a2a",
+        runtime_id=None,
+        source_message_id=None,
+        parent_job_id=None,
+        title="Project me",
+        instructions="Project into A2A",
+        status="running",
+        hop_count=0,
+        priority="normal",
+        codex_runtime_id=None,
+        codex_thread_id=None,
+        active_turn_id=None,
+        last_known_turn_status=None,
+        result_summary=None,
+        error_code=None,
+        error_message=None,
+        started_at="2026-03-31T00:00:00Z",
+        completed_at=None,
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:00:00Z",
+        channel_key="general",
+    )
+    task = A2ATaskRecord(
+        id="a2a_001",
+        session_id=job.session_id,
+        job_id=job.id,
+        phase_id=None,
+        task_id="tsk_001",
+        context_id=job.session_id,
+        task_status="in_progress",
+        relay_template_key="planner_to_builder",
+        primary_artifact_id=None,
+        task_payload_json='{"task_id":"tsk_001"}',
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:00:00Z",
+    )
+
+    asyncio.run(job_repository.create(job))
+    created_task = asyncio.run(a2a_task_repository.create(task))
+    fetched_task = asyncio.run(a2a_task_repository.get(task.task_id))
+    fetched_by_job = asyncio.run(a2a_task_repository.get_by_job(job.id))
+    listed_tasks = asyncio.run(a2a_task_repository.list_by_session(job.session_id))
+    updated_task = replace(created_task, task_status="completed")
+
+    assert created_task == task
+    assert fetched_task == task
+    assert fetched_by_job == task
+    assert listed_tasks == [task]
+
+    saved_task = asyncio.run(a2a_task_repository.update(updated_task))
+    deleted_task = asyncio.run(a2a_task_repository.delete(task.task_id))
+
+    assert saved_task.task_status == "completed"
+    assert deleted_task is True
+    assert asyncio.run(a2a_task_repository.get(task.task_id)) is None
+    assert asyncio.run(job_repository.delete(job.id)) is True
+    assert asyncio.run(session_repository.delete("ses_a2a")) is True
+    assert asyncio.run(agent_repository.delete("agt_a2a")) is True
 
 
 def test_presence_and_relay_repository_crud(tmp_path) -> None:

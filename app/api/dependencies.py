@@ -10,6 +10,7 @@ from fastapi import Depends
 from app.codex_bridge import CodexProcessManager, LazyCodexBridgeClient
 from app.core.config import get_config
 from app.repositories.agents import AgentRepository, AgentRuntimeRepository
+from app.repositories.a2a_tasks import A2ATaskRepository
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.artifacts import ArtifactRepository
 from app.repositories.channels import SessionChannelRepository
@@ -17,6 +18,7 @@ from app.repositories.job_inputs import JobInputRepository
 from app.repositories.jobs import JobEventRepository, JobRepository
 from app.repositories.messages import MessageMentionRepository, MessageRepository
 from app.repositories.participants import ParticipantRepository
+from app.repositories.phases import PhaseRepository
 from app.repositories.presence import PresenceRepository
 from app.repositories.relay_edges import RelayEdgeRepository
 from app.repositories.rules import RuleRepository
@@ -31,9 +33,11 @@ from app.services.command_handler import CommandHandler
 from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardService
 from app.services.offline_queue import OfflineQueueService
+from app.services.a2a_adapter import A2AAdapterService
 from app.services.participant_policy import ParticipantPolicyService
 from app.services.message_routing import MessageRoutingService
 from app.services.permissions import CommandPermissions
+from app.services.phase_service import PhaseService
 from app.services.rule_engine import RuleEngineService
 from app.services.presence import PresenceService
 from app.services.recovery import RecoveryService
@@ -190,6 +194,13 @@ def get_participant_policy_service() -> ParticipantPolicyService:
     return ParticipantPolicyService()
 
 
+def get_phase_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> PhaseRepository:
+    """Provide a phase repository bound to the configured database."""
+    return PhaseRepository(database_url)
+
+
 def get_message_repository(
     database_url: Annotated[str, Depends(get_database_url)],
 ) -> MessageRepository:
@@ -232,6 +243,13 @@ def get_rule_repository(
     return RuleRepository(database_url)
 
 
+def get_a2a_task_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> A2ATaskRepository:
+    """Provide an experimental A2A task repository bound to the configured database."""
+    return A2ATaskRepository(database_url)
+
+
 def get_rule_engine_service(
     rule_repository: Annotated[RuleRepository, Depends(get_rule_repository)],
 ) -> RuleEngineService:
@@ -242,6 +260,22 @@ def get_rule_engine_service(
 def get_relay_templates_service() -> RelayTemplatesService:
     """Provide the structured relay template service."""
     return RelayTemplatesService()
+
+
+def get_phase_service(
+    phase_repository: Annotated[PhaseRepository, Depends(get_phase_repository)],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    relay_templates_service: Annotated[
+        RelayTemplatesService,
+        Depends(get_relay_templates_service),
+    ],
+) -> PhaseService:
+    """Provide the phase preset and activation service."""
+    return PhaseService(
+        phase_repository=phase_repository,
+        session_repository=session_repository,
+        relay_templates_service=relay_templates_service,
+    )
 
 
 def get_job_service(
@@ -351,6 +385,7 @@ def get_command_handler(
     relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
     offline_queue_service: Annotated[OfflineQueueService, Depends(get_offline_queue_service)],
     review_mode_service: Annotated[ReviewModeService, Depends(get_review_mode_service)],
+    phase_service: Annotated[PhaseService, Depends(get_phase_service)],
 ) -> CommandHandler:
     """Provide the command handler."""
     return CommandHandler(
@@ -364,6 +399,7 @@ def get_command_handler(
         relay_engine=relay_engine,
         offline_queue_service=offline_queue_service,
         review_mode_service=review_mode_service,
+        phase_service=phase_service,
     )
 
 
@@ -426,6 +462,23 @@ def get_channel_service(
 ) -> ChannelService:
     """Provide the session channel orchestration service."""
     return ChannelService(channel_repository)
+
+
+def get_a2a_adapter_service(
+    task_repository: Annotated[A2ATaskRepository, Depends(get_a2a_task_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    phase_service: Annotated[PhaseService, Depends(get_phase_service)],
+) -> A2AAdapterService:
+    """Provide the experimental A2A adapter bridge service."""
+    return A2AAdapterService(
+        task_repository=task_repository,
+        job_repository=job_repository,
+        artifact_repository=artifact_repository,
+        session_repository=session_repository,
+        phase_service=phase_service,
+    )
 
 
 def get_transcript_export_service(

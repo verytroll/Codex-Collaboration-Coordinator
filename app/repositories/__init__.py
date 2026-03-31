@@ -6,6 +6,7 @@ from app.repositories.agents import (
     AgentRuntimeRecord,
     AgentRuntimeRepository,
 )
+from app.repositories.a2a_tasks import A2ATaskRecord, A2ATaskRepository
 from app.repositories.approvals import ApprovalRepository, ApprovalRequestRecord
 from app.repositories.artifacts import ArtifactRecord, ArtifactRepository
 from app.repositories.channels import SessionChannelRecord, SessionChannelRepository
@@ -18,6 +19,7 @@ from app.repositories.messages import (
     MessageRepository,
 )
 from app.repositories.participants import ParticipantRepository, SessionParticipantRecord
+from app.repositories.phases import PhaseRecord, PhaseRepository
 from app.repositories.presence import PresenceHeartbeatRecord, PresenceRepository
 from app.repositories.relay_edges import RelayEdgeRecord, RelayEdgeRepository
 from app.repositories.rules import RuleRecord, RuleRepository
@@ -32,6 +34,8 @@ from app.repositories.transcript_exports import (
 __all__ = [
     "ApprovalRepository",
     "ApprovalRequestRecord",
+    "A2ATaskRecord",
+    "A2ATaskRepository",
     "ArtifactRecord",
     "ArtifactRepository",
     "SessionChannelRecord",
@@ -53,6 +57,8 @@ __all__ = [
     "ParticipantRepository",
     "PresenceHeartbeatRecord",
     "PresenceRepository",
+    "PhaseRecord",
+    "PhaseRepository",
     "RelayEdgeRecord",
     "RelayEdgeRepository",
     "RuleRecord",

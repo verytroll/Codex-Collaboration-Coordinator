@@ -2,14 +2,15 @@
 
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-03-31
-- Pha hiện tại: V2 implementation
-- Đang tập trung vào: F24 - Thêm phase presets và experimental A2A adapter bridge
+- Pha hiện tại: V3 planning
+- Đang tập trung vào: Chuẩn bị backlog V3 sau khi hoàn tất foundation V2
 - Người thực hiện: Codex
 
 ### Đang làm
-- [ ] F24 - Thêm phase presets và experimental A2A adapter bridge
+- [ ] Chuẩn bị backlog V3
 
 ### Vừa hoàn thành
+- [x] F24 - Thêm phase presets và experimental A2A adapter bridge - 2026-03-31
 - [x] F23 - Tạo review mode và structured relay templates - 2026-03-31
 - [x] F22 - Nâng cấp artifacts và transcript export - 2026-03-31
 - [x] F21 - Tạo rules engine cơ bản và manual activation flow - 2026-03-31
@@ -21,14 +22,14 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] F24 - Thêm phase presets và experimental A2A adapter bridge
+- [ ] Chuẩn bị backlog V3
 
 ### Blockers / Rủi ro
 - Không có blocker hiện tại.
 - CodexBridge health trong `system/status` phản ánh trạng thái aggregate, chưa phải telemetry live dài hạn.
 
 ### Kiểm chứng gần nhất
-- `pytest` - 59 passed - 2026-03-31
+- `pytest` - 62 passed - 2026-03-31
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`

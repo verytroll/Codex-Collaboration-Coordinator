@@ -1,6 +1,6 @@
 ﻿# Codex Collaboration Coordinator
 
-Skeleton project for the coordinator service.
+Multi-agent coordination system for session-based collaboration, routing, review, and job orchestration.
 
 ## Layout
 
@@ -39,15 +39,13 @@ Skeleton project for the coordinator service.
 
 ## Current status
 
-- Project skeleton is in place.
-- Toolchain config and `GET /api/v1/healthz` are in place.
-- SQLite connection helpers and migration runner are in place.
-- Session and agent API basics are in place.
-- Participant and message API basics, plus session event logging, are in place.
+- Core coordinator, FastAPI API layer, and SQLite repository layer are in place.
+- Session channels, participant roles/policies, and structured permissions are in place.
+- Messages, jobs, artifacts, approvals, and session events are persisted and exposed through API routes.
+- Advanced job lifecycle support includes create, retry, resume, offline queueing, and streaming.
+- Rules engine, manual activation flow, transcript export, and review mode are implemented.
+- Structured relay templates support planner, builder, and reviewer handoffs.
+- Session phase presets and the experimental A2A adapter bridge are implemented.
 - CodexBridge subprocess manager and JSON-RPC client are in place.
-- Runtime status service and session-thread mapping service are in place.
-- Message parser, mention router, and internal job creation are in place.
-- Relay engine and command handlers for `/new`, `/interrupt`, and `/compact` are in place.
-- Presence heartbeat, recovery, loop guard, artifacts, approvals, and SSE job/session streaming are in place.
-- `GET /.well-known/agent-card.json` is available as an A2A-ready discovery placeholder.
-- Post-MVP planning docs for V2 are in place.
+- `GET /.well-known/agent-card.json` remains available as an A2A-ready discovery placeholder.
+- Post-MVP V2 foundation is complete; V3 planning is next.

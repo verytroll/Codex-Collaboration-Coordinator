@@ -20,8 +20,14 @@ from app.services.permissions import (
     CommandPermissionError,
     CommandPermissions,
 )
+from app.services.a2a_adapter import A2AAdapterService, A2ATaskProjection
 from app.services.presence import PresenceService, PresenceSnapshot
 from app.services.recovery import RecoveryService, RecoverySummary
+from app.services.phase_service import (
+    PhaseActivationResult,
+    PhasePresetDefinition,
+    PhaseService,
+)
 from app.services.relay_templates import RelayTemplateDefinition, RelayTemplatesService
 from app.services.relay_engine import CodexRelayBridge, RelayEngine, RelayExecutionResult
 from app.services.rule_engine import RuleEngineService, RuleEvaluationResult
@@ -48,6 +54,8 @@ __all__ = [
     "CommandPermissions",
     "ArtifactBundle",
     "ArtifactManager",
+    "A2AAdapterService",
+    "A2ATaskProjection",
     "JobService",
     "LoopGuardDecision",
     "LoopGuardService",
@@ -67,6 +75,9 @@ __all__ = [
     "PresenceSnapshot",
     "RecoveryService",
     "RecoverySummary",
+    "PhaseActivationResult",
+    "PhasePresetDefinition",
+    "PhaseService",
     "DEFAULT_CHANNELS",
     "ResolvedMention",
     "RelayEngine",

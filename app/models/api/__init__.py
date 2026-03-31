@@ -13,6 +13,12 @@ from app.models.api.artifacts import (
     TranscriptExportListEnvelope,
     TranscriptExportResponse,
 )
+from app.models.api.a2a_adapter import (
+    A2AAdapterArtifactResponse,
+    A2ATaskEnvelope,
+    A2ATaskListEnvelope,
+    A2ATaskResponse,
+)
 from app.models.api.channels import (
     ChannelCreateRequest,
     ChannelEnvelope,
@@ -55,6 +61,13 @@ from app.models.api.review import (
     ReviewListEnvelope,
     ReviewResponse,
 )
+from app.models.api.phases import (
+    PhaseEnvelope,
+    PhaseListEnvelope,
+    PhasePresetListEnvelope,
+    PhasePresetResponse,
+    PhaseResponse,
+)
 from app.models.api.participants import (
     ParticipantCreateRequest,
     ParticipantEnvelope,
@@ -90,6 +103,10 @@ __all__ = [
     "AgentResponse",
     "AgentUpdateRequest",
     "SessionArtifactEnvelope",
+    "A2AAdapterArtifactResponse",
+    "A2ATaskEnvelope",
+    "A2ATaskListEnvelope",
+    "A2ATaskResponse",
     "ChannelCreateRequest",
     "ChannelEnvelope",
     "ChannelListEnvelope",
@@ -140,6 +157,11 @@ __all__ = [
     "ReviewEnvelope",
     "ReviewListEnvelope",
     "ReviewResponse",
+    "PhaseEnvelope",
+    "PhaseListEnvelope",
+    "PhasePresetListEnvelope",
+    "PhasePresetResponse",
+    "PhaseResponse",
     "SessionCreateRequest",
     "SessionEnvelope",
     "SessionListEnvelope",

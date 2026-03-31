@@ -15,6 +15,7 @@ from app.services.job_service import JobService
 from app.services.mention_router import MentionRouter, ResolvedMention
 from app.services.message_parser import MessageParser, ParsedCommand, ParsedMessage
 from app.services.offline_queue import OfflineQueueService
+from app.services.phase_service import PhaseService
 from app.services.review_mode import ReviewModeService
 from app.services.permissions import CommandPermissions
 from app.services.relay_engine import RelayEngine
@@ -50,6 +51,7 @@ class CommandHandler:
         relay_engine: RelayEngine,
         offline_queue_service: OfflineQueueService,
         review_mode_service: ReviewModeService,
+        phase_service: PhaseService,
         parser: MessageParser | None = None,
     ) -> None:
         self.job_service = job_service
@@ -62,6 +64,7 @@ class CommandHandler:
         self.relay_engine = relay_engine
         self.offline_queue_service = offline_queue_service
         self.review_mode_service = review_mode_service
+        self.phase_service = phase_service
         self.parser = parser or MessageParser()
         self.mention_router = MentionRouter()
 
@@ -93,12 +96,26 @@ class CommandHandler:
         )
 
         if command.command_name == "new":
+            target_participant = await self.participant_repository.get_by_session_and_agent(
+                session_id,
+                target_agent_id,
+            )
+            target_agent = await self.agent_repository.get(target_agent_id)
+            target_role = target_participant.role if target_participant is not None else None
+            source_role = sender.role if sender.role is not None else "planner"
+            structured_instructions = await self.phase_service.build_new_job_instructions(
+                session_id=session_id,
+                objective=command.arguments or message.content,
+                source_role=source_role,
+                target_role=target_role or (target_agent.role if target_agent is not None else None),
+                notes=command.arguments or message.content,
+            )
             job = await self.job_service.create_job_for_agent(
                 session_id=session_id,
                 channel_key=message.channel_key,
                 agent_id=target_agent_id,
                 title=self._build_title(command),
-                instructions=command.arguments or message.content,
+                instructions=structured_instructions,
                 source_message_id=message.id,
             )
             await self._record_command_event(

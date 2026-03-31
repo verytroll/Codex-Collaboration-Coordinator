@@ -1,35 +1,60 @@
-# A2A Mapping Note
+# A2A Mapping
 
-This repository remains coordinator-first. The A2A surface is a placeholder for discovery and future adapters.
+This document describes the experimental A2A adapter bridge used by F24.
 
-## Internal to A2A mapping
+## Internal model
 
-- `session` maps to an A2A conversation or workspace scope.
-- `job` maps to an A2A task.
-- `job_events` map to task progress updates.
-- `artifacts` map to task artifacts.
-- `presence_heartbeats` map to runtime availability signals.
-- `session_events` map to the session activity timeline.
+The coordinator keeps its native model:
 
-## Status mapping
+- `session`
+- `job`
+- `artifact`
 
-- `queued` maps to `submitted`
-- `running` maps to `working`
-- `input_required` maps to `input_required`
-- `auth_required` maps to `auth_required`
-- `completed` maps to `completed`
-- `canceled` maps to `canceled`
-- `failed` maps to `failed`
-- `paused_by_loop_guard` maps to a guarded or paused internal state
+The A2A adapter does not replace that model. It only projects it into a task-shaped view for experimental interop.
 
-## Placeholder agent card
+## Mapping
 
-The discovery endpoint at `/.well-known/agent-card.json` advertises:
+| Internal field | A2A field |
+|---|---|
+| `session.id` | `context_id` |
+| `job.id` | `job_id` |
+| adapter task id | `task_id` |
+| `job.status` | `status` |
+| `job.title` | `title` |
+| `job.result_summary` or `job.instructions` | `summary` |
+| `job.assigned_agent_id` | `assigned_agent_id` |
+| `artifact.id` | artifact item `id` |
+| `artifact.artifact_type` | artifact item `artifact_type` |
+| `artifact.file_name` | artifact item `file_name` |
+| `artifact.mime_type` | artifact item `mime_type` |
 
-- `streaming = true`
-- `push_notifications = false`
-- collaboration and Codex execution skills
+## Status translation
 
-## Design note
+The adapter uses a small translation layer:
 
-The coordinator API is not a public A2A implementation yet. Future A2A support should sit in an adapter layer, not replace the internal session/job model.
+- `queued` -> `queued`
+- `running` -> `in_progress`
+- `input_required` -> `blocked`
+- `auth_required` -> `blocked`
+- `paused_by_loop_guard` -> `blocked`
+- `completed` -> `completed`
+- `failed` -> `failed`
+- `canceled` -> `canceled`
+
+## Routes
+
+- `POST /api/v1/a2a/jobs/{job_id}/project`
+- `GET /api/v1/a2a/tasks/{task_id}`
+- `GET /api/v1/a2a/sessions/{session_id}/tasks`
+
+## Phase link
+
+The adapter includes the current active phase metadata when a job is projected. That lets the task view stay aligned with the session phase presets.
+
+## Scope
+
+This is intentionally experimental.
+
+- It keeps the coordinator internal model unchanged.
+- It stores a lightweight mapping table in SQLite.
+- It does not claim production-grade A2A compatibility yet.
