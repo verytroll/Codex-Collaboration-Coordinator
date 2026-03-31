@@ -211,6 +211,8 @@ class PhaseService:
         payload = self._build_phase_payload(
             phase_key=resolved_phase.phase_key,
             phase_title=resolved_phase.title,
+            relay_template_key=resolved_phase.relay_template_key,
+            default_channel_key=resolved_phase.default_channel_key,
             objective=objective,
             source_role=source_role,
             target_role=target_role,
@@ -240,6 +242,8 @@ class PhaseService:
         *,
         phase_key: str,
         phase_title: str,
+        relay_template_key: str,
+        default_channel_key: str,
         objective: str,
         source_role: str | None,
         target_role: str | None,
@@ -255,8 +259,6 @@ class PhaseService:
                 "open_questions": [],
                 "review_focus": notes,
             }
-            template_key = "builder_to_reviewer"
-            default_channel_key = "review"
         elif phase_key == "revise":
             sections = {
                 "decision": "changes_requested",
@@ -265,8 +267,6 @@ class PhaseService:
                 "revision_priority": "normal",
                 "next_actions": [],
             }
-            template_key = "reviewer_to_builder_revise"
-            default_channel_key = "review"
         else:
             sections = {
                 "objective": objective,
@@ -275,11 +275,9 @@ class PhaseService:
                 "constraints": [],
                 "notes": notes,
             }
-            template_key = "planner_to_builder"
-            default_channel_key = "planning" if phase_key == "planning" else "general"
 
         return {
-            "template_key": template_key,
+            "template_key": relay_template_key,
             "title": phase_title,
             "source_role": source_role or "planner",
             "target_role": target_role or "builder",

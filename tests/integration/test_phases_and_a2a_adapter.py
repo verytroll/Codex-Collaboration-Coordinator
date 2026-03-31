@@ -167,14 +167,38 @@ def test_phase_api_and_phase_aware_new_jobs(tmp_path, monkeypatch) -> None:
             assert "phase_key" in review_job.instructions
             assert "review" in review_job.instructions
 
+            finalize_activate_response = client.post(
+                f"/api/v1/sessions/{session_id}/phases/finalize/activate"
+            )
+            assert finalize_activate_response.status_code == 200
+            assert finalize_activate_response.json()["phase"]["phase_key"] == "finalize"
+
+            finalize_message_response = client.post(
+                f"/api/v1/sessions/{session_id}/messages",
+                json={
+                    "sender_type": "agent",
+                    "sender_id": lead_agent_id,
+                    "content": "/new #builder wrap up the work",
+                    "reply_to_message_id": None,
+                    "channel_key": "general",
+                },
+            )
+            assert finalize_message_response.status_code == 202
+
+            finalize_job = asyncio.run(job_repository.list_by_session(session_id))[-1]
+            assert "builder_to_reviewer" in finalize_job.instructions
+            assert finalize_job.channel_key == "general"
+            assert "phase_key" in finalize_job.instructions
+            assert "finalize" in finalize_job.instructions
+
             artifact_repository = ArtifactRepository(database_url)
             asyncio.run(
                 artifact_repository.create(
                     ArtifactRecord(
                         id="art_phase_001",
-                        job_id=review_job.id,
+                        job_id=finalize_job.id,
                         session_id=session_id,
-                        source_message_id=review_job.source_message_id,
+                        source_message_id=finalize_job.source_message_id,
                         artifact_type="json",
                         title="Phase handoff artifact",
                         content_text='{"ok": true}',
@@ -186,16 +210,16 @@ def test_phase_api_and_phase_aware_new_jobs(tmp_path, monkeypatch) -> None:
                         metadata_json='{"kind":"a2a_preview"}',
                         created_at="2026-03-31T00:00:00Z",
                         updated_at="2026-03-31T00:00:00Z",
-                        channel_key=review_job.channel_key,
+                        channel_key=finalize_job.channel_key,
                     )
                 )
             )
 
-            project_response = client.post(f"/api/v1/a2a/jobs/{review_job.id}/project")
+            project_response = client.post(f"/api/v1/a2a/jobs/{finalize_job.id}/project")
             assert project_response.status_code == 201
             task = project_response.json()["task"]
-            assert task["job_id"] == review_job.id
-            assert task["phase_key"] == "review"
+            assert task["job_id"] == finalize_job.id
+            assert task["phase_key"] == "finalize"
             assert task["status"] == "queued"
             assert len(task["artifacts"]) == 1
 
