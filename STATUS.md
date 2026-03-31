@@ -2,15 +2,17 @@
 
 ### Trạng thái hiện tại
 - **Ngày cập nhật:** 2026-03-31
-- **Pha hiện tại:** F08 hoàn thành
-- **Đang tập trung vào:** F09 - Session API và Agent API cơ bản
+- **Pha hiện tại:** F09 hoàn thành
+- **Đang tập trung vào:** F10 - Participant API, Message API và event log cơ bản
 - **Người thực hiện:** Codex
 
 ### Đang làm
-- [ ] F09 — Tạo Session API và Agent API cơ bản
-- [ ] PR08 — Session API và Agent API cơ bản
+- [ ] F10 — Tạo Participant API, Message API và event log cơ bản
+- [ ] PR09 — Participant API, Message API và session event log
 
 ### Vừa hoàn thành
+- [x] F09 — Tạo Session API và Agent API cơ bản — 2026-03-31
+- [x] PR08 — Session API và Agent API cơ bản — 2026-03-31
 - [x] F08 — Tạo repository layer cho message và job — 2026-03-31
 - [x] PR07 — Repository layer cho message, job, artifact, approval, presence — 2026-03-31
 - [x] F07 — Tạo repository layer cho session và agent — 2026-03-31
@@ -28,8 +30,8 @@
 - [x] PR01 — Tạo skeleton repo và app chạy được — 2026-03-31
 
 ### Tiếp theo
-- [ ] F09 — session, agent API cơ bản
-- [ ] PR08 — Session API và Agent API cơ bản
+- [ ] F10 — participant, message API cơ bản
+- [ ] PR09 — Participant API, Message API và session event log
 
 ### Blockers / Rủi ro
 - Không có

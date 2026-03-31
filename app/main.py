@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from app.api.health import router as health_router
+from app.api import router as api_router
 from app.core.config import get_config
 from app.core.errors import install_error_handlers
 from app.core.logging import configure_logging
@@ -22,7 +22,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title=APP_NAME, version=APP_VERSION)
     app.add_middleware(RequestIdMiddleware, header_name=settings.request_id_header)
     install_error_handlers(app)
-    app.include_router(health_router)
+    app.include_router(api_router)
     return app
 
 
