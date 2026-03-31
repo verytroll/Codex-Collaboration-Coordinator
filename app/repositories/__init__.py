@@ -21,6 +21,7 @@ from app.repositories.participants import ParticipantRepository, SessionParticip
 from app.repositories.presence import PresenceHeartbeatRecord, PresenceRepository
 from app.repositories.relay_edges import RelayEdgeRecord, RelayEdgeRepository
 from app.repositories.rules import RuleRecord, RuleRepository
+from app.repositories.reviews import ReviewRecord, ReviewRepository
 from app.repositories.session_events import SessionEventRecord, SessionEventRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
 from app.repositories.transcript_exports import (
@@ -56,6 +57,8 @@ __all__ = [
     "RelayEdgeRepository",
     "RuleRecord",
     "RuleRepository",
+    "ReviewRecord",
+    "ReviewRepository",
     "SessionEventRecord",
     "SessionEventRepository",
     "SessionParticipantRecord",

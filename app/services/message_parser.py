@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 MENTION_PATTERN = re.compile(r"(?<!\w)#(?P<name>[A-Za-z][A-Za-z0-9_-]*)")
 COMMAND_PATTERN = re.compile(
-    r"^/(?P<name>new|interrupt|compact)(?:\s+(?P<args>.*))?$",
+    r"^/(?P<name>new|interrupt|compact|review)(?:\s+(?P<args>.*))?$",
     re.IGNORECASE,
 )
 

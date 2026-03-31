@@ -45,6 +45,16 @@ from app.models.api.messages import (
     MessageResponse,
     MessageRoutingResponse,
 )
+from app.models.api.review import (
+    RelayTemplateEnvelope,
+    RelayTemplateListEnvelope,
+    RelayTemplateResponse,
+    ReviewCreateRequest,
+    ReviewDecisionRequest,
+    ReviewEnvelope,
+    ReviewListEnvelope,
+    ReviewResponse,
+)
 from app.models.api.participants import (
     ParticipantCreateRequest,
     ParticipantEnvelope,
@@ -90,6 +100,9 @@ __all__ = [
     "MessageListEnvelope",
     "MessageResponse",
     "MessageRoutingResponse",
+    "RelayTemplateEnvelope",
+    "RelayTemplateListEnvelope",
+    "RelayTemplateResponse",
     "PresenceEnvelope",
     "PresenceHeartbeatRequest",
     "PresenceHeartbeatResponse",
@@ -122,6 +135,11 @@ __all__ = [
     "ParticipantPolicyResponse",
     "ParticipantResponse",
     "ParticipantUpdateRequest",
+    "ReviewCreateRequest",
+    "ReviewDecisionRequest",
+    "ReviewEnvelope",
+    "ReviewListEnvelope",
+    "ReviewResponse",
     "SessionCreateRequest",
     "SessionEnvelope",
     "SessionListEnvelope",

@@ -163,6 +163,63 @@ class ArtifactManager:
 
         return ArtifactBundle(artifacts=artifacts)
 
+    async def create_structured_artifact(
+        self,
+        *,
+        job: JobRecord,
+        artifact_type: str,
+        title: str,
+        content_text: str | None,
+        file_name: str | None = None,
+        mime_type: str | None = None,
+        metadata: dict[str, object] | None = None,
+        source_message_id: str | None = None,
+        channel_key: str | None = None,
+        created_at: str | None = None,
+    ) -> ArtifactRecord:
+        """Create a single artifact row with a standard job event trail."""
+        now = created_at or _utc_now()
+        payload_text = content_text or ""
+        artifact = ArtifactRecord(
+            id=f"art_{uuid4().hex}",
+            job_id=job.id,
+            session_id=job.session_id,
+            channel_key=channel_key or job.channel_key,
+            source_message_id=source_message_id if source_message_id is not None else job.source_message_id,
+            artifact_type=artifact_type,
+            title=title[:120],
+            content_text=content_text,
+            file_path=None,
+            file_name=file_name,
+            mime_type=mime_type,
+            size_bytes=len(payload_text.encode("utf-8")) if content_text is not None else None,
+            checksum_sha256=_sha256_hex(payload_text) if content_text is not None else None,
+            metadata_json=(
+                json.dumps(metadata, sort_keys=True) if metadata is not None else None
+            ),
+            created_at=now,
+            updated_at=now,
+        )
+        created = await self.artifact_repository.create(artifact)
+        await self.job_event_repository.create(
+            JobEventRecord(
+                id=f"jbe_{uuid4().hex}",
+                job_id=job.id,
+                session_id=job.session_id,
+                event_type="artifact.created",
+                event_payload_json=json.dumps(
+                    {
+                        "artifact_id": created.id,
+                        "artifact_type": artifact_type,
+                        "title": created.title,
+                    },
+                    sort_keys=True,
+                ),
+                created_at=now,
+            )
+        )
+        return created
+
     async def _create_artifact(
         self,
         *,

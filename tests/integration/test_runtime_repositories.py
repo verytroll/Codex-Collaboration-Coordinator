@@ -17,6 +17,7 @@ from app.repositories.messages import (
 )
 from app.repositories.presence import PresenceHeartbeatRecord, PresenceRepository
 from app.repositories.relay_edges import RelayEdgeRecord, RelayEdgeRepository
+from app.repositories.reviews import ReviewRecord, ReviewRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
 from app.repositories.transcript_exports import (
     TranscriptExportRecord,
@@ -467,6 +468,90 @@ def test_transcript_export_repository_crud(tmp_path) -> None:
     assert asyncio.run(job_repository.delete(job.id)) is True
     assert asyncio.run(session_repository.delete("ses_export")) is True
     assert asyncio.run(agent_repository.delete("agt_export")) is True
+
+
+def test_review_repository_crud(tmp_path) -> None:
+    database_url = _database_url(tmp_path)
+    _migrate(database_url)
+    session_repository, agent_repository = _bootstrap_session_and_agent(
+        database_url,
+        "ses_review",
+        "agt_review",
+    )
+    job_repository = JobRepository(database_url)
+    review_repository = ReviewRepository(database_url)
+
+    job = JobRecord(
+        id="job_review",
+        session_id="ses_review",
+        assigned_agent_id="agt_review",
+        runtime_id=None,
+        source_message_id=None,
+        parent_job_id=None,
+        title="Review source",
+        instructions="Prepare a review",
+        status="completed",
+        hop_count=0,
+        priority="normal",
+        codex_runtime_id=None,
+        codex_thread_id=None,
+        active_turn_id=None,
+        last_known_turn_status=None,
+        result_summary="Done",
+        error_code=None,
+        error_message=None,
+        started_at="2026-03-31T00:00:00Z",
+        completed_at="2026-03-31T00:01:00Z",
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:01:00Z",
+    )
+    review = ReviewRecord(
+        id="rvw_001",
+        session_id="ses_review",
+        source_job_id=job.id,
+        reviewer_agent_id="agt_review",
+        requested_by_agent_id="agt_review",
+        review_scope="job",
+        review_status="requested",
+        review_channel_key="review",
+        template_key="builder_to_reviewer",
+        request_message_id=None,
+        decision_message_id=None,
+        summary_artifact_id=None,
+        revision_job_id=None,
+        request_payload_json='{"template_key":"builder_to_reviewer"}',
+        decision_payload_json=None,
+        requested_at="2026-03-31T00:00:00Z",
+        decided_at=None,
+        created_at="2026-03-31T00:00:00Z",
+        updated_at="2026-03-31T00:00:00Z",
+    )
+
+    asyncio.run(job_repository.create(job))
+    created_review = asyncio.run(review_repository.create(review))
+    fetched_review = asyncio.run(review_repository.get(review.id))
+    listed_reviews = asyncio.run(review_repository.list_by_session(job.session_id))
+    updated_review = replace(
+        created_review,
+        review_status="approved",
+        decided_at="2026-03-31T00:10:00Z",
+    )
+
+    assert created_review == review
+    assert fetched_review == review
+    assert listed_reviews == [review]
+
+    saved_review = asyncio.run(review_repository.update(updated_review))
+    active_reviews = asyncio.run(review_repository.list_active_by_session(job.session_id))
+    deleted_review = asyncio.run(review_repository.delete(review.id))
+
+    assert saved_review.review_status == "approved"
+    assert active_reviews == []
+    assert deleted_review is True
+    assert asyncio.run(review_repository.get(review.id)) is None
+    assert asyncio.run(job_repository.delete(job.id)) is True
+    assert asyncio.run(session_repository.delete("ses_review")) is True
+    assert asyncio.run(agent_repository.delete("agt_review")) is True
 
 
 def test_presence_and_relay_repository_crud(tmp_path) -> None:

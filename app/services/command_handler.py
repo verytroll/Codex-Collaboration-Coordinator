@@ -15,6 +15,7 @@ from app.services.job_service import JobService
 from app.services.mention_router import MentionRouter, ResolvedMention
 from app.services.message_parser import MessageParser, ParsedCommand, ParsedMessage
 from app.services.offline_queue import OfflineQueueService
+from app.services.review_mode import ReviewModeService
 from app.services.permissions import CommandPermissions
 from app.services.relay_engine import RelayEngine
 
@@ -48,6 +49,7 @@ class CommandHandler:
         permissions: CommandPermissions,
         relay_engine: RelayEngine,
         offline_queue_service: OfflineQueueService,
+        review_mode_service: ReviewModeService,
         parser: MessageParser | None = None,
     ) -> None:
         self.job_service = job_service
@@ -59,6 +61,7 @@ class CommandHandler:
         self.permissions = permissions
         self.relay_engine = relay_engine
         self.offline_queue_service = offline_queue_service
+        self.review_mode_service = review_mode_service
         self.parser = parser or MessageParser()
         self.mention_router = MentionRouter()
 
@@ -131,6 +134,27 @@ class CommandHandler:
         if target_job is None:
             raise LookupError(
                 f"No active job found for agent {target_agent_id} in session {session_id}"
+            )
+
+        if command.command_name == "review":
+            review_result = await self.review_mode_service.request_review(
+                source_job_id=target_job.id,
+                requested_by_agent_id=sender_id if sender_type == "agent" else None,
+                notes=command.arguments or None,
+            )
+            await self._record_command_event(
+                session_id=session_id,
+                sender_type=sender_type,
+                sender_id=sender_id,
+                command_name="review",
+                target_agent_id=target_agent_id,
+                target_job_id=target_job.id,
+            )
+            return CommandExecutionResult(
+                command_name="review",
+                target_agent_id=target_agent_id,
+                target_job_id=target_job.id,
+                relay_result="review.requested",
             )
 
         if command.command_name == "interrupt":

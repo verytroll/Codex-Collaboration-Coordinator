@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from app.api.a2a_placeholder import router as a2a_placeholder_router
 from app.api.artifacts import router as artifacts_router
 from app.api.rules import router as rules_router
+from app.api.review import router as review_router
 from app.api.channels import router as channels_router
 from app.api.agents import router as agents_router
 from app.api.approvals import router as approvals_router
@@ -24,6 +25,7 @@ router.include_router(sessions_router)
 router.include_router(artifacts_router)
 router.include_router(channels_router)
 router.include_router(rules_router)
+router.include_router(review_router)
 router.include_router(agents_router)
 router.include_router(presence_router)
 router.include_router(participants_router)

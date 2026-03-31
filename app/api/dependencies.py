@@ -20,6 +20,7 @@ from app.repositories.participants import ParticipantRepository
 from app.repositories.presence import PresenceRepository
 from app.repositories.relay_edges import RelayEdgeRepository
 from app.repositories.rules import RuleRepository
+from app.repositories.reviews import ReviewRepository
 from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRepository
 from app.repositories.transcript_exports import TranscriptExportRepository
@@ -36,7 +37,9 @@ from app.services.permissions import CommandPermissions
 from app.services.rule_engine import RuleEngineService
 from app.services.presence import PresenceService
 from app.services.recovery import RecoveryService
+from app.services.relay_templates import RelayTemplatesService
 from app.services.relay_engine import CodexRelayBridge, RelayEngine
+from app.services.review_mode import ReviewModeService
 from app.services.transcript_export import TranscriptExportService
 from app.services.runtime_service import RuntimeService
 from app.services.streaming import StreamingService
@@ -78,6 +81,13 @@ def get_artifact_repository(
 ) -> ArtifactRepository:
     """Provide an artifact repository bound to the configured database."""
     return ArtifactRepository(database_url)
+
+
+def get_review_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> ReviewRepository:
+    """Provide a review repository bound to the configured database."""
+    return ReviewRepository(database_url)
 
 
 def get_transcript_export_repository(
@@ -229,6 +239,11 @@ def get_rule_engine_service(
     return RuleEngineService(rule_repository)
 
 
+def get_relay_templates_service() -> RelayTemplatesService:
+    """Provide the structured relay template service."""
+    return RelayTemplatesService()
+
+
 def get_job_service(
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     runtime_service: Annotated[RuntimeService, Depends(get_runtime_service)],
@@ -335,6 +350,7 @@ def get_command_handler(
     permissions: Annotated[CommandPermissions, Depends(get_command_permissions)],
     relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
     offline_queue_service: Annotated[OfflineQueueService, Depends(get_offline_queue_service)],
+    review_mode_service: Annotated[ReviewModeService, Depends(get_review_mode_service)],
 ) -> CommandHandler:
     """Provide the command handler."""
     return CommandHandler(
@@ -347,6 +363,7 @@ def get_command_handler(
         permissions=permissions,
         relay_engine=relay_engine,
         offline_queue_service=offline_queue_service,
+        review_mode_service=review_mode_service,
     )
 
 
@@ -365,6 +382,42 @@ def get_artifact_manager(
     return ArtifactManager(
         artifact_repository=artifact_repository,
         job_event_repository=job_event_repository,
+    )
+
+
+def get_review_mode_service(
+    review_repository: Annotated[ReviewRepository, Depends(get_review_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    message_repository: Annotated[MessageRepository, Depends(get_message_repository)],
+    artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
+    artifact_manager: Annotated[ArtifactManager, Depends(get_artifact_manager)],
+    job_service: Annotated[JobService, Depends(get_job_service)],
+    offline_queue_service: Annotated[OfflineQueueService, Depends(get_offline_queue_service)],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    participant_repository: Annotated[ParticipantRepository, Depends(get_participant_repository)],
+    channel_service: Annotated[ChannelService, Depends(get_channel_service)],
+    session_event_repository: Annotated[
+        SessionEventRepository, Depends(get_session_event_repository)
+    ],
+    relay_templates_service: Annotated[
+        RelayTemplatesService,
+        Depends(get_relay_templates_service),
+    ],
+) -> ReviewModeService:
+    """Provide the review mode service."""
+    return ReviewModeService(
+        review_repository=review_repository,
+        job_repository=job_repository,
+        message_repository=message_repository,
+        artifact_repository=artifact_repository,
+        artifact_manager=artifact_manager,
+        job_service=job_service,
+        offline_queue_service=offline_queue_service,
+        session_repository=session_repository,
+        participant_repository=participant_repository,
+        channel_service=channel_service,
+        session_event_repository=session_event_repository,
+        relay_templates_service=relay_templates_service,
     )
 
 
