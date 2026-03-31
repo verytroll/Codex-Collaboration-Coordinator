@@ -2,15 +2,18 @@
 
 ### Trạng thái hiện tại
 - **Ngày cập nhật:** 2026-03-31
-- **Pha hiện tại:** F13 hoàn thành
-- **Đang tập trung vào:** F14 - Relay engine và command handlers
+- **Pha hiện tại:** F14 hoàn thành
+- **Đang tập trung vào:** F15 - Presence, recovery, loop guard, artifacts, approval và streaming
 - **Người thực hiện:** Codex
 
 ### Đang làm
-- [ ] F14 — Relay engine và command handlers
-- [ ] PR13 — Relay engine thực thi job qua CodexBridge
+- [ ] F15 — Presence, recovery, loop guard, artifacts, approval và streaming
+- [ ] PR15 — Presence và heartbeat
 
 ### Vừa hoàn thành
+- [x] F14 — Relay engine và command handlers — 2026-03-31
+- [x] PR14 — Command handlers và permissions lead/non-lead — 2026-03-31
+- [x] PR13 — Relay engine thực thi job qua CodexBridge — 2026-03-31
 - [x] F13 — Message parser, mention router và job creation — 2026-03-31
 - [x] PR12 — Message parser, mention detection và job creation — 2026-03-31
 - [x] F12 — Runtime service và session-thread mapping — 2026-03-31
@@ -38,8 +41,8 @@
 - [x] PR01 — Tạo skeleton repo và app chạy được — 2026-03-31
 
 ### Tiếp theo
-- [ ] F14 — Relay engine và command handlers
-- [ ] PR13 — Relay engine thực thi job qua CodexBridge
+- [ ] F15 — Presence, recovery, loop guard, artifacts, approval và streaming
+- [ ] PR15 — Presence và heartbeat
 
 ### Blockers / Rủi ro
 - Không có
@@ -60,6 +63,9 @@
 - Quyết định: Mention routing giai đoạn đầu phân giải `#agent` theo participant đang active và tạo job queued nội bộ.
 - Lý do: F13 cần khóa được flow message -> mention -> job trước khi sang relay thực thi Codex.
 - Ảnh hưởng: Message command bắt đầu bằng `/` được nhận diện trước routing, còn mention hợp lệ mới sinh job.
+- Quyết định: Relay engine giai đoạn đầu publish output agent ngay sau `turn/start`, còn `/interrupt` và `/compact` đi qua command handler với quyền lead/self-target tối thiểu.
+- Lý do: F14 cần khóa được flow relay thật và command control trước khi sang presence/recovery.
+- Ảnh hưởng: Mention relay và command control có thể demo end-to-end mà chưa cần artifact/streaming.
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`

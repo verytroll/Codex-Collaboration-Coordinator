@@ -10,10 +10,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.dependencies import (
     get_agent_repository,
+    get_command_handler,
     get_message_mention_repository,
     get_message_repository,
     get_message_routing_service,
     get_participant_repository,
+    get_relay_engine,
     get_session_event_repository,
     get_session_repository,
 )
@@ -32,7 +34,9 @@ from app.repositories.messages import MessageMentionRepository, MessageRecord, M
 from app.repositories.participants import ParticipantRepository
 from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
+from app.services.command_handler import CommandHandler
 from app.services.message_routing import MessageRoutingService
+from app.services.relay_engine import RelayEngine
 from app.services.session_events import record_session_event
 
 router = APIRouter(prefix="/api/v1", tags=["messages"])
@@ -151,6 +155,8 @@ async def create_message(
     ],
     event_repository: Annotated[SessionEventRepository, Depends(get_session_event_repository)],
     routing_service: Annotated[MessageRoutingService, Depends(get_message_routing_service)],
+    relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
+    command_handler: Annotated[CommandHandler, Depends(get_command_handler)],
 ) -> MessageCreateEnvelope:
     session = await _ensure_session_exists(session_repository, session_id)
     if payload.sender_type == "agent":
@@ -223,6 +229,25 @@ async def create_message(
         created_at=created_at,
     )
     routing = await routing_service.apply(message=created, plan=routing_plan)
+    if routing_plan.commands:
+        try:
+            await command_handler.handle_command(
+                session_id=session_id,
+                sender_type=payload.sender_type,
+                sender_id=payload.sender_id,
+                message=created,
+                command=routing_plan.commands[0],
+            )
+        except PermissionError as exc:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+        except LookupError as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    else:
+        for job_id in routing.created_jobs:
+            try:
+                await relay_engine.execute_job(job_id)
+            except LookupError as exc:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     mentions = await _load_mentions(mention_repository, created.id)
     return MessageCreateEnvelope(
         message=_message_response(created, mentions),

@@ -30,3 +30,4 @@ Skeleton project for the coordinator service.
 - CodexBridge subprocess manager and JSON-RPC client are in place.
 - Runtime status service and session-thread mapping service are in place.
 - Message parser, mention router, and internal job creation are in place.
+- Relay engine and command handlers for `/new`, `/interrupt`, and `/compact` are in place.
