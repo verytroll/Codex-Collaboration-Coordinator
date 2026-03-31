@@ -12,6 +12,7 @@ from app.api.dependencies import (
     get_agent_repository,
     get_message_mention_repository,
     get_message_repository,
+    get_message_routing_service,
     get_participant_repository,
     get_session_event_repository,
     get_session_repository,
@@ -31,6 +32,7 @@ from app.repositories.messages import MessageMentionRepository, MessageRecord, M
 from app.repositories.participants import ParticipantRepository
 from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
+from app.services.message_routing import MessageRoutingService
 from app.services.session_events import record_session_event
 
 router = APIRouter(prefix="/api/v1", tags=["messages"])
@@ -148,6 +150,7 @@ async def create_message(
         Depends(get_message_mention_repository),
     ],
     event_repository: Annotated[SessionEventRepository, Depends(get_session_event_repository)],
+    routing_service: Annotated[MessageRoutingService, Depends(get_message_routing_service)],
 ) -> MessageCreateEnvelope:
     session = await _ensure_session_exists(session_repository, session_id)
     if payload.sender_type == "agent":
@@ -171,13 +174,18 @@ async def create_message(
     if payload.reply_to_message_id is not None:
         await _ensure_reply_message(message_repository, session_id, payload.reply_to_message_id)
 
+    try:
+        routing_plan = await routing_service.preview(session_id=session_id, content=payload.content)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
     created_at = _utc_now()
     message = MessageRecord(
         id=f"msg_{uuid4().hex}",
         session_id=session_id,
         sender_type=payload.sender_type,
         sender_id=payload.sender_id,
-        message_type=payload.message_type,
+        message_type="command" if routing_plan.commands else payload.message_type,
         content=payload.content,
         content_format="plain_text",
         reply_to_message_id=payload.reply_to_message_id,
@@ -214,10 +222,14 @@ async def create_message(
         },
         created_at=created_at,
     )
+    routing = await routing_service.apply(message=created, plan=routing_plan)
     mentions = await _load_mentions(mention_repository, created.id)
     return MessageCreateEnvelope(
         message=_message_response(created, mentions),
-        routing=MessageRoutingResponse(),
+        routing=MessageRoutingResponse(
+            detected_mentions=routing.detected_mentions,
+            created_jobs=routing.created_jobs,
+        ),
     )
 
 

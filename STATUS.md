@@ -2,15 +2,17 @@
 
 ### Trạng thái hiện tại
 - **Ngày cập nhật:** 2026-03-31
-- **Pha hiện tại:** F12 hoàn thành
-- **Đang tập trung vào:** F13 - Message parser, mention router và job creation
+- **Pha hiện tại:** F13 hoàn thành
+- **Đang tập trung vào:** F14 - Relay engine và command handlers
 - **Người thực hiện:** Codex
 
 ### Đang làm
-- [ ] F13 — Message parser, mention router và job creation
-- [ ] PR12 — Message parser, mention detection và job creation
+- [ ] F14 — Relay engine và command handlers
+- [ ] PR13 — Relay engine thực thi job qua CodexBridge
 
 ### Vừa hoàn thành
+- [x] F13 — Message parser, mention router và job creation — 2026-03-31
+- [x] PR12 — Message parser, mention detection và job creation — 2026-03-31
 - [x] F12 — Runtime service và session-thread mapping — 2026-03-31
 - [x] PR11 — Runtime service và session-thread mapping — 2026-03-31
 - [x] F11 — Dựng CodexBridge process manager và JSON-RPC client — 2026-03-31
@@ -36,8 +38,8 @@
 - [x] PR01 — Tạo skeleton repo và app chạy được — 2026-03-31
 
 ### Tiếp theo
-- [ ] F13 — Message parser, mention router và job creation
-- [ ] PR12 — Message parser, mention detection và job creation
+- [ ] F14 — Relay engine và command handlers
+- [ ] PR13 — Relay engine thực thi job qua CodexBridge
 
 ### Blockers / Rủi ro
 - Không có
@@ -55,6 +57,9 @@
 - Quyết định: Session-thread mapping giai đoạn đầu dùng state service trong memory, còn runtime status đi qua repository.
 - Lý do: Tránh mở thêm schema/migration trong F12 nhưng vẫn có thể demo create/reuse thread ngay.
 - Ảnh hưởng: F12 khóa được contract `thread/start`/`thread/resume` trước khi sang parser/router.
+- Quyết định: Mention routing giai đoạn đầu phân giải `#agent` theo participant đang active và tạo job queued nội bộ.
+- Lý do: F13 cần khóa được flow message -> mention -> job trước khi sang relay thực thi Codex.
+- Ảnh hưởng: Message command bắt đầu bằng `/` được nhận diện trước routing, còn mention hợp lệ mới sinh job.
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`

@@ -6,6 +6,8 @@ from fastapi.testclient import TestClient
 
 import app.main as app_main
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
+from app.repositories.jobs import JobRepository
+from app.repositories.messages import MessageMentionRepository
 from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRepository
 
@@ -112,7 +114,7 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
                 json={
                     "sender_type": "agent",
                     "sender_id": builder_agent_id,
-                    "content": "Hello session",
+                    "content": "#builder fix this bug",
                     "reply_to_message_id": None,
                 },
             )
@@ -122,12 +124,44 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
             message_id = message_body["id"]
             assert message_body["session_id"] == session_id
             assert message_body["sender_id"] == builder_agent_id
-            assert message_body["mentions"] == []
-            assert message_envelope["routing"]["created_jobs"] == []
+            assert message_body["message_type"] == "chat"
+            assert message_body["mentions"] == [builder_agent_id]
+            assert message_envelope["routing"]["detected_mentions"] == [builder_agent_id]
+            assert len(message_envelope["routing"]["created_jobs"]) == 1
+
+            mention_repository = MessageMentionRepository(database_url)
+            mentions = asyncio.run(mention_repository.list_by_message(message_id))
+            assert len(mentions) == 1
+            assert mentions[0].mentioned_agent_id == builder_agent_id
+            assert mentions[0].mention_text == "#builder"
+
+            job_repository = JobRepository(database_url)
+            jobs = asyncio.run(job_repository.list_by_session(session_id))
+            assert len(jobs) == 1
+            assert jobs[0].assigned_agent_id == builder_agent_id
+            assert jobs[0].source_message_id == message_id
+            assert jobs[0].status == "queued"
+
+            command_message_response = client.post(
+                f"/api/v1/sessions/{session_id}/messages",
+                json={
+                    "sender_type": "agent",
+                    "sender_id": builder_agent_id,
+                    "content": "/interrupt #builder",
+                    "reply_to_message_id": None,
+                },
+            )
+            assert command_message_response.status_code == 202
+            command_envelope = command_message_response.json()
+            assert command_envelope["message"]["message_type"] == "command"
+            assert command_envelope["routing"]["detected_mentions"] == []
+            assert command_envelope["routing"]["created_jobs"] == []
+            jobs_after_command = asyncio.run(job_repository.list_by_session(session_id))
+            assert len(jobs_after_command) == 1
 
             get_message_response = client.get(f"/api/v1/messages/{message_id}")
             assert get_message_response.status_code == 200
-            assert get_message_response.json()["message"]["content"] == "Hello session"
+            assert get_message_response.json()["message"]["content"] == "#builder fix this bug"
 
             list_messages_response = client.get(f"/api/v1/sessions/{session_id}/messages")
             assert list_messages_response.status_code == 200
@@ -144,16 +178,17 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
 
             event_repository = SessionEventRepository(database_url)
             events = asyncio.run(event_repository.list_by_session(session_id))
-            assert len(events) == 3
+            assert len(events) == 4
             assert {event.event_type for event in events} == {
                 "participant.added",
                 "message.created",
                 "participant.removed",
             }
+            assert sum(event.event_type == "message.created" for event in events) == 2
 
             session_repository = SessionRepository(database_url)
             stored_session = asyncio.run(session_repository.get(session_id))
             assert stored_session is not None
-            assert stored_session.last_message_at == message_body["created_at"]
+            assert stored_session.last_message_at == command_envelope["message"]["created_at"]
     finally:
         app_main.get_config.cache_clear()
