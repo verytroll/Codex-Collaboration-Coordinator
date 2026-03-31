@@ -12,8 +12,13 @@ from datetime import datetime, timezone
 
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
 from app.repositories.agents import AgentRecord, AgentRepository, AgentRuntimeRecord, AgentRuntimeRepository
+from app.repositories.channels import SessionChannelRepository
 from app.repositories.participants import ParticipantRepository, SessionParticipantRecord
+from app.repositories.phases import PhaseRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
+from app.services.channel_service import ChannelService
+from app.services.phase_service import PhaseService
+from app.services.relay_templates import RelayTemplatesService
 
 
 def _utc_now() -> str:
@@ -28,6 +33,14 @@ async def _seed() -> None:
     runtime_repository = AgentRuntimeRepository(database_url)
     session_repository = SessionRepository(database_url)
     participant_repository = ParticipantRepository(database_url)
+    channel_repository = SessionChannelRepository(database_url)
+    phase_repository = PhaseRepository(database_url)
+    channel_service = ChannelService(channel_repository)
+    phase_service = PhaseService(
+        phase_repository=phase_repository,
+        session_repository=session_repository,
+        relay_templates_service=RelayTemplatesService(),
+    )
 
     now = _utc_now()
     specs = [
@@ -88,11 +101,11 @@ async def _seed() -> None:
         )
 
     participants = [
-        ("agt_planner_demo", 1),
-        ("agt_builder_demo", 0),
-        ("agt_reviewer_demo", 0),
+        ("agt_planner_demo", 1, "planner"),
+        ("agt_builder_demo", 0, "builder"),
+        ("agt_reviewer_demo", 0, "reviewer"),
     ]
-    for agent_id, is_lead in participants:
+    for agent_id, is_lead, role in participants:
         participant_id = f"sp_ses_demo_{agent_id}"
         if await participant_repository.get(participant_id) is None:
             await participant_repository.create(
@@ -109,10 +122,17 @@ async def _seed() -> None:
                     left_at=None,
                     created_at=now,
                     updated_at=now,
+                    role=role,
                 )
             )
+    await channel_service.ensure_default_channels("ses_demo")
+    await phase_service.ensure_default_phases("ses_demo")
+    await phase_service.activate_phase_by_key("ses_demo", "planning")
 
-    print("Seeded demo data: ses_demo, agt_planner_demo, agt_builder_demo, agt_reviewer_demo")
+    print(
+        "Seeded demo data: ses_demo, agt_planner_demo, agt_builder_demo, "
+        "agt_reviewer_demo, default channels, and planning phase"
+    )
 
 
 asyncio.run(_seed())

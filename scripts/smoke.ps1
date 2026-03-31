@@ -82,6 +82,20 @@ $sessions = Invoke-ApiGet "/api/v1/sessions"
 Assert-Condition (@($agents.agents | Where-Object { $_.id -eq "agt_builder_demo" }).Count -ge 1) "builder demo agent missing"
 Assert-Condition (@($sessions.sessions | Where-Object { $_.id -eq "ses_demo" }).Count -ge 1) "demo session missing"
 
+Write-Host "Checking phase presets..."
+$presets = Invoke-ApiGet "/api/v1/phases/presets"
+$presetKeys = @($presets.presets | ForEach-Object { $_.phase_key })
+Assert-Condition (($presetKeys -join ",") -eq "planning,implementation,review,revise,finalize") "phase presets are incomplete or out of order"
+
+$sessionPhases = Invoke-ApiGet "/api/v1/sessions/ses_demo/phases"
+$planningPhase = @($sessionPhases.phases | Where-Object { $_.phase_key -eq "planning" })[0]
+Assert-Condition ($null -ne $planningPhase) "planning phase missing from session"
+Assert-Condition ($planningPhase.is_active -eq $true) "planning phase should be active after seed"
+
+Write-Host "Activating finalize phase..."
+$finalizePhase = Invoke-ApiPost "/api/v1/sessions/ses_demo/phases/finalize/activate" @{}
+Assert-Condition ($finalizePhase.phase.phase_key -eq "finalize") "finalize phase activation failed"
+
 Write-Host "Posting a normal message..."
 $messageResponse = Invoke-ApiPost "/api/v1/sessions/ses_demo/messages" @{
     sender_type       = "agent"
@@ -93,6 +107,34 @@ Assert-Condition (@($messageResponse.routing.created_jobs).Count -eq 0) "plain m
 
 $messages = Invoke-ApiGet "/api/v1/sessions/ses_demo/messages"
 Assert-Condition (@($messages.messages).Count -ge 1) "expected at least one session message"
+
+Write-Host "Creating a phase-aware command job..."
+$jobCountBefore = @((Invoke-ApiGet "/api/v1/jobs?session_id=ses_demo").jobs).Count
+$commandResponse = Invoke-ApiPost "/api/v1/sessions/ses_demo/messages" @{
+    sender_type         = "agent"
+    sender_id           = "agt_planner_demo"
+    content             = "/new #builder smoke finalize handoff"
+    reply_to_message_id = $null
+    channel_key         = "general"
+}
+Assert-Condition ($commandResponse.message.message_type -eq "command") "command message was not recorded as a command"
+
+$jobsAfter = @((Invoke-ApiGet "/api/v1/jobs?session_id=ses_demo").jobs)
+Assert-Condition ($jobsAfter.Count -gt $jobCountBefore) "command did not create a new job"
+$smokeJob = $jobsAfter | Sort-Object created_at, id | Select-Object -Last 1
+Assert-Condition ($smokeJob.assigned_agent_id -eq "agt_builder_demo") "new job targeted the wrong agent"
+Assert-Condition ($smokeJob.instructions -match "builder_to_reviewer") "finalize phase did not use the expected relay template"
+Assert-Condition ($smokeJob.instructions -match "phase_key") "phase metadata missing from job instructions"
+Assert-Condition ($smokeJob.instructions -match "finalize") "finalize phase metadata missing from job instructions"
+
+Write-Host "Projecting the job into the experimental A2A adapter..."
+$taskEnvelope = Invoke-ApiPost "/api/v1/a2a/jobs/$($smokeJob.id)/project" @{}
+Assert-Condition ($taskEnvelope.task.job_id -eq $smokeJob.id) "A2A projection returned the wrong job id"
+Assert-Condition ($taskEnvelope.task.phase_key -eq "finalize") "A2A projection did not carry the active phase"
+Assert-Condition ($taskEnvelope.task.status -eq "queued") "A2A projection returned the wrong task status"
+
+$taskList = Invoke-ApiGet "/api/v1/a2a/sessions/ses_demo/tasks"
+Assert-Condition (@($taskList.tasks | Where-Object { $_.task_id -eq $taskEnvelope.task.task_id }).Count -ge 1) "projected A2A task missing from session task list"
 
 if ($IncludeRelay) {
     Write-Host "Posting a mention message to exercise relay..."
