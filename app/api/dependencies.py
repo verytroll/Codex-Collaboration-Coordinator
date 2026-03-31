@@ -31,6 +31,8 @@ from app.services.recovery import RecoveryService
 from app.services.relay_engine import CodexRelayBridge, RelayEngine
 from app.services.runtime_service import RuntimeService
 from app.services.streaming import StreamingService
+from app.services.system_status import SystemStatusService
+from app.services.debug_service import DebugService
 from app.services.thread_mapping import ThreadMappingService, ThreadMappingStore
 
 _THREAD_MAPPING_STORE = ThreadMappingStore()
@@ -81,6 +83,46 @@ def get_runtime_service(
 ) -> RuntimeService:
     """Provide a runtime service bound to the configured repositories."""
     return RuntimeService(runtime_repository)
+
+
+def get_system_status_service(
+    database_url: Annotated[str, Depends(get_database_url)],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
+    runtime_repository: Annotated[AgentRuntimeRepository, Depends(get_agent_runtime_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
+) -> SystemStatusService:
+    """Provide operator-facing system status aggregation."""
+    config = get_config()
+    return SystemStatusService(
+        database_url=database_url,
+        codex_bridge_mode=config.codex_bridge_mode,
+        session_repository=session_repository,
+        agent_repository=agent_repository,
+        runtime_repository=runtime_repository,
+        job_repository=job_repository,
+        approval_repository=approval_repository,
+    )
+
+
+
+def get_debug_service(
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    runtime_repository: Annotated[AgentRuntimeRepository, Depends(get_agent_runtime_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
+    system_status_service: Annotated[SystemStatusService, Depends(get_system_status_service)],
+) -> DebugService:
+    """Provide the operator-facing debug surface service."""
+    return DebugService(
+        session_repository=session_repository,
+        runtime_repository=runtime_repository,
+        job_repository=job_repository,
+        approval_repository=approval_repository,
+        system_status_service=system_status_service,
+    )
+
 
 
 def get_presence_repository(
@@ -356,3 +398,5 @@ def get_relay_edge_repository(
 ) -> RelayEdgeRepository:
     """Provide a relay edge repository bound to the configured database."""
     return RelayEdgeRepository(database_url)
+
+

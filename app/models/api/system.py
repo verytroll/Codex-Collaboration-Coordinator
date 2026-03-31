@@ -15,6 +15,136 @@ class HealthResponse(BaseModel):
     status: Literal["ok"] = "ok"
 
 
+SystemHealth = Literal["ok", "degraded", "unavailable"]
+
+
+class SystemAppInfoResponse(BaseModel):
+    """Application identity for operator-facing system endpoints."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    version: str
+    env: str
+
+
+class SystemComponentResponse(BaseModel):
+    """Health check detail for a coordinator subsystem."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: SystemHealth
+    detail: str | None = None
+
+
+class SystemJobSummaryResponse(BaseModel):
+    """Aggregate counts for jobs by status."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    queued: int = 0
+    running: int = 0
+    input_required: int = 0
+    auth_required: int = 0
+    paused_by_loop_guard: int = 0
+    completed: int = 0
+    failed: int = 0
+    canceled: int = 0
+
+
+class SystemAggregatesResponse(BaseModel):
+    """Top-level coordinator aggregates shown in system status."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    active_sessions: int
+    registered_agents: int
+    jobs: SystemJobSummaryResponse
+    pending_approvals: int
+    runtimes_by_status: dict[str, int] = Field(default_factory=dict)
+
+
+class SystemChecksResponse(BaseModel):
+    """Subsystem checks for status and diagnostics."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    db: SystemComponentResponse
+    codex_bridge: SystemComponentResponse
+
+
+class SystemStatusResponse(BaseModel):
+    """Coordinator status summary for operators."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: SystemHealth
+    app: SystemAppInfoResponse
+    checks: SystemChecksResponse
+    aggregates: SystemAggregatesResponse
+    diagnostics: list[str] = Field(default_factory=list)
+
+
+class DebugSessionResponse(BaseModel):
+    """Condensed session data for debug surfaces."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    title: str
+    status: str
+    lead_agent_id: str | None
+    updated_at: str
+    last_message_at: str | None
+
+
+class DebugJobResponse(BaseModel):
+    """Condensed job data for queued/running/blocked surfaces."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    session_id: str
+    assigned_agent_id: str
+    title: str
+    status: str
+    priority: str
+    codex_thread_id: str | None
+    active_turn_id: str | None
+    last_known_turn_status: str | None
+    updated_at: str
+
+
+class DebugApprovalResponse(BaseModel):
+    """Condensed approval data for pending approval surfaces."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    job_id: str
+    agent_id: str
+    approval_type: str
+    status: str
+    requested_at: str
+    updated_at: str
+
+
+class DebugSurfaceResponse(BaseModel):
+    """Detailed operator-facing diagnostics payload."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    generated_at: str
+    codex_bridge: SystemComponentResponse
+    runtime_statuses: dict[str, int] = Field(default_factory=dict)
+    active_sessions: list[DebugSessionResponse] = Field(default_factory=list)
+    queued_jobs: list[DebugJobResponse] = Field(default_factory=list)
+    running_jobs: list[DebugJobResponse] = Field(default_factory=list)
+    blocked_jobs: list[DebugJobResponse] = Field(default_factory=list)
+    pending_approvals: list[DebugApprovalResponse] = Field(default_factory=list)
+    diagnostics: list[str] = Field(default_factory=list)
+
+
 class A2AAgentCardCapabilities(BaseModel):
     """Discovery capabilities advertised for A2A-ready clients."""
 
