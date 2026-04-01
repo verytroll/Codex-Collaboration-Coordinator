@@ -7,7 +7,12 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.dependencies import get_job_repository, get_review_mode_service, get_session_repository
+from app.api.dependencies import (
+    get_job_repository,
+    get_phase_gate_service,
+    get_review_mode_service,
+    get_session_repository,
+)
 from app.models.api.review import (
     RelayTemplateEnvelope,
     RelayTemplateListEnvelope,
@@ -20,6 +25,7 @@ from app.models.api.review import (
 )
 from app.repositories.jobs import JobRepository
 from app.repositories.sessions import SessionRepository
+from app.services.phase_gate_service import PhaseGateService
 from app.services.review_mode import ReviewModeService
 
 router = APIRouter(prefix="/api/v1", tags=["review"])
@@ -173,6 +179,7 @@ async def submit_review_decision(
     review_id: str,
     payload: ReviewDecisionRequest,
     review_mode_service: Annotated[ReviewModeService, Depends(get_review_mode_service)],
+    phase_gate_service: Annotated[PhaseGateService, Depends(get_phase_gate_service)],
 ) -> ReviewEnvelope:
     try:
         result = await review_mode_service.submit_decision(
@@ -188,4 +195,5 @@ async def submit_review_decision(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    await phase_gate_service.resolve_review_decision(result)
     return ReviewEnvelope(review=_review_response(result.review))

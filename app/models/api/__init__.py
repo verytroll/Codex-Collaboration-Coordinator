@@ -68,6 +68,16 @@ from app.models.api.messages import (
     MessageResponse,
     MessageRoutingResponse,
 )
+from app.models.api.orchestration import (
+    OrchestrationGateEnvelope,
+    OrchestrationGateRequest,
+    OrchestrationGateStatus,
+    OrchestrationGateType,
+    OrchestrationRunEnvelope,
+    OrchestrationRunListEnvelope,
+    OrchestrationRunResponse,
+    OrchestrationRunStatus,
+)
 from app.models.api.participants import (
     ParticipantCreateRequest,
     ParticipantEnvelope,
@@ -161,6 +171,14 @@ __all__ = [
     "MessageListEnvelope",
     "MessageResponse",
     "MessageRoutingResponse",
+    "OrchestrationGateEnvelope",
+    "OrchestrationGateRequest",
+    "OrchestrationGateStatus",
+    "OrchestrationGateType",
+    "OrchestrationRunEnvelope",
+    "OrchestrationRunListEnvelope",
+    "OrchestrationRunResponse",
+    "OrchestrationRunStatus",
     "RelayTemplateEnvelope",
     "RelayTemplateListEnvelope",
     "RelayTemplateResponse",

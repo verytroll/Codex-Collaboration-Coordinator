@@ -18,6 +18,10 @@ from app.repositories.messages import (
     MessageRecord,
     MessageRepository,
 )
+from app.repositories.orchestration_runs import (
+    OrchestrationRunRecord,
+    OrchestrationRunRepository,
+)
 from app.repositories.participants import ParticipantRepository, SessionParticipantRecord
 from app.repositories.phases import PhaseRecord, PhaseRepository
 from app.repositories.presence import PresenceHeartbeatRecord, PresenceRepository
@@ -60,6 +64,8 @@ __all__ = [
     "MessageMentionRepository",
     "MessageRecord",
     "MessageRepository",
+    "OrchestrationRunRecord",
+    "OrchestrationRunRepository",
     "ParticipantRepository",
     "PresenceHeartbeatRecord",
     "PresenceRepository",

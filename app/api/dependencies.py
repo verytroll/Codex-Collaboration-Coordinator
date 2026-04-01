@@ -17,6 +17,7 @@ from app.repositories.channels import SessionChannelRepository
 from app.repositories.job_inputs import JobInputRepository
 from app.repositories.jobs import JobEventRepository, JobRepository
 from app.repositories.messages import MessageMentionRepository, MessageRepository
+from app.repositories.orchestration_runs import OrchestrationRunRepository
 from app.repositories.participants import ParticipantRepository
 from app.repositories.phases import PhaseRepository
 from app.repositories.presence import PresenceRepository
@@ -40,8 +41,10 @@ from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardService
 from app.services.message_routing import MessageRoutingService
 from app.services.offline_queue import OfflineQueueService
+from app.services.orchestration_engine import OrchestrationEngineService
 from app.services.participant_policy import ParticipantPolicyService
 from app.services.permissions import CommandPermissions
+from app.services.phase_gate_service import PhaseGateService
 from app.services.phase_service import PhaseService
 from app.services.presence import PresenceService
 from app.services.public_event_stream import PublicEventStreamService
@@ -212,6 +215,13 @@ def get_phase_repository(
     return PhaseRepository(database_url)
 
 
+def get_orchestration_run_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> OrchestrationRunRepository:
+    """Provide an orchestration run repository bound to the configured database."""
+    return OrchestrationRunRepository(database_url)
+
+
 def get_message_repository(
     database_url: Annotated[str, Depends(get_database_url)],
 ) -> MessageRepository:
@@ -300,6 +310,22 @@ def get_phase_service(
         phase_repository=phase_repository,
         session_repository=session_repository,
         relay_templates_service=relay_templates_service,
+    )
+
+
+def get_orchestration_engine_service(
+    orchestration_run_repository: Annotated[
+        OrchestrationRunRepository,
+        Depends(get_orchestration_run_repository),
+    ],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    phase_service: Annotated[PhaseService, Depends(get_phase_service)],
+) -> OrchestrationEngineService:
+    """Provide the orchestration run state service."""
+    return OrchestrationEngineService(
+        orchestration_run_repository=orchestration_run_repository,
+        session_repository=session_repository,
+        phase_service=phase_service,
     )
 
 
@@ -620,6 +646,49 @@ def get_approval_manager(
         approval_repository=approval_repository,
         job_repository=job_repository,
         job_event_repository=job_event_repository,
+        session_event_repository=session_event_repository,
+    )
+
+
+def get_phase_gate_service(
+    orchestration_engine_service: Annotated[
+        OrchestrationEngineService,
+        Depends(get_orchestration_engine_service),
+    ],
+    review_mode_service: Annotated[ReviewModeService, Depends(get_review_mode_service)],
+    approval_manager: Annotated[ApprovalManager, Depends(get_approval_manager)],
+    job_service: Annotated[JobService, Depends(get_job_service)],
+    artifact_manager: Annotated[ArtifactManager, Depends(get_artifact_manager)],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    participant_repository: Annotated[
+        ParticipantRepository,
+        Depends(get_participant_repository),
+    ],
+    channel_service: Annotated[ChannelService, Depends(get_channel_service)],
+    phase_service: Annotated[PhaseService, Depends(get_phase_service)],
+    relay_templates_service: Annotated[
+        RelayTemplatesService,
+        Depends(get_relay_templates_service),
+    ],
+    session_event_repository: Annotated[
+        SessionEventRepository,
+        Depends(get_session_event_repository),
+    ],
+) -> PhaseGateService:
+    """Provide the orchestration phase gate service."""
+    return PhaseGateService(
+        orchestration_engine_service=orchestration_engine_service,
+        review_mode_service=review_mode_service,
+        approval_manager=approval_manager,
+        job_service=job_service,
+        artifact_manager=artifact_manager,
+        session_repository=session_repository,
+        job_repository=job_repository,
+        participant_repository=participant_repository,
+        channel_service=channel_service,
+        phase_service=phase_service,
+        relay_templates_service=relay_templates_service,
         session_event_repository=session_event_repository,
     )
 

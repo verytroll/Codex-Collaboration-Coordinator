@@ -3,13 +3,15 @@
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-01
 - Pha hiện tại: V3 planning
-- Đang tập trung vào: Bắt đầu PR30 với advanced review orchestration và phase gates
+- Đang tập trung vào: Bắt đầu PR31 với runtime pools và isolated work contexts
 - Người thực hiện: Codex
 
 ### Đang làm
-- [ ] PR30 - Advanced review orchestration và phase gates
+- [ ] PR31 - Runtime pools và isolated work contexts
 
 ### Vừa hoàn thành
+- [x] F28 - Nâng cấp review orchestration và gated phase transitions - 2026-04-01
+- [x] PR30 - Advanced review orchestration và phase gates - 2026-04-01
 - [x] F27 - Tạo session templates và orchestration presets - 2026-04-01
 - [x] PR29 - Session templates và orchestration presets - 2026-04-01
 - [x] F25 - Chuẩn hóa A2A public API v1 trên nền adapter bridge - 2026-04-01
@@ -38,7 +40,7 @@
 - CodexBridge health trong `system/status` phản ánh trạng thái aggregate, chưa phải telemetry live dài hạn.
 
 ### Kiểm chứng gần nhất
-- `pytest` - 66 passed - 2026-04-01
+- `pytest` - 67 passed - 2026-04-01
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`

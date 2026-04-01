@@ -16,11 +16,17 @@ from app.services.message_routing import (
     MessageRoutingService,
 )
 from app.services.offline_queue import OfflineQueueDispatchResult, OfflineQueueService
+from app.services.orchestration_engine import OrchestrationEngineService, OrchestrationRunResult
 from app.services.participant_policy import ParticipantPolicy, ParticipantPolicyService
 from app.services.permissions import (
     CommandPermissionCheck,
     CommandPermissionError,
     CommandPermissions,
+)
+from app.services.phase_gate_service import (
+    GateRequestResult,
+    GateResolutionResult,
+    PhaseGateService,
 )
 from app.services.phase_service import (
     PhaseActivationResult,
@@ -71,6 +77,11 @@ __all__ = [
     "MessageRoutingService",
     "OfflineQueueDispatchResult",
     "OfflineQueueService",
+    "OrchestrationRunResult",
+    "OrchestrationEngineService",
+    "GateRequestResult",
+    "GateResolutionResult",
+    "PhaseGateService",
     "ParticipantPolicy",
     "ParticipantPolicyService",
     "ParsedCommand",
