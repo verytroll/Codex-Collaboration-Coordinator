@@ -40,6 +40,12 @@ from app.services.relay_engine import CodexRelayBridge, RelayEngine, RelayExecut
 from app.services.relay_templates import RelayTemplateDefinition, RelayTemplatesService
 from app.services.review_mode import ReviewDecisionResult, ReviewModeService, ReviewStartResult
 from app.services.rule_engine import RuleEngineService, RuleEvaluationResult
+from app.services.runtime_pool_service import (
+    RuntimePoolAssignment,
+    RuntimePoolDefinition,
+    RuntimePoolPlan,
+    RuntimePoolService,
+)
 from app.services.runtime_service import RuntimeService
 from app.services.session_events import record_session_event
 from app.services.session_template_service import SessionTemplateDefinition, SessionTemplateService
@@ -50,6 +56,7 @@ from app.services.thread_mapping import (
     ThreadMappingStore,
 )
 from app.services.transcript_export import TranscriptExportBundle, TranscriptExportService
+from app.services.work_context_service import WorkContextPlan, WorkContextService
 
 __all__ = [
     "CodexRelayBridge",
@@ -102,12 +109,18 @@ __all__ = [
     "RelayTemplatesService",
     "RuleEngineService",
     "RuleEvaluationResult",
+    "RuntimePoolAssignment",
+    "RuntimePoolDefinition",
+    "RuntimePoolPlan",
+    "RuntimePoolService",
     "RuntimeService",
     "ReviewDecisionResult",
     "ReviewModeService",
     "ReviewStartResult",
     "SessionTemplateDefinition",
     "SessionTemplateService",
+    "WorkContextPlan",
+    "WorkContextService",
     "TranscriptExportBundle",
     "TranscriptExportService",
     "StreamingService",

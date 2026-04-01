@@ -304,6 +304,8 @@ async def create_job(
         priority=payload.priority,
         source_message_id=payload.source_message_id,
         parent_job_id=payload.parent_job_id,
+        preferred_pool_key=payload.preferred_runtime_pool_key,
+        required_capabilities=payload.required_capabilities,
     )
     try:
         await offline_queue_service.schedule_job(

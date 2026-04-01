@@ -62,6 +62,8 @@ class JobCreateRequest(BaseModel):
     source_message_id: str | None = None
     parent_job_id: str | None = None
     priority: JobPriority = "normal"
+    preferred_runtime_pool_key: str | None = None
+    required_capabilities: list[str] = Field(default_factory=list)
 
 
 class JobEventResponse(BaseModel):

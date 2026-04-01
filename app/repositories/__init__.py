@@ -33,6 +33,12 @@ from app.repositories.public_subscriptions import (
 from app.repositories.relay_edges import RelayEdgeRecord, RelayEdgeRepository
 from app.repositories.reviews import ReviewRecord, ReviewRepository
 from app.repositories.rules import RuleRecord, RuleRepository
+from app.repositories.runtime_pools import (
+    RuntimePoolRecord,
+    RuntimePoolRepository,
+    WorkContextRecord,
+    WorkContextRepository,
+)
 from app.repositories.session_events import SessionEventRecord, SessionEventRepository
 from app.repositories.session_templates import SessionTemplateRecord, SessionTemplateRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
@@ -83,6 +89,8 @@ __all__ = [
     "RuleRepository",
     "ReviewRecord",
     "ReviewRepository",
+    "RuntimePoolRecord",
+    "RuntimePoolRepository",
     "SessionEventRecord",
     "SessionEventRepository",
     "SessionParticipantRecord",
@@ -90,4 +98,6 @@ __all__ = [
     "SessionRepository",
     "TranscriptExportRecord",
     "TranscriptExportRepository",
+    "WorkContextRecord",
+    "WorkContextRepository",
 ]

@@ -119,6 +119,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "014_public_subscriptions.sql",
         "015_session_templates.sql",
         "016_orchestration_runs.sql",
+        "017_runtime_pools.sql",
     ]
     assert second_run == []
 
@@ -154,6 +155,8 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "a2a_public_events",
         "session_templates",
         "orchestration_runs",
+        "runtime_pools",
+        "work_contexts",
     }.issubset(tables)
     assert {
         "idx_messages_session_id_created_at",
@@ -198,5 +201,15 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "idx_orchestration_runs_gate_type",
         "idx_orchestration_runs_review_id",
         "idx_orchestration_runs_approval_id",
+        "idx_runtime_pools_pool_key",
+        "idx_runtime_pools_is_default",
+        "idx_runtime_pools_runtime_kind",
+        "idx_work_contexts_session_id",
+        "idx_work_contexts_job_id",
+        "idx_work_contexts_agent_id",
+        "idx_work_contexts_runtime_pool_id",
+        "idx_work_contexts_runtime_id",
+        "idx_work_contexts_context_status",
+        "idx_work_contexts_ownership_state",
     }.issubset(indexes)
-    assert version_count == 16
+    assert version_count == 17

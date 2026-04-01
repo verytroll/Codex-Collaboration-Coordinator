@@ -26,6 +26,7 @@ from app.repositories.public_subscriptions import PublicTaskSubscriptionReposito
 from app.repositories.relay_edges import RelayEdgeRepository
 from app.repositories.reviews import ReviewRepository
 from app.repositories.rules import RuleRepository
+from app.repositories.runtime_pools import RuntimePoolRepository, WorkContextRepository
 from app.repositories.session_events import SessionEventRepository
 from app.repositories.session_templates import SessionTemplateRepository
 from app.repositories.sessions import SessionRepository
@@ -53,12 +54,14 @@ from app.services.relay_engine import CodexRelayBridge, RelayEngine
 from app.services.relay_templates import RelayTemplatesService
 from app.services.review_mode import ReviewModeService
 from app.services.rule_engine import RuleEngineService
+from app.services.runtime_pool_service import RuntimePoolService
 from app.services.runtime_service import RuntimeService
 from app.services.session_template_service import SessionTemplateService
 from app.services.streaming import StreamingService
 from app.services.system_status import SystemStatusService
 from app.services.thread_mapping import ThreadMappingService, ThreadMappingStore
 from app.services.transcript_export import TranscriptExportService
+from app.services.work_context_service import WorkContextService
 
 _THREAD_MAPPING_STORE = ThreadMappingStore()
 
@@ -264,6 +267,56 @@ def get_rule_repository(
     return RuleRepository(database_url)
 
 
+def get_runtime_pool_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> RuntimePoolRepository:
+    """Provide a runtime pool repository bound to the configured database."""
+    return RuntimePoolRepository(database_url)
+
+
+def get_work_context_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> WorkContextRepository:
+    """Provide a work context repository bound to the configured database."""
+    return WorkContextRepository(database_url)
+
+
+def get_work_context_service(
+    work_context_repository: Annotated[
+        WorkContextRepository,
+        Depends(get_work_context_repository),
+    ],
+    runtime_repository: Annotated[AgentRuntimeRepository, Depends(get_agent_runtime_repository)],
+    agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
+) -> WorkContextService:
+    """Provide the work context orchestration service."""
+    return WorkContextService(
+        work_context_repository=work_context_repository,
+        runtime_repository=runtime_repository,
+        agent_repository=agent_repository,
+    )
+
+
+def get_runtime_pool_service(
+    runtime_pool_repository: Annotated[
+        RuntimePoolRepository,
+        Depends(get_runtime_pool_repository),
+    ],
+    work_context_service: Annotated[WorkContextService, Depends(get_work_context_service)],
+    agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
+    runtime_repository: Annotated[AgentRuntimeRepository, Depends(get_agent_runtime_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+) -> RuntimePoolService:
+    """Provide the runtime pool orchestration service."""
+    return RuntimePoolService(
+        runtime_pool_repository=runtime_pool_repository,
+        work_context_service=work_context_service,
+        agent_repository=agent_repository,
+        runtime_repository=runtime_repository,
+        job_repository=job_repository,
+    )
+
+
 def get_a2a_task_repository(
     database_url: Annotated[str, Depends(get_database_url)],
 ) -> A2ATaskRepository:
@@ -332,9 +385,17 @@ def get_orchestration_engine_service(
 def get_job_service(
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     runtime_service: Annotated[RuntimeService, Depends(get_runtime_service)],
+    runtime_pool_service: Annotated[
+        RuntimePoolService,
+        Depends(get_runtime_pool_service),
+    ],
 ) -> JobService:
     """Provide a job service bound to the configured repositories."""
-    return JobService(job_repository, runtime_service)
+    return JobService(
+        job_repository,
+        runtime_service,
+        runtime_pool_service=runtime_pool_service,
+    )
 
 
 def get_thread_mapping_service(

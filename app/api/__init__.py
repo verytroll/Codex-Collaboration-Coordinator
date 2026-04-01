@@ -19,6 +19,7 @@ from app.api.phases import router as phases_router
 from app.api.presence import router as presence_router
 from app.api.review import router as review_router
 from app.api.rules import router as rules_router
+from app.api.runtime_pools import router as runtime_pools_router
 from app.api.session_templates import router as session_templates_router
 from app.api.sessions import router as sessions_router
 from app.api.system import router as system_router
@@ -37,6 +38,7 @@ router.include_router(channels_router)
 router.include_router(rules_router)
 router.include_router(review_router)
 router.include_router(session_templates_router)
+router.include_router(runtime_pools_router)
 router.include_router(agents_router)
 router.include_router(presence_router)
 router.include_router(participants_router)

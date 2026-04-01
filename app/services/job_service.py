@@ -8,6 +8,7 @@ from uuid import uuid4
 from app.repositories.jobs import JobRecord, JobRepository
 from app.repositories.messages import MessageRecord
 from app.services.mention_router import ResolvedMention
+from app.services.runtime_pool_service import RuntimePoolAssignment, RuntimePoolService
 from app.services.runtime_service import RuntimeService
 
 
@@ -22,9 +23,11 @@ class JobService:
         self,
         job_repository: JobRepository,
         runtime_service: RuntimeService,
+        runtime_pool_service: RuntimePoolService | None = None,
     ) -> None:
         self.job_repository = job_repository
         self.runtime_service = runtime_service
+        self.runtime_pool_service = runtime_pool_service
 
     async def create_jobs_for_mentions(
         self,
@@ -61,16 +64,30 @@ class JobService:
         source_message_id: str | None = None,
         parent_job_id: str | None = None,
         runtime_id: str | None = None,
+        preferred_pool_key: str | None = None,
+        required_capabilities: list[str] | None = None,
     ) -> JobRecord:
         """Create a single queued job for a specific agent."""
+        job_id = f"job_{uuid4().hex}"
         resolved_runtime_id = runtime_id
-        if resolved_runtime_id is None:
+        assignment: RuntimePoolAssignment | None = None
+        if self.runtime_pool_service is not None:
+            assignment = await self.runtime_pool_service.plan_assignment(
+                job_id=job_id,
+                session_id=session_id,
+                agent_id=agent_id,
+                preferred_pool_key=preferred_pool_key,
+                required_capabilities=required_capabilities,
+                runtime_id=runtime_id,
+            )
+            resolved_runtime_id = runtime_id if runtime_id is not None else assignment.runtime_id
+        elif resolved_runtime_id is None:
             latest_runtime = await self.runtime_service.get_latest_runtime_for_agent(agent_id)
             resolved_runtime_id = latest_runtime.id if latest_runtime is not None else None
 
         now = _utc_now()
         job = JobRecord(
-            id=f"job_{uuid4().hex}",
+            id=job_id,
             session_id=session_id,
             channel_key=channel_key,
             assigned_agent_id=agent_id,
@@ -94,7 +111,15 @@ class JobService:
             created_at=now,
             updated_at=now,
         )
-        return await self.job_repository.create(job)
+        created_job = await self.job_repository.create(job)
+        if self.runtime_pool_service is not None and assignment is not None:
+            await self.runtime_pool_service.assign_work_context_for_job(
+                created_job,
+                preferred_pool_key=preferred_pool_key,
+                required_capabilities=required_capabilities,
+                runtime_id=resolved_runtime_id,
+            )
+        return created_job
 
     async def create_job_for_mention(
         self,
@@ -102,6 +127,8 @@ class JobService:
         message: MessageRecord,
         mention: ResolvedMention,
         channel_key: str | None = None,
+        preferred_pool_key: str | None = None,
+        required_capabilities: list[str] | None = None,
     ) -> JobRecord:
         """Create a single queued job for a mention."""
         return await self.create_job_for_agent(
@@ -112,6 +139,8 @@ class JobService:
             instructions=message.content,
             source_message_id=message.id,
             runtime_id=await self._resolve_runtime_id(mention),
+            preferred_pool_key=preferred_pool_key,
+            required_capabilities=required_capabilities,
         )
 
     async def _resolve_runtime_id(self, mention: ResolvedMention) -> str | None:
