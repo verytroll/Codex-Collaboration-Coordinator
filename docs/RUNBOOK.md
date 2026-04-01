@@ -20,6 +20,8 @@ pip install -e .[dev]
 .\scripts\smoke.ps1
 ```
 
+4. Open `http://127.0.0.1:8000/operator` to inspect the thin operator shell.
+
 ## Prod-like startup
 
 1. Keep `DATABASE_URL` pointed at a writable local SQLite file.
@@ -31,6 +33,8 @@ pip install -e .[dev]
 6. Confirm `GET /api/v1/readinessz` returns a ready response with `checks.db.status=ok`
    and `checks.migrations.status=ok`.
 7. Confirm `GET /api/v1/system/status` reports the expected aggregates and bridge state.
+8. Confirm `GET /operator` renders the operator shell and `GET /api/v1/operator/shell`
+   returns the bootstrap payload for a selected session.
 
 ## Release candidate
 
@@ -53,10 +57,11 @@ The release gate performs:
 1. Check `GET /api/v1/system/status` first.
 2. Check `GET /api/v1/system/debug` for queued jobs, blocked jobs, and runtime state.
 3. Check `GET /api/v1/operator/dashboard` for higher-level operator diagnostics.
-4. If operator/public routes return `401`, verify `ACCESS_TOKEN` and the request header name.
-5. If operator/public routes return `403`, verify the token value being sent.
-6. Correlate logs by `request_id` from the request headers or the request log.
-7. If the bridge is degraded, check the latest `bridge` samples in telemetry and restart the app after confirming the Codex binary is available.
+4. Check `GET /operator` if you want the read-only shell view instead of raw JSON.
+5. If operator/public routes return `401`, verify `ACCESS_TOKEN` and the request header name.
+6. If operator/public routes return `403`, verify the token value being sent.
+7. Correlate logs by `request_id` from the request headers or the request log.
+8. If the bridge is degraded, check the latest `bridge` samples in telemetry and restart the app after confirming the Codex binary is available.
 
 ## SQLite backup and restore
 

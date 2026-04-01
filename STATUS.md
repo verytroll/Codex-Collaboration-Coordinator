@@ -2,13 +2,15 @@
 
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-01
-- Pha hiện tại: V4 planning
-- Đang tập trung vào: chốt và tổng kết V4 foundation sau PR37
+- Pha hiện tại: V5 implementation
+- Đang tập trung vào: thin operator UI shell sau PR38
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F37 - Thin operator UI shell - 2026-04-01
+- [x] PR39 - Thin operator UI shell - 2026-04-01
 - [x] F36 - Access boundary và external safety baseline - 2026-04-01
 - [x] PR38 - Access boundary và external safety baseline - 2026-04-01
 - [x] F35 - Deployment surface và external readiness tối thiểu - 2026-04-01
@@ -49,7 +51,7 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] Bắt đầu PR39 / F37: thin operator UI shell
+- [x] PR39 / F37: thin operator UI shell - 2026-04-01
 - [ ] Sau PR39, mở PR40 / F38: realtime operator surface
 - [ ] Sau PR40, mở PR41 / F39: A2A interoperability và adoption kit
 - [ ] Sau PR41, mở PR42 / F40: small-team deployment profile và release packaging

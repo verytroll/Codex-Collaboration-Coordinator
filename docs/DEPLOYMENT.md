@@ -37,6 +37,10 @@ The default profile is `local` in development/testing and `trusted` outside that
 If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
 (`X-Access-Token` by default).
 
+The operator shell lives at `GET /operator` and bootstraps from
+`GET /api/v1/operator/shell`. Both routes follow the same access boundary rules as the
+rest of the operator/public surface.
+
 ## Startup contract
 
 The application startup path applies SQLite migrations before the API is served.

@@ -68,6 +68,10 @@ def test_operator_and_public_surfaces_allow_local_mode_without_token(tmp_path, m
                 "runtime_pool_key": None,
             }
 
+            shell_response = client.get("/operator")
+            assert shell_response.status_code == 200
+            assert "Operator Shell" in shell_response.text
+
             public_response = client.get("/.well-known/agent-card.json")
             assert public_response.status_code == 200
             assert public_response.json()["name"] == "Codex Collaboration Coordinator"
@@ -85,6 +89,9 @@ def test_operator_and_public_surfaces_allow_trusted_local_clients_without_token(
         with TestClient(app) as client:
             operator_response = client.get("/api/v1/operator/dashboard")
             assert operator_response.status_code == 200
+
+            shell_response = client.get("/operator")
+            assert shell_response.status_code == 200
 
             public_response = client.get("/.well-known/agent-card.json")
             assert public_response.status_code == 200
@@ -110,17 +117,32 @@ def test_operator_and_public_surfaces_require_service_token_in_protected_mode(
             unauthorized_response = client.get("/api/v1/operator/dashboard")
             _assert_access_error(unauthorized_response, code="access_unauthorized")
 
+            unauthorized_shell_response = client.get("/operator")
+            _assert_access_error(unauthorized_shell_response, code="access_unauthorized")
+
             forbidden_response = client.get(
                 "/api/v1/operator/dashboard",
                 headers={"X-Access-Token": "wrong-token"},
             )
             _assert_access_error(forbidden_response, code="access_forbidden")
 
+            forbidden_shell_response = client.get(
+                "/operator",
+                headers={"X-Access-Token": "wrong-token"},
+            )
+            _assert_access_error(forbidden_shell_response, code="access_forbidden")
+
             allowed_operator_response = client.get(
                 "/api/v1/operator/dashboard",
                 headers={"X-Access-Token": "service-token"},
             )
             assert allowed_operator_response.status_code == 200
+
+            allowed_shell_response = client.get(
+                "/operator",
+                headers={"X-Access-Token": "service-token"},
+            )
+            assert allowed_shell_response.status_code == 200
 
             unauthorized_public_response = client.get("/.well-known/agent-card.json")
             _assert_access_error(unauthorized_public_response, code="access_unauthorized")

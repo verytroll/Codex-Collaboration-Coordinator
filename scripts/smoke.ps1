@@ -27,6 +27,16 @@ function Invoke-ApiGet {
     }
 }
 
+function Invoke-PageGet {
+    param([string]$Path)
+    $headers = Get-AccessHeaders
+    if ($headers.Count -gt 0) {
+        Invoke-WebRequest -Method Get -Uri "$BaseUrl$Path" -Headers $headers -TimeoutSec 30
+    } else {
+        Invoke-WebRequest -Method Get -Uri "$BaseUrl$Path" -TimeoutSec 30
+    }
+}
+
 function Invoke-ApiPost {
     param(
         [string]$Path,
@@ -189,6 +199,24 @@ Assert-Condition ($taskEnvelope.task.status -eq "queued") "A2A projection return
 
 $taskList = Invoke-ApiGet "/api/v1/a2a/sessions/ses_demo/tasks"
 Assert-Condition (@($taskList.tasks | Where-Object { $_.task_id -eq $taskEnvelope.task.task_id }).Count -ge 1) "projected A2A task missing from session task list"
+
+Write-Host "Checking operator shell..."
+$shellPage = Invoke-PageGet "/operator"
+Assert-Condition ($shellPage.Content -match "Operator Shell") "operator shell page did not render"
+Assert-Condition ($shellPage.Content -match 'id="summary-cards"') "operator shell summary cards anchor missing"
+Assert-Condition ($shellPage.Content -match 'id="session-list"') "operator shell session rail anchor missing"
+Assert-Condition ($shellPage.Content -match 'id="selected-session"') "operator shell selected session anchor missing"
+Assert-Condition ($shellPage.Content -match 'id="dashboard-bottlenecks"') "operator shell dashboard anchor missing"
+Assert-Condition ($shellPage.Content -match "/api/v1/operator/shell") "operator shell bootstrap path missing"
+
+$shellBootstrap = Invoke-ApiGet "/api/v1/operator/shell?session_id=ses_demo"
+Assert-Condition ($shellBootstrap.selected_session_id -eq "ses_demo") "operator shell bootstrap returned the wrong session"
+Assert-Condition ($shellBootstrap.selected_session.session.id -eq "ses_demo") "operator shell selected session payload is wrong"
+Assert-Condition ($shellBootstrap.sessions.Count -ge 1) "operator shell should include at least one session"
+Assert-Condition ($shellBootstrap.dashboard.filters.session_id -eq "ses_demo") "operator shell dashboard filters lost the selected session id"
+Assert-Condition ($shellBootstrap.selected_session.message_count -ge 2) "operator shell selected session should include transcript messages"
+Assert-Condition ($shellBootstrap.selected_session.job_count -ge 1) "operator shell selected session should include jobs"
+Assert-Condition ($shellBootstrap.selected_session.approval_count -ge 0) "operator shell selected session approval count missing"
 
 if ($IncludeRelay) {
     Write-Host "Posting a mention message to exercise relay..."

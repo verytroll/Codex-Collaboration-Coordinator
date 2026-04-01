@@ -15,6 +15,8 @@ from app.api.health import router as health_router
 from app.api.jobs import router as jobs_router
 from app.api.messages import router as messages_router
 from app.api.operator_dashboard import router as operator_dashboard_router
+from app.api.operator_ui import shell_router as operator_shell_router
+from app.api.operator_ui import ui_router as operator_ui_router
 from app.api.orchestration import router as orchestration_router
 from app.api.participants import router as participants_router
 from app.api.phases import router as phases_router
@@ -55,5 +57,7 @@ router.include_router(runtime_pools_router, dependencies=[Depends(require_operat
 router.include_router(orchestration_router, dependencies=[Depends(require_operator_access)])
 router.include_router(policies_router, dependencies=[Depends(require_operator_access)])
 router.include_router(operator_dashboard_router, dependencies=[Depends(require_operator_access)])
+router.include_router(operator_ui_router, dependencies=[Depends(require_operator_access)])
+router.include_router(operator_shell_router, dependencies=[Depends(require_operator_access)])
 
 __all__ = ["router"]

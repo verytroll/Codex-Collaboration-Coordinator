@@ -47,6 +47,7 @@ from app.services.loop_guard import LoopGuardService
 from app.services.message_routing import MessageRoutingService
 from app.services.offline_queue import OfflineQueueService
 from app.services.operator_dashboard import OperatorDashboardService
+from app.services.operator_shell import OperatorShellService
 from app.services.orchestration_engine import OrchestrationEngineService
 from app.services.participant_policy import ParticipantPolicyService
 from app.services.permissions import CommandPermissions
@@ -258,6 +259,49 @@ def get_operator_dashboard_service(
         a2a_task_repository=a2a_task_repository,
         approval_repository=approval_repository,
         debug_service=debug_service,
+    )
+
+
+def get_operator_shell_service(
+    dashboard_service: Annotated[OperatorDashboardService, Depends(get_operator_dashboard_service)],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    phase_repository: Annotated[PhaseRepository, Depends(get_phase_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
+    artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
+    transcript_export_repository: Annotated[
+        TranscriptExportRepository,
+        Depends(get_transcript_export_repository),
+    ],
+    message_repository: Annotated[MessageRepository, Depends(get_message_repository)],
+    message_mention_repository: Annotated[
+        MessageMentionRepository,
+        Depends(get_message_mention_repository),
+    ],
+    participant_repository: Annotated[
+        ParticipantRepository,
+        Depends(get_participant_repository),
+    ],
+    agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
+    participant_policy_service: Annotated[
+        ParticipantPolicyService,
+        Depends(get_participant_policy_service),
+    ],
+) -> OperatorShellService:
+    """Provide the thin operator shell bootstrap service."""
+    return OperatorShellService(
+        dashboard_service=dashboard_service,
+        session_repository=session_repository,
+        phase_repository=phase_repository,
+        job_repository=job_repository,
+        approval_repository=approval_repository,
+        artifact_repository=artifact_repository,
+        transcript_export_repository=transcript_export_repository,
+        message_repository=message_repository,
+        message_mention_repository=message_mention_repository,
+        participant_repository=participant_repository,
+        agent_repository=agent_repository,
+        participant_policy_service=participant_policy_service,
     )
 
 

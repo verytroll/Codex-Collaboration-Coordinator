@@ -35,6 +35,7 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - [V4 upgrade notes](docs/UPGRADE_NOTES_V4.md)
 - [Runbook](docs/RUNBOOK.md)
 - [Deployment](docs/DEPLOYMENT.md)
+- [Operator UI shell](docs/OPERATOR_UI.md)
 - [Current status](STATUS.md)
 - [MVP plan](PLAN.md)
 - [Post-MVP plan (V2)](PLAN_V2.md)
@@ -56,6 +57,7 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - Messages, jobs, artifacts, approvals, session events, and public A2A task/event surfaces are persisted and exposed through API routes.
 - Advanced job lifecycle support includes create, retry, resume, offline queueing, templates, orchestration gates, runtime pools, and streaming.
 - Operator dashboard/debug surfaces and advanced policy automation are implemented.
+- Thin operator UI shell is available at `/operator` and bootstraps from `/api/v1/operator/shell`.
 - CodexBridge subprocess manager and JSON-RPC client are in place.
 - `GET /.well-known/agent-card.json` remains available as an A2A-ready discovery placeholder.
 - `GET /api/v1/readinessz` reports deployment readiness for a booted database-backed runtime.

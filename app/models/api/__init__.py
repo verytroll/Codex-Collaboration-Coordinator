@@ -79,6 +79,11 @@ from app.models.api.operator_dashboard import (
     OperatorReviewBottleneckResponse,
     OperatorRuntimePoolHealthResponse,
 )
+from app.models.api.operator_ui import (
+    OperatorSessionDetailResponse,
+    OperatorSessionSummaryResponse,
+    OperatorShellResponse,
+)
 from app.models.api.orchestration import (
     OrchestrationGateEnvelope,
     OrchestrationGateRequest,
@@ -243,6 +248,9 @@ __all__ = [
     "OperatorQueueHeatResponse",
     "OperatorReviewBottleneckResponse",
     "OperatorRuntimePoolHealthResponse",
+    "OperatorShellResponse",
+    "OperatorSessionDetailResponse",
+    "OperatorSessionSummaryResponse",
     "RelayTemplateEnvelope",
     "RelayTemplateListEnvelope",
     "RelayTemplateResponse",

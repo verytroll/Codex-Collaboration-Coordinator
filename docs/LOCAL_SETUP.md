@@ -22,6 +22,7 @@ pip install -e .[dev]
    require a token.
 5. If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
    (default: `X-Access-Token`).
+6. Open the operator shell at `http://127.0.0.1:8000/operator` after the app starts.
 
 ## Run
 
@@ -73,5 +74,7 @@ For a deployment-style startup, use `.\scripts\run.ps1`. That script binds to
 - `GET /api/v1/healthz`
 - `GET /api/v1/readinessz`
 - `GET /.well-known/agent-card.json`
+- `GET /operator`
+- `GET /api/v1/operator/shell`
 - `GET /api/v1/sessions`
 - `GET /api/v1/jobs/{job_id}`
