@@ -79,6 +79,12 @@ from app.models.api.operator_dashboard import (
     OperatorReviewBottleneckResponse,
     OperatorRuntimePoolHealthResponse,
 )
+from app.models.api.operator_realtime import (
+    OperatorActivitySignalResponse,
+    OperatorSessionActivityEventResponse,
+    OperatorSessionActivityResponse,
+    OperatorSessionActivitySignalsResponse,
+)
 from app.models.api.operator_ui import (
     OperatorSessionDetailResponse,
     OperatorSessionSummaryResponse,
@@ -248,6 +254,10 @@ __all__ = [
     "OperatorQueueHeatResponse",
     "OperatorReviewBottleneckResponse",
     "OperatorRuntimePoolHealthResponse",
+    "OperatorActivitySignalResponse",
+    "OperatorSessionActivityEventResponse",
+    "OperatorSessionActivityResponse",
+    "OperatorSessionActivitySignalsResponse",
     "OperatorShellResponse",
     "OperatorSessionDetailResponse",
     "OperatorSessionSummaryResponse",

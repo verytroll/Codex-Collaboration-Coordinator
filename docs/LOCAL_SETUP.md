@@ -76,5 +76,6 @@ For a deployment-style startup, use `.\scripts\run.ps1`. That script binds to
 - `GET /.well-known/agent-card.json`
 - `GET /operator`
 - `GET /api/v1/operator/shell`
+- `GET /api/v1/operator/sessions/{session_id}/activity`
 - `GET /api/v1/sessions`
 - `GET /api/v1/jobs/{job_id}`

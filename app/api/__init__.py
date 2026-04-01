@@ -15,6 +15,7 @@ from app.api.health import router as health_router
 from app.api.jobs import router as jobs_router
 from app.api.messages import router as messages_router
 from app.api.operator_dashboard import router as operator_dashboard_router
+from app.api.operator_realtime import router as operator_realtime_router
 from app.api.operator_ui import shell_router as operator_shell_router
 from app.api.operator_ui import ui_router as operator_ui_router
 from app.api.orchestration import router as orchestration_router
@@ -59,5 +60,6 @@ router.include_router(policies_router, dependencies=[Depends(require_operator_ac
 router.include_router(operator_dashboard_router, dependencies=[Depends(require_operator_access)])
 router.include_router(operator_ui_router, dependencies=[Depends(require_operator_access)])
 router.include_router(operator_shell_router, dependencies=[Depends(require_operator_access)])
+router.include_router(operator_realtime_router, dependencies=[Depends(require_operator_access)])
 
 __all__ = ["router"]

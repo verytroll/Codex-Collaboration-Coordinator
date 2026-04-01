@@ -50,5 +50,16 @@ def test_operator_shell_smoke_contract(tmp_path, monkeypatch) -> None:
             assert payload["sessions"]
             assert payload["selected_session"]["session"]["id"] == "ses_demo"
             assert payload["dashboard"]["filters"]["session_id"] == "ses_demo"
+
+            activity_response = client.get(
+                "/api/v1/operator/sessions/ses_demo/activity",
+                params={"since_sequence": 0, "limit": 5},
+            )
+            assert activity_response.status_code == 200
+            activity_payload = activity_response.json()
+            assert activity_payload["session_id"] == "ses_demo"
+            assert activity_payload["events"]
+            assert activity_payload["signals"]["pending_approvals"] is not None
+            assert activity_payload["signals"]["stuck_jobs"] is not None
     finally:
         app_main.get_config.cache_clear()

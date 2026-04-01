@@ -47,6 +47,7 @@ from app.services.loop_guard import LoopGuardService
 from app.services.message_routing import MessageRoutingService
 from app.services.offline_queue import OfflineQueueService
 from app.services.operator_dashboard import OperatorDashboardService
+from app.services.operator_realtime import OperatorRealtimeService
 from app.services.operator_shell import OperatorShellService
 from app.services.orchestration_engine import OrchestrationEngineService
 from app.services.participant_policy import ParticipantPolicyService
@@ -302,6 +303,42 @@ def get_operator_shell_service(
         participant_repository=participant_repository,
         agent_repository=agent_repository,
         participant_policy_service=participant_policy_service,
+    )
+
+
+def get_operator_realtime_service(
+    dashboard_service: Annotated[OperatorDashboardService, Depends(get_operator_dashboard_service)],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    phase_repository: Annotated[PhaseRepository, Depends(get_phase_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    job_event_repository: Annotated[JobEventRepository, Depends(get_job_event_repository)],
+    approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
+    message_repository: Annotated[MessageRepository, Depends(get_message_repository)],
+    session_event_repository: Annotated[
+        SessionEventRepository,
+        Depends(get_session_event_repository),
+    ],
+    runtime_pool_repository: Annotated[
+        RuntimePoolRepository,
+        Depends(get_runtime_pool_repository),
+    ],
+    work_context_repository: Annotated[
+        WorkContextRepository,
+        Depends(get_work_context_repository),
+    ],
+) -> OperatorRealtimeService:
+    """Provide the operator realtime activity service."""
+    return OperatorRealtimeService(
+        dashboard_service=dashboard_service,
+        session_repository=session_repository,
+        phase_repository=phase_repository,
+        job_repository=job_repository,
+        job_event_repository=job_event_repository,
+        approval_repository=approval_repository,
+        message_repository=message_repository,
+        session_event_repository=session_event_repository,
+        runtime_pool_repository=runtime_pool_repository,
+        work_context_repository=work_context_repository,
     )
 
 

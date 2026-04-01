@@ -21,6 +21,7 @@ from app.services.operator_dashboard import (
     OperatorDashboardService,
     OperatorDashboardSnapshot,
 )
+from app.services.operator_realtime import OperatorRealtimeService
 from app.services.orchestration_engine import OrchestrationEngineService, OrchestrationRunResult
 from app.services.participant_policy import ParticipantPolicy, ParticipantPolicyService
 from app.services.permissions import (
@@ -95,6 +96,7 @@ __all__ = [
     "OperatorDashboardFilters",
     "OperatorDashboardService",
     "OperatorDashboardSnapshot",
+    "OperatorRealtimeService",
     "GateRequestResult",
     "GateResolutionResult",
     "PhaseGateService",

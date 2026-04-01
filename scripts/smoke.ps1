@@ -218,6 +218,13 @@ Assert-Condition ($shellBootstrap.selected_session.message_count -ge 2) "operato
 Assert-Condition ($shellBootstrap.selected_session.job_count -ge 1) "operator shell selected session should include jobs"
 Assert-Condition ($shellBootstrap.selected_session.approval_count -ge 0) "operator shell selected session approval count missing"
 
+Write-Host "Checking realtime operator activity..."
+$activity = Invoke-ApiGet "/api/v1/operator/sessions/ses_demo/activity?since_sequence=0&limit=5"
+Assert-Condition ($activity.session_id -eq "ses_demo") "operator activity returned the wrong session"
+Assert-Condition (@($activity.events).Count -ge 1) "operator activity should include replayable events"
+Assert-Condition (@($activity.signals.pending_approvals).Count -ge 0) "operator activity pending approvals missing"
+Assert-Condition (@($activity.signals.stuck_jobs).Count -ge 0) "operator activity stuck jobs missing"
+
 if ($IncludeRelay) {
     Write-Host "Posting a mention message to exercise relay..."
     $relayResponse = Invoke-ApiPost "/api/v1/sessions/ses_demo/messages" @{
