@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -61,7 +61,11 @@ class SystemAggregatesResponse(BaseModel):
     registered_agents: int
     jobs: SystemJobSummaryResponse
     pending_approvals: int
+    pending_reviews: int = 0
     runtimes_by_status: dict[str, int] = Field(default_factory=dict)
+    active_phase_durations: dict[str, float] = Field(default_factory=dict)
+    average_job_latency_seconds: float | None = None
+    average_review_wait_seconds: float | None = None
 
 
 class SystemChecksResponse(BaseModel):
@@ -83,6 +87,7 @@ class SystemStatusResponse(BaseModel):
     checks: SystemChecksResponse
     aggregates: SystemAggregatesResponse
     diagnostics: list[str] = Field(default_factory=list)
+    telemetry: "TelemetrySurfaceResponse"
 
 
 class DebugSessionResponse(BaseModel):
@@ -143,6 +148,32 @@ class DebugSurfaceResponse(BaseModel):
     blocked_jobs: list[DebugJobResponse] = Field(default_factory=list)
     pending_approvals: list[DebugApprovalResponse] = Field(default_factory=list)
     diagnostics: list[str] = Field(default_factory=list)
+    telemetry: "TelemetrySurfaceResponse"
+
+
+class TelemetrySampleResponse(BaseModel):
+    """Single telemetry sample within the recent timeline."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: str
+    generated_at: str
+    status: str
+    correlation: dict[str, str] = Field(default_factory=dict)
+    metrics: dict[str, Any] = Field(default_factory=dict)
+
+
+class TelemetrySurfaceResponse(BaseModel):
+    """Live/recent telemetry surface for operator diagnostics."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    generated_at: str
+    window_size: int
+    sample_counts: dict[str, int] = Field(default_factory=dict)
+    summary: dict[str, Any] = Field(default_factory=dict)
+    latest: dict[str, TelemetrySampleResponse] = Field(default_factory=dict)
+    recent_samples: list[TelemetrySampleResponse] = Field(default_factory=list)
 
 
 class A2AAgentCardCapabilities(BaseModel):

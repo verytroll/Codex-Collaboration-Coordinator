@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
+from app.core.logging import get_logger
+from app.core.telemetry import get_telemetry_service
 from app.repositories.a2a_tasks import A2ATaskRepository
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.jobs import JobRepository
@@ -18,6 +20,8 @@ from app.repositories.runtime_pools import WorkContextRepository
 from app.repositories.sessions import SessionRepository
 from app.services.debug_service import DebugService
 from app.services.runtime_pool_service import RuntimePoolService
+
+logger = get_logger(__name__)
 
 BLOCKED_JOB_STATUSES = {"input_required", "auth_required", "paused_by_loop_guard"}
 PENDING_REVIEW_STATUS = "requested"
@@ -99,7 +103,17 @@ class OperatorDashboardService:
         snapshot = await self._load_snapshot()
         resolved_filters = filters or OperatorDashboardFilters()
         filtered = self._filter_snapshot(snapshot, resolved_filters)
-        return self._build_dashboard(filtered, resolved_filters)
+        payload = self._build_dashboard(filtered, resolved_filters)
+        await get_telemetry_service().record_sample(
+            "operator_dashboard",
+            metrics=self._telemetry_metrics(
+                snapshot=filtered,
+                dashboard=payload,
+            ),
+        )
+        payload["telemetry"] = await get_telemetry_service().get_surface()
+        logger.info("operator dashboard generated")
+        return payload
 
     async def get_debug_surface(
         self,
@@ -147,22 +161,14 @@ class OperatorDashboardService:
         job_by_id = {job.id: job for job in jobs}
         pool_key_by_id = self._pool_key_by_id(pool_diagnostics)
         context_pool_key_by_job_id = {
-            context.job_id: pool_key_by_id.get(context.runtime_pool_id)
-            for context in contexts
+            context.job_id: pool_key_by_id.get(context.runtime_pool_id) for context in contexts
         }
         job_pool_key_by_id = {
-            job_id: context_pool_key_by_job_id.get(job_id)
-            for job_id in job_by_id
+            job_id: context_pool_key_by_job_id.get(job_id) for job_id in job_by_id
         }
-        job_phase_key_by_id = {
-            job.id: phase_key_by_session_id.get(job.session_id)
-            for job in jobs
-        }
+        job_phase_key_by_id = {job.id: phase_key_by_session_id.get(job.session_id) for job in jobs}
         task_pool_key_by_id = {task.id: job_pool_key_by_id.get(task.job_id) for task in tasks}
-        task_phase_key_by_id = {
-            task.id: job_phase_key_by_id.get(task.job_id)
-            for task in tasks
-        }
+        task_phase_key_by_id = {task.id: job_phase_key_by_id.get(task.job_id) for task in tasks}
         return OperatorDashboardSnapshot(
             sessions=sessions,
             phases=phases,
@@ -847,3 +853,103 @@ class OperatorDashboardService:
         if candidate is None:
             return current
         return max(current, candidate)
+
+    @staticmethod
+    def _average(values: list[float]) -> float | None:
+        if not values:
+            return None
+        return sum(values) / len(values)
+
+    def _telemetry_metrics(
+        self,
+        *,
+        snapshot: OperatorDashboardSnapshot,
+        dashboard: dict[str, Any],
+    ) -> dict[str, Any]:
+        queue_depth = sum(
+            item["queued_jobs"] + item["running_jobs"] + item["blocked_jobs"]
+            for item in dashboard["queue_heat"]
+        )
+        return {
+            "queue_depth": queue_depth,
+            "queued_jobs": sum(item["queued_jobs"] for item in dashboard["queue_heat"]),
+            "running_jobs": sum(item["running_jobs"] for item in dashboard["queue_heat"]),
+            "blocked_jobs": sum(item["blocked_jobs"] for item in dashboard["queue_heat"]),
+            "average_job_latency_seconds": self._average_job_latency_seconds(snapshot.jobs),
+            "average_phase_duration_seconds": self._average_phase_duration_seconds(
+                snapshot.sessions,
+                snapshot.phases,
+                snapshot.phase_key_by_session_id,
+            ),
+            "pending_review_bottlenecks": sum(
+                item["pending_reviews"] for item in dashboard["review_bottlenecks"]
+            ),
+            "degraded_runtime_pools": [
+                pool["pool_key"]
+                for pool in dashboard["runtime_pools"]
+                if pool["pool_status"] != "ready"
+            ],
+            "runtime_pool_pressure": {
+                pool["pool_key"]: {
+                    "pool_status": pool["pool_status"],
+                    "utilization_ratio": pool["utilization_ratio"],
+                    "queued_jobs": pool["queued_jobs"],
+                    "blocked_jobs": pool["blocked_jobs"],
+                    "pending_reviews": pool["pending_reviews"],
+                    "pending_tasks": pool["pending_tasks"],
+                }
+                for pool in dashboard["runtime_pools"]
+            },
+            "public_task_throughput": dashboard["public_task_throughput"],
+        }
+
+    def _average_job_latency_seconds(self, jobs: list[Any]) -> float | None:
+        ages = []
+        now = datetime.now(timezone.utc)
+        for job in jobs:
+            started_at = self._parse_timestamp(job.started_at)
+            if started_at is None:
+                started_at = self._parse_timestamp(job.created_at)
+            if started_at is None:
+                continue
+            if job.status not in {
+                "queued",
+                "running",
+                "input_required",
+                "auth_required",
+                "paused_by_loop_guard",
+            }:
+                continue
+            ages.append((now - started_at).total_seconds())
+        return self._average(ages)
+
+    def _average_phase_duration_seconds(
+        self,
+        sessions: list[Any],
+        phases: list[Any],
+        phase_key_by_session_id: dict[str, str | None],
+    ) -> float | None:
+        phase_by_key = {phase.id: phase for phase in phases}
+        ages = []
+        now = datetime.now(timezone.utc)
+        for session in sessions:
+            phase_key = phase_key_by_session_id.get(session.id)
+            if phase_key is None or session.active_phase_id is None:
+                continue
+            phase = phase_by_key.get(session.active_phase_id)
+            if phase is None:
+                continue
+            updated_at = self._parse_timestamp(phase.updated_at)
+            if updated_at is None:
+                continue
+            ages.append((now - updated_at).total_seconds())
+        return self._average(ages)
+
+    @staticmethod
+    def _parse_timestamp(value: str | None) -> datetime | None:
+        if value is None:
+            return None
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return None

@@ -8,6 +8,10 @@ from typing import Any
 from app.codex_bridge.jsonrpc_client import JsonRpcClient
 from app.codex_bridge.models import JsonRpcResponse
 from app.codex_bridge.process_manager import CodexProcessManager
+from app.core.logging import get_logger
+from app.core.telemetry import get_telemetry_service
+
+logger = get_logger(__name__)
 
 
 class LazyCodexBridgeClient:
@@ -29,7 +33,26 @@ class LazyCodexBridgeClient:
             return self._initialized_response
         client = await self._ensure_client()
         self._initialized_response = await client.initialize(self._build_initialize_params(params))
-        self._raise_for_error(self._initialized_response)
+        try:
+            self._raise_for_error(self._initialized_response)
+        except Exception:
+            await get_telemetry_service().record_sample(
+                "codex_bridge",
+                status="error",
+                metrics={
+                    "event": "initialize",
+                    "response": self._initialized_response.model_dump(mode="json"),
+                },
+            )
+            raise
+        logger.info("codex bridge initialized")
+        await get_telemetry_service().record_sample(
+            "codex_bridge",
+            metrics={
+                "event": "initialize",
+                "response": self._initialized_response.model_dump(mode="json"),
+            },
+        )
         return self._initialized_response
 
     async def thread_start(self, params: Mapping[str, Any] | None = None) -> Any:
@@ -113,6 +136,11 @@ class LazyCodexBridgeClient:
             self._initialized_response = await client.initialize(self._build_initialize_params())
             self._raise_for_error(self._initialized_response)
         except Exception:
+            await get_telemetry_service().record_sample(
+                "codex_bridge",
+                status="error",
+                metrics={"event": "initialize"},
+            )
             await self.aclose()
             raise
         return client

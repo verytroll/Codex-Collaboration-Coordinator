@@ -3,12 +3,14 @@
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-01
 - Pha hiện tại: V4 planning
-- Đang tập trung vào: PR35 telemetry và observability sau khi khóa PR34
+- Đang tập trung vào: PR36 release readiness sau khi khóa PR35
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F33 - Thêm telemetry và observability theo thời gian - 2026-04-01
+- [x] PR35 - Telemetry và observability - 2026-04-01
 - [x] F32 - Hardening và reliability cho public/orchestration/runtime surface - 2026-04-01
 - [x] PR34 - Hardening và reliability - 2026-04-01
 - [x] Chốt thứ tự triển khai V4 (`IMPLEMENTATION_ORDER_V4.md`) - 2026-04-01
@@ -44,10 +46,9 @@
 
 ### Blockers / Rủi ro
 - Không có blocker hiện tại.
-- CodexBridge health trong `system/status` phản ánh trạng thái aggregate, chưa phải telemetry live dài hạn.
 
 ### Kiểm chứng gần nhất
-- `pytest` - 72 passed - 2026-04-01
+- `pytest` - 78 passed - 2026-04-01
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`

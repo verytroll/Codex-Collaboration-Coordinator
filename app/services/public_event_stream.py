@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 from typing import Any, cast
 from uuid import uuid4
 
+from app.core.logging import bind_log_context, get_logger, reset_log_context
+from app.core.telemetry import get_telemetry_service
 from app.models.api.a2a_events import (
     A2APublicTaskEventResponse,
     A2APublicTaskEventType,
@@ -26,6 +28,8 @@ from app.repositories.public_subscriptions import (
 from app.repositories.reviews import ReviewRepository
 
 _DELIVERY_MODE = "sse"
+
+logger = get_logger(__name__)
 
 
 def _utc_now() -> str:
@@ -92,6 +96,24 @@ class PublicEventStreamService:
             updated_at=now,
         )
         saved = await self.subscription_repository.create(subscription)
+        log_tokens = bind_log_context(
+            task_id=task.task_id,
+            session_id=task.session_id,
+            subscription_id=saved.id,
+            event_type="public.subscription.created",
+        )
+        logger.info("public subscription created")
+        await get_telemetry_service().record_sample(
+            "public_event_stream",
+            metrics={
+                "task_id": task.task_id,
+                "session_id": task.session_id,
+                "subscription_id": saved.id,
+                "since_sequence": since_sequence,
+                "delivery_mode": _DELIVERY_MODE,
+            },
+        )
+        reset_log_context(log_tokens)
         return self._subscription_response(saved)
 
     async def get_subscription(
@@ -115,6 +137,15 @@ class PublicEventStreamService:
             raise ValueError("since_sequence must be greater than or equal to 0")
         await self._get_task_record(task_id)
         events = await self.event_repository.list_since(task_id, since_sequence)
+        await get_telemetry_service().record_sample(
+            "public_event_stream",
+            metrics={
+                "task_id": task_id,
+                "since_sequence": since_sequence,
+                "event_count": len(events),
+                "delivery_mode": _DELIVERY_MODE,
+            },
+        )
         return [self._event_response(event) for event in events]
 
     async def list_subscription_events(
@@ -134,6 +165,14 @@ class PublicEventStreamService:
     ) -> AsyncIterator[str]:
         """Stream public task events as SSE frames."""
         events = await self.list_subscription_events(subscription_id, since_sequence)
+        await get_telemetry_service().record_sample(
+            "public_event_stream",
+            metrics={
+                "subscription_id": subscription_id,
+                "event_count": len(events),
+                "delivery_mode": _DELIVERY_MODE,
+            },
+        )
         for event in events:
             yield _sse(event.event_type, event.model_dump(mode="json"), event_id=event.sequence)
 
@@ -169,6 +208,46 @@ class PublicEventStreamService:
                 )
             )
             saved_events.append(self._event_response(event_record))
+        log_tokens = bind_log_context(
+            task_id=current_task.task_id,
+            session_id=current_task.session_id,
+            job_id=current_task.job_id,
+            phase_id=current_task.phase_id,
+            event_type="public.task.projected",
+        )
+        logger.info("public task projection recorded")
+        await get_telemetry_service().record_sample(
+            "public_task_projection",
+            metrics={
+                "task_id": current_task.task_id,
+                "session_id": current_task.session_id,
+                "job_id": current_task.job_id,
+                "phase_id": current_task.phase_id,
+                "event_count": len(saved_events),
+                "event_types": [event.event_type for event in saved_events],
+                "status": current_task.status.internal_status,
+                "public_task_throughput": {
+                    "total_events": len(saved_events),
+                    "created": sum(1 for event in saved_events if event.event_type == "created"),
+                    "phase_changed": sum(
+                        1 for event in saved_events if event.event_type == "phase_changed"
+                    ),
+                    "status_changed": sum(
+                        1 for event in saved_events if event.event_type == "status_changed"
+                    ),
+                    "review_requested": sum(
+                        1 for event in saved_events if event.event_type == "review_requested"
+                    ),
+                    "artifact_attached": sum(
+                        1 for event in saved_events if event.event_type == "artifact_attached"
+                    ),
+                    "completed": sum(
+                        1 for event in saved_events if event.event_type == "completed"
+                    ),
+                },
+            },
+        )
+        reset_log_context(log_tokens)
         return saved_events
 
     async def _build_event_specs(

@@ -6,9 +6,13 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from uuid import uuid4
 
+from app.core.logging import bind_log_context, get_logger, reset_log_context
+from app.core.telemetry import get_telemetry_service
 from app.repositories.phases import PhaseRecord, PhaseRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
 from app.services.relay_templates import RelayTemplatesService
+
+logger = get_logger(__name__)
 
 
 def _utc_now() -> str:
@@ -301,7 +305,23 @@ class PhaseService:
         phase: PhaseRecord,
     ) -> PhaseActivationResult:
         session = await self._get_session(session_id)
+        log_tokens = bind_log_context(
+            session_id=session.id,
+            phase_id=phase.id,
+            event_type="phase.activated",
+        )
         if session.active_phase_id == phase.id:
+            logger.info("phase already active")
+            await get_telemetry_service().record_sample(
+                "phase_transition",
+                metrics={
+                    "session_id": session.id,
+                    "phase_id": phase.id,
+                    "phase_key": phase.phase_key,
+                    "changed": False,
+                },
+            )
+            reset_log_context(log_tokens)
             return PhaseActivationResult(session=session, phase=phase)
         updated_session = SessionRecord(
             id=session.id,
@@ -318,6 +338,17 @@ class PhaseService:
             updated_at=_utc_now(),
         )
         saved_session = await self.session_repository.update(updated_session)
+        logger.info("phase activated")
+        await get_telemetry_service().record_sample(
+            "phase_transition",
+            metrics={
+                "session_id": session.id,
+                "phase_id": phase.id,
+                "phase_key": phase.phase_key,
+                "changed": True,
+            },
+        )
+        reset_log_context(log_tokens)
         return PhaseActivationResult(session=saved_session, phase=phase)
 
     @staticmethod

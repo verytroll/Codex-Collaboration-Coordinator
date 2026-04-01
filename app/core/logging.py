@@ -12,6 +12,14 @@ REQUEST_ID_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
     "request_id",
     default=REQUEST_ID_DEFAULT,
 )
+REQUEST_METHOD_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "request_method",
+    default=LOG_CONTEXT_DEFAULT,
+)
+REQUEST_PATH_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "request_path",
+    default=LOG_CONTEXT_DEFAULT,
+)
 SESSION_ID_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
     "session_id",
     default=LOG_CONTEXT_DEFAULT,
@@ -24,8 +32,32 @@ JOB_ID_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
     "job_id",
     default=LOG_CONTEXT_DEFAULT,
 )
+PHASE_ID_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "phase_id",
+    default=LOG_CONTEXT_DEFAULT,
+)
+REVIEW_ID_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "review_id",
+    default=LOG_CONTEXT_DEFAULT,
+)
+RUNTIME_POOL_ID_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "runtime_pool_id",
+    default=LOG_CONTEXT_DEFAULT,
+)
+RUNTIME_ID_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "runtime_id",
+    default=LOG_CONTEXT_DEFAULT,
+)
 CODEX_THREAD_ID_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
     "codex_thread_id",
+    default=LOG_CONTEXT_DEFAULT,
+)
+TASK_ID_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "task_id",
+    default=LOG_CONTEXT_DEFAULT,
+)
+SUBSCRIPTION_ID_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "subscription_id",
     default=LOG_CONTEXT_DEFAULT,
 )
 EVENT_TYPE_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
@@ -49,24 +81,68 @@ def get_request_id() -> str:
     return REQUEST_ID_CONTEXT.get()
 
 
+def get_log_context() -> dict[str, str]:
+    """Snapshot the active logging context into a plain dictionary."""
+    return {
+        "request_id": REQUEST_ID_CONTEXT.get(),
+        "request_method": REQUEST_METHOD_CONTEXT.get(),
+        "request_path": REQUEST_PATH_CONTEXT.get(),
+        "session_id": SESSION_ID_CONTEXT.get(),
+        "agent_id": AGENT_ID_CONTEXT.get(),
+        "job_id": JOB_ID_CONTEXT.get(),
+        "phase_id": PHASE_ID_CONTEXT.get(),
+        "review_id": REVIEW_ID_CONTEXT.get(),
+        "runtime_pool_id": RUNTIME_POOL_ID_CONTEXT.get(),
+        "runtime_id": RUNTIME_ID_CONTEXT.get(),
+        "codex_thread_id": CODEX_THREAD_ID_CONTEXT.get(),
+        "task_id": TASK_ID_CONTEXT.get(),
+        "subscription_id": SUBSCRIPTION_ID_CONTEXT.get(),
+        "event_type": EVENT_TYPE_CONTEXT.get(),
+    }
+
+
 def bind_log_context(
     *,
+    request_method: str | None = None,
+    request_path: str | None = None,
     session_id: str | None = None,
     agent_id: str | None = None,
     job_id: str | None = None,
+    phase_id: str | None = None,
+    review_id: str | None = None,
+    runtime_pool_id: str | None = None,
+    runtime_id: str | None = None,
     codex_thread_id: str | None = None,
+    task_id: str | None = None,
+    subscription_id: str | None = None,
     event_type: str | None = None,
 ) -> dict[str, contextvars.Token[str]]:
     """Bind operator-relevant logging fields into the current context."""
     tokens: dict[str, contextvars.Token[str]] = {}
+    if request_method is not None:
+        tokens["request_method"] = REQUEST_METHOD_CONTEXT.set(request_method)
+    if request_path is not None:
+        tokens["request_path"] = REQUEST_PATH_CONTEXT.set(request_path)
     if session_id is not None:
         tokens["session_id"] = SESSION_ID_CONTEXT.set(session_id)
     if agent_id is not None:
         tokens["agent_id"] = AGENT_ID_CONTEXT.set(agent_id)
     if job_id is not None:
         tokens["job_id"] = JOB_ID_CONTEXT.set(job_id)
+    if phase_id is not None:
+        tokens["phase_id"] = PHASE_ID_CONTEXT.set(phase_id)
+    if review_id is not None:
+        tokens["review_id"] = REVIEW_ID_CONTEXT.set(review_id)
+    if runtime_pool_id is not None:
+        tokens["runtime_pool_id"] = RUNTIME_POOL_ID_CONTEXT.set(runtime_pool_id)
+    if runtime_id is not None:
+        tokens["runtime_id"] = RUNTIME_ID_CONTEXT.set(runtime_id)
     if codex_thread_id is not None:
         tokens["codex_thread_id"] = CODEX_THREAD_ID_CONTEXT.set(codex_thread_id)
+    if task_id is not None:
+        tokens["task_id"] = TASK_ID_CONTEXT.set(task_id)
+    if subscription_id is not None:
+        tokens["subscription_id"] = SUBSCRIPTION_ID_CONTEXT.set(subscription_id)
     if event_type is not None:
         tokens["event_type"] = EVENT_TYPE_CONTEXT.set(event_type)
     return tokens
@@ -81,22 +157,47 @@ def reset_log_context(tokens: dict[str, contextvars.Token[str]]) -> None:
             AGENT_ID_CONTEXT.reset(token)
         elif key == "job_id":
             JOB_ID_CONTEXT.reset(token)
+        elif key == "phase_id":
+            PHASE_ID_CONTEXT.reset(token)
+        elif key == "review_id":
+            REVIEW_ID_CONTEXT.reset(token)
+        elif key == "runtime_pool_id":
+            RUNTIME_POOL_ID_CONTEXT.reset(token)
+        elif key == "runtime_id":
+            RUNTIME_ID_CONTEXT.reset(token)
         elif key == "codex_thread_id":
             CODEX_THREAD_ID_CONTEXT.reset(token)
+        elif key == "task_id":
+            TASK_ID_CONTEXT.reset(token)
+        elif key == "subscription_id":
+            SUBSCRIPTION_ID_CONTEXT.reset(token)
         elif key == "event_type":
             EVENT_TYPE_CONTEXT.reset(token)
+        elif key == "request_method":
+            REQUEST_METHOD_CONTEXT.reset(token)
+        elif key == "request_path":
+            REQUEST_PATH_CONTEXT.reset(token)
 
 
 class RequestIdFilter(logging.Filter):
     """Inject the request id into each log record."""
 
     def filter(self, record: logging.LogRecord) -> bool:
-        record.request_id = get_request_id()
-        record.session_id = SESSION_ID_CONTEXT.get()
-        record.agent_id = AGENT_ID_CONTEXT.get()
-        record.job_id = JOB_ID_CONTEXT.get()
-        record.codex_thread_id = CODEX_THREAD_ID_CONTEXT.get()
-        record.event_type = EVENT_TYPE_CONTEXT.get()
+        context = get_log_context()
+        record.request_id = context["request_id"]
+        record.request_method = context["request_method"]
+        record.request_path = context["request_path"]
+        record.session_id = context["session_id"]
+        record.agent_id = context["agent_id"]
+        record.job_id = context["job_id"]
+        record.phase_id = context["phase_id"]
+        record.review_id = context["review_id"]
+        record.runtime_pool_id = context["runtime_pool_id"]
+        record.runtime_id = context["runtime_id"]
+        record.codex_thread_id = context["codex_thread_id"]
+        record.task_id = context["task_id"]
+        record.subscription_id = context["subscription_id"]
+        record.event_type = context["event_type"]
         return True
 
 
@@ -113,10 +214,18 @@ def configure_logging(level: str) -> None:
             fmt=(
                 "%(asctime)s %(levelname)s %(name)s "
                 "request_id=%(request_id)s "
+                "request_method=%(request_method)s "
+                "request_path=%(request_path)s "
                 "session_id=%(session_id)s "
                 "agent_id=%(agent_id)s "
                 "job_id=%(job_id)s "
+                "phase_id=%(phase_id)s "
+                "review_id=%(review_id)s "
+                "runtime_pool_id=%(runtime_pool_id)s "
+                "runtime_id=%(runtime_id)s "
                 "codex_thread_id=%(codex_thread_id)s "
+                "task_id=%(task_id)s "
+                "subscription_id=%(subscription_id)s "
                 "event_type=%(event_type)s "
                 "%(message)s"
             )

@@ -7,7 +7,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.api.runtime_pools import RuntimePoolStatus
-from app.models.api.system import DebugSurfaceResponse
+from app.models.api.system import DebugSurfaceResponse, TelemetrySurfaceResponse
 
 OperatorBottleneckKind = Literal["phase", "runtime_pool", "review"]
 
@@ -131,6 +131,7 @@ class OperatorDashboardResponse(BaseModel):
     runtime_pools: list[OperatorRuntimePoolHealthResponse] = Field(default_factory=list)
     public_task_throughput: OperatorPublicTaskThroughputResponse
     diagnostics: list[str] = Field(default_factory=list)
+    telemetry: TelemetrySurfaceResponse
 
 
 class OperatorDebugResponse(BaseModel):

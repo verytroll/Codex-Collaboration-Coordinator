@@ -5,15 +5,22 @@ from __future__ import annotations
 import asyncio
 import shutil
 from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from app.codex_bridge.process_manager import CodexProcessManager
+from app.core.logging import bind_log_context, get_logger, reset_log_context
+from app.core.telemetry import get_telemetry_service
 from app.db.connection import connect_sqlite
 from app.repositories.agents import AgentRepository, AgentRuntimeRepository
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.jobs import JobRepository
+from app.repositories.phases import PhaseRepository
+from app.repositories.reviews import ReviewRepository
 from app.repositories.sessions import SessionRepository
+
+logger = get_logger(__name__)
 
 
 class SystemStatusService:
@@ -29,6 +36,8 @@ class SystemStatusService:
         runtime_repository: AgentRuntimeRepository,
         job_repository: JobRepository,
         approval_repository: ApprovalRepository,
+        phase_repository: PhaseRepository,
+        review_repository: ReviewRepository,
     ) -> None:
         self.database_url = database_url
         self.codex_bridge_mode = codex_bridge_mode
@@ -37,21 +46,23 @@ class SystemStatusService:
         self.runtime_repository = runtime_repository
         self.job_repository = job_repository
         self.approval_repository = approval_repository
+        self.phase_repository = phase_repository
+        self.review_repository = review_repository
 
     async def get_status(self) -> dict[str, Any]:
         """Return a system status payload suitable for the API model."""
+        log_tokens = bind_log_context(event_type="system.status")
         db_check = await self._check_database()
         bridge_check = self._check_codex_bridge()
         diagnostics: list[str] = []
         aggregates = self._empty_aggregates()
-
         if db_check["status"] == "ok":
             aggregates = await self._load_aggregates()
             diagnostics.extend(self._build_diagnostics(bridge_check, aggregates))
         else:
             diagnostics.append(db_check["detail"] or "Database unavailable.")
 
-        return {
+        payload = {
             "status": self._overall_status(db_check["status"], bridge_check["status"], diagnostics),
             "checks": {
                 "db": db_check,
@@ -59,7 +70,17 @@ class SystemStatusService:
             },
             "aggregates": aggregates,
             "diagnostics": diagnostics,
+            "telemetry": {},
         }
+        await get_telemetry_service().record_sample(
+            "system_status",
+            metrics=self._telemetry_metrics(aggregates=aggregates, bridge_check=bridge_check),
+        )
+        telemetry = await get_telemetry_service().get_surface()
+        payload["telemetry"] = telemetry
+        logger.info("system status generated")
+        reset_log_context(log_tokens)
+        return payload
 
     async def _check_database(self) -> dict[str, str]:
         try:
@@ -76,21 +97,27 @@ class SystemStatusService:
             connection.close()
 
     async def _load_aggregates(self) -> dict[str, Any]:
-        sessions, agents, runtimes, jobs, approvals = await asyncio.gather(
+        sessions, agents, runtimes, jobs, approvals, phases, reviews = await asyncio.gather(
             self.session_repository.list(),
             self.agent_repository.list(),
             self.runtime_repository.list(),
             self.job_repository.list(),
             self.approval_repository.list(),
+            self.phase_repository.list(),
+            self.review_repository.list(),
         )
         return {
             "active_sessions": sum(1 for session in sessions if session.status == "active"),
             "registered_agents": len(agents),
             "jobs": self._job_counts(jobs),
             "pending_approvals": sum(1 for approval in approvals if approval.status == "pending"),
+            "pending_reviews": sum(1 for review in reviews if review.review_status == "requested"),
             "runtimes_by_status": dict(
                 sorted(Counter(runtime.runtime_status for runtime in runtimes).items())
             ),
+            "active_phase_durations": self._active_phase_durations(sessions, phases),
+            "average_job_latency_seconds": self._average_job_latency_seconds(jobs),
+            "average_review_wait_seconds": self._average_review_wait_seconds(reviews),
         }
 
     def _check_codex_bridge(self) -> dict[str, str]:
@@ -176,5 +203,108 @@ class SystemStatusService:
             "registered_agents": 0,
             "jobs": self._job_counts([]),
             "pending_approvals": 0,
+            "pending_reviews": 0,
             "runtimes_by_status": {},
+            "active_phase_durations": {},
+            "average_job_latency_seconds": None,
+            "average_review_wait_seconds": None,
         }
+
+    def _telemetry_metrics(
+        self,
+        *,
+        aggregates: dict[str, Any],
+        bridge_check: dict[str, str],
+    ) -> dict[str, Any]:
+        queue_depth = (
+            aggregates["jobs"]["queued"]
+            + aggregates["jobs"]["running"]
+            + aggregates["jobs"]["input_required"]
+            + aggregates["jobs"]["auth_required"]
+            + aggregates["jobs"]["paused_by_loop_guard"]
+        )
+        phase_durations = aggregates.get("active_phase_durations", {})
+        return {
+            "queue_depth": queue_depth,
+            "queued_jobs": aggregates["jobs"]["queued"],
+            "running_jobs": aggregates["jobs"]["running"],
+            "pending_approvals": aggregates["pending_approvals"],
+            "pending_reviews": aggregates.get("pending_reviews", 0),
+            "pending_review_bottlenecks": aggregates.get("pending_reviews", 0),
+            "average_job_latency_seconds": aggregates.get("average_job_latency_seconds"),
+            "average_phase_duration_seconds": self._average_of_mapping(phase_durations),
+            "average_review_wait_seconds": aggregates.get("average_review_wait_seconds"),
+            "codex_bridge_status": bridge_check["status"],
+        }
+
+    @staticmethod
+    def _parse_timestamp(value: str | None) -> datetime | None:
+        if value is None:
+            return None
+        normalized = value.replace("Z", "+00:00")
+        try:
+            return datetime.fromisoformat(normalized)
+        except ValueError:
+            return None
+
+    def _average_job_latency_seconds(self, jobs: list[Any]) -> float | None:
+        ages = []
+        now = datetime.now(timezone.utc)
+        for job in jobs:
+            started_at = self._parse_timestamp(job.started_at)
+            if started_at is None:
+                started_at = self._parse_timestamp(job.created_at)
+            if started_at is None:
+                continue
+            if job.status not in {
+                "queued",
+                "running",
+                "input_required",
+                "auth_required",
+                "paused_by_loop_guard",
+            }:
+                continue
+            ages.append((now - started_at).total_seconds())
+        return self._average(ages)
+
+    def _average_review_wait_seconds(self, reviews: list[Any]) -> float | None:
+        ages = []
+        now = datetime.now(timezone.utc)
+        for review in reviews:
+            if review.review_status != "requested":
+                continue
+            requested_at = self._parse_timestamp(review.requested_at)
+            if requested_at is None:
+                continue
+            ages.append((now - requested_at).total_seconds())
+        return self._average(ages)
+
+    def _active_phase_durations(self, sessions: list[Any], phases: list[Any]) -> dict[str, float]:
+        phase_by_id = {phase.id: phase for phase in phases}
+        durations: dict[str, list[float]] = {}
+        now = datetime.now(timezone.utc)
+        for session in sessions:
+            if session.active_phase_id is None:
+                continue
+            phase = phase_by_id.get(session.active_phase_id)
+            if phase is None:
+                continue
+            updated_at = self._parse_timestamp(phase.updated_at)
+            if updated_at is None:
+                continue
+            durations.setdefault(phase.phase_key, []).append((now - updated_at).total_seconds())
+        return {
+            phase_key: round(self._average(values), 2)
+            for phase_key, values in durations.items()
+            if self._average(values) is not None
+        }
+
+    @staticmethod
+    def _average(values: list[float]) -> float | None:
+        if not values:
+            return None
+        return sum(values) / len(values)
+
+    def _average_of_mapping(self, mapping: dict[str, float]) -> float | None:
+        values = list(mapping.values())
+        return self._average(values) if values else None

@@ -7,6 +7,8 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from uuid import uuid4
 
+from app.core.logging import bind_log_context, get_logger, reset_log_context
+from app.core.telemetry import get_telemetry_service
 from app.repositories.artifacts import ArtifactRecord, ArtifactRepository
 from app.repositories.jobs import JobRecord, JobRepository
 from app.repositories.messages import MessageRecord, MessageRepository
@@ -20,6 +22,8 @@ from app.services.job_service import JobService
 from app.services.offline_queue import OfflineQueueService
 from app.services.relay_templates import RelayTemplateDefinition, RelayTemplatesService
 from app.services.session_events import record_session_event
+
+logger = get_logger(__name__)
 
 
 def _utc_now() -> str:
@@ -201,6 +205,27 @@ class ReviewModeService:
                 }
             )
         )
+        log_tokens = bind_log_context(
+            session_id=session.id,
+            job_id=job.id,
+            agent_id=resolved_reviewer_id,
+            review_id=saved_review.id,
+            event_type="review.requested",
+        )
+        logger.info("review requested")
+        await get_telemetry_service().record_sample(
+            "review_event",
+            metrics={
+                "session_id": session.id,
+                "job_id": job.id,
+                "review_id": saved_review.id,
+                "review_status": saved_review.review_status,
+                "template_key": saved_review.template_key,
+                "review_channel_key": saved_review.review_channel_key,
+                "pending_reviews": 1,
+            },
+        )
+        reset_log_context(log_tokens)
         await self._record_session_event(
             session_id=session.id,
             event_type="review.requested",
@@ -329,6 +354,30 @@ class ReviewModeService:
                 }
             )
         )
+        log_tokens = bind_log_context(
+            session_id=session.id,
+            job_id=job.id,
+            agent_id=requested_by_agent_id or review.reviewer_agent_id,
+            review_id=saved_review.id,
+            event_type="review.decision.recorded",
+        )
+        logger.info("review decision recorded")
+        await get_telemetry_service().record_sample(
+            "review_event",
+            metrics={
+                "session_id": session.id,
+                "job_id": job.id,
+                "review_id": saved_review.id,
+                "review_status": saved_review.review_status,
+                "decision": decision,
+                "revision_job_id": revision_job.id if revision_job is not None else None,
+                "review_wait_seconds": self._review_wait_seconds(
+                    saved_review.requested_at,
+                    saved_review.decided_at or now,
+                ),
+            },
+        )
+        reset_log_context(log_tokens)
         await self._record_session_event(
             session_id=session.id,
             event_type="review.decision.recorded",
@@ -512,3 +561,9 @@ class ReviewModeService:
         if session is None:
             raise LookupError(f"Session not found: {session_id}")
         return session
+
+    @staticmethod
+    def _review_wait_seconds(requested_at: str, decided_at: str) -> float | None:
+        requested = datetime.fromisoformat(requested_at.replace("Z", "+00:00"))
+        decided = datetime.fromisoformat(decided_at.replace("Z", "+00:00"))
+        return (decided - requested).total_seconds()

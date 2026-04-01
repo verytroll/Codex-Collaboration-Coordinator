@@ -30,6 +30,12 @@
 - If `POST /api/v1/reviews/{review_id}/decision` is replayed with the same decision, it should return the existing review state.
 - If runtime pool metadata is malformed in an old database snapshot, diagnostics should still render with safe defaults.
 
+## Telemetry checks
+
+- If `telemetry.summary.queue_depth` stays high while `runtime_pool_pressure` is low, the bottleneck is likely upstream in job or review flow.
+- If `bridge.error_rate` climbs, check the recent `codex_bridge` samples in `telemetry.latest` and `telemetry.recent_samples`.
+- If the request log has the wrong `request_id`, verify the client sent `X-Request-ID` and the middleware is still mounted.
+
 ## General checks
 
 ```powershell

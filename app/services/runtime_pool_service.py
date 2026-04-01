@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from app.core.logging import bind_log_context, get_logger, reset_log_context
+from app.core.telemetry import get_telemetry_service
 from app.repositories.agents import AgentRepository, AgentRuntimeRepository
 from app.repositories.jobs import JobRecord, JobRepository
 from app.repositories.runtime_pools import (
@@ -17,6 +19,8 @@ from app.repositories.runtime_pools import (
     WorkContextRecord,
 )
 from app.services.work_context_service import WorkContextPlan, WorkContextService
+
+logger = get_logger(__name__)
 
 ACTIVE_CONTEXT_STATUSES = {"active", "fallback", "recovered"}
 DISPATCHABLE_RUNTIME_STATUSES = {"starting", "online", "busy"}
@@ -182,9 +186,7 @@ class RuntimePoolService:
         if max_active_contexts < 0:
             raise ValueError("Runtime pool max_active_contexts must be greater than or equal to 0")
         if default_isolation_mode not in VALID_ISOLATION_MODES:
-            raise ValueError(
-                f"Unsupported runtime pool isolation mode: {default_isolation_mode}"
-            )
+            raise ValueError(f"Unsupported runtime pool isolation mode: {default_isolation_mode}")
         if pool_status not in VALID_POOL_STATUSES:
             raise ValueError(f"Unsupported runtime pool status: {pool_status}")
         if pool_key in self._builtin_pool_keys():
@@ -252,6 +254,31 @@ class RuntimePoolService:
                 failure_reason=plan.failure_reason,
             ),
         )
+        log_tokens = bind_log_context(
+            session_id=job.session_id,
+            job_id=job.id,
+            agent_id=job.assigned_agent_id,
+            runtime_pool_id=plan.pool.pool_key,
+            runtime_id=plan.runtime_id,
+            event_type="runtime.assignment",
+        )
+        logger.info("runtime assignment resolved")
+        await get_telemetry_service().record_sample(
+            "runtime_assignment",
+            metrics={
+                "session_id": job.session_id,
+                "job_id": job.id,
+                "agent_id": job.assigned_agent_id,
+                "runtime_pool_id": plan.pool.pool_key,
+                "runtime_id": plan.runtime_id,
+                "fallback_used": plan.fallback_used,
+                "runtime_found": plan.runtime_found,
+                "selection_reason": plan.selection_reason,
+                "context_status": plan.context_status,
+                "ownership_state": plan.ownership_state,
+            },
+        )
+        reset_log_context(log_tokens)
         return RuntimePoolAssignment(
             pool=plan.pool,
             context=context,
@@ -330,7 +357,7 @@ class RuntimePoolService:
             )
             for pool in pools
         ]
-        return {
+        diagnostics = {
             "generated_at": _utc_now(),
             "total_pools": len(pools),
             "total_contexts": len(contexts),
@@ -343,6 +370,37 @@ class RuntimePoolService:
             ),
             "pools": pool_responses,
         }
+        await get_telemetry_service().record_sample(
+            "runtime_pool_diagnostics",
+            metrics={
+                "total_pools": len(pools),
+                "total_contexts": len(contexts),
+                "owned_contexts": sum(
+                    1 for context in contexts if context.ownership_state == "owned"
+                ),
+                "borrowed_contexts": sum(
+                    1 for context in contexts if context.ownership_state == "borrowed"
+                ),
+                "released_contexts": sum(
+                    1 for context in contexts if context.ownership_state == "released"
+                ),
+                "runtime_pool_pressure": {
+                    pool["pool_key"]: {
+                        "utilization_ratio": pool["utilization_ratio"],
+                        "active_context_count": pool["active_context_count"],
+                        "waiting_context_count": pool["waiting_context_count"],
+                        "borrowed_context_count": pool["borrowed_context_count"],
+                        "available_runtime_count": pool["available_runtime_count"],
+                        "pool_status": pool["pool_status"],
+                    }
+                    for pool in pool_responses
+                },
+                "degraded_runtime_pools": [
+                    pool["pool_key"] for pool in pool_responses if pool["pool_status"] != "ready"
+                ],
+            },
+        )
+        return diagnostics
 
     def _builtin_pool_keys(self) -> set[str]:
         return {pool.pool_key for pool in self._BUILTIN_POOLS}
@@ -592,7 +650,5 @@ class RuntimePoolService:
         if capabilities is None:
             return []
         return [
-            capability
-            for capability in capabilities
-            if isinstance(capability, str) and capability
+            capability for capability in capabilities if isinstance(capability, str) and capability
         ]

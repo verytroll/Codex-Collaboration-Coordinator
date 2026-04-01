@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
+from app.core.telemetry import get_telemetry_service
 from app.repositories.agents import AgentRuntimeRepository
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.jobs import JobRepository
@@ -48,13 +49,14 @@ class DebugService:
                 "blocked_jobs": [],
                 "pending_approvals": [],
                 "diagnostics": status["diagnostics"],
+                "telemetry": status["telemetry"],
             }
 
         sessions = await self.session_repository.list()
         runtimes = await self.runtime_repository.list()
         jobs = await self.job_repository.list()
         approvals = await self.approval_repository.list()
-        return {
+        payload = {
             "generated_at": _utc_now(),
             "codex_bridge": status["checks"]["codex_bridge"],
             "runtime_statuses": status["aggregates"]["runtimes_by_status"],
@@ -74,7 +76,41 @@ class DebugService:
                 if approval.status == "pending"
             ],
             "diagnostics": status["diagnostics"] + self._runtime_diagnostics(runtimes),
+            "telemetry": {},
         }
+        await get_telemetry_service().record_sample(
+            "debug_surface",
+            metrics={
+                "runtime_statuses": payload["runtime_statuses"],
+                "active_sessions": len(payload["active_sessions"]),
+                "queued_jobs": len(payload["queued_jobs"]),
+                "running_jobs": len(payload["running_jobs"]),
+                "blocked_jobs": len(payload["blocked_jobs"]),
+                "pending_approvals": len(payload["pending_approvals"]),
+                "diagnostics_count": len(payload["diagnostics"]),
+                "queue_depth": status["telemetry"]["summary"].get("queue_depth", 0),
+                "average_job_latency_seconds": status["telemetry"]["summary"].get(
+                    "average_job_latency_seconds"
+                ),
+                "average_phase_duration_seconds": status["telemetry"]["summary"].get(
+                    "average_phase_duration_seconds"
+                ),
+                "pending_review_bottlenecks": status["telemetry"]["summary"].get(
+                    "pending_review_bottlenecks",
+                    0,
+                ),
+                "public_task_throughput": status["telemetry"]["summary"].get(
+                    "public_task_throughput",
+                    {},
+                ),
+                "runtime_pool_pressure": status["telemetry"]["summary"].get(
+                    "runtime_pool_pressure",
+                    {},
+                ),
+            },
+        )
+        payload["telemetry"] = await get_telemetry_service().get_surface()
+        return payload
 
     def _session_item(self, session: Any) -> dict[str, Any]:
         return {

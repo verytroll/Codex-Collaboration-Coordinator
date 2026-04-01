@@ -152,6 +152,8 @@ def get_system_status_service(
     runtime_repository: Annotated[AgentRuntimeRepository, Depends(get_agent_runtime_repository)],
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
+    phase_repository: Annotated[PhaseRepository, Depends(get_phase_repository)],
+    review_repository: Annotated[ReviewRepository, Depends(get_review_repository)],
 ) -> SystemStatusService:
     """Provide operator-facing system status aggregation."""
     config = get_config()
@@ -163,6 +165,8 @@ def get_system_status_service(
         runtime_repository=runtime_repository,
         job_repository=job_repository,
         approval_repository=approval_repository,
+        phase_repository=phase_repository,
+        review_repository=review_repository,
     )
 
 

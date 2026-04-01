@@ -176,6 +176,8 @@ from app.models.api.system import (
     A2AAgentCardResponse,
     A2AAgentCardSkill,
     HealthResponse,
+    TelemetrySampleResponse,
+    TelemetrySurfaceResponse,
 )
 
 __all__ = [
@@ -321,4 +323,6 @@ __all__ = [
     "A2AAgentCardResponse",
     "A2AAgentCardSkill",
     "HealthResponse",
+    "TelemetrySampleResponse",
+    "TelemetrySurfaceResponse",
 ]

@@ -9,7 +9,17 @@ import shutil
 import subprocess
 import threading
 from collections.abc import Mapping, Sequence
+from datetime import datetime, timezone
 from pathlib import Path
+
+from app.core.logging import get_logger
+from app.core.telemetry import get_telemetry_service
+
+logger = get_logger(__name__)
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 class CodexProcessManager:
@@ -73,8 +83,27 @@ class CodexProcessManager:
             except TimeoutError:
                 await asyncio.to_thread(process.kill)
                 await asyncio.to_thread(process.wait)
+                await get_telemetry_service().record_sample(
+                    "codex_bridge",
+                    status="error",
+                    metrics={
+                        "pid": process.pid,
+                        "error": "stop_timeout",
+                        "startup_timeout_seconds": self.startup_timeout_seconds,
+                    },
+                )
 
         await self._join_stderr_thread()
+        await get_telemetry_service().record_sample(
+            "codex_bridge",
+            metrics={
+                "pid": process.pid,
+                "stopped": True,
+                "stderr_line_count": len(self.stderr_lines),
+                "startup_timeout_seconds": self.startup_timeout_seconds,
+                "stopped_at": _utc_now(),
+            },
+        )
         self.process = None
 
     def _start_sync(self) -> subprocess.Popen[bytes]:
@@ -89,7 +118,31 @@ class CodexProcessManager:
                 stderr=subprocess.PIPE,
             )
         except FileNotFoundError as exc:
+            logger.exception("codex bridge start failed")
+            asyncio.run(
+                get_telemetry_service().record_sample(
+                    "codex_bridge",
+                    status="error",
+                    metrics={
+                        "command": " ".join(self.command),
+                        "cwd": str(self.cwd) if self.cwd is not None else None,
+                        "error": "command_not_found",
+                    },
+                )
+            )
             raise RuntimeError(f"Codex command not found: {' '.join(self.command)}") from exc
+        logger.info("codex bridge process started")
+        asyncio.run(
+            get_telemetry_service().record_sample(
+                "codex_bridge",
+                metrics={
+                    "command": " ".join(self.command),
+                    "cwd": str(self.cwd) if self.cwd is not None else None,
+                    "pid": process.pid,
+                    "startup_timeout_seconds": self.startup_timeout_seconds,
+                },
+            )
+        )
         self._stderr_thread = threading.Thread(
             target=self._drain_stderr_sync,
             args=(process,),
