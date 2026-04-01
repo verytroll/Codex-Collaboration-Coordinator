@@ -164,9 +164,7 @@ class ThreadMappingService:
                 if thread_id is not None:
                     return str(thread_id)
             thread_id = (
-                result.get("thread_id")
-                or result.get("threadId")
-                or result.get("codex_thread_id")
+                result.get("thread_id") or result.get("threadId") or result.get("codex_thread_id")
             )
             if thread_id is not None:
                 return str(thread_id)

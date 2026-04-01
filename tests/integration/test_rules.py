@@ -292,7 +292,9 @@ def test_channel_routing_preference_moves_mentions_to_review_channel(tmp_path, m
             assert jobs[0].channel_key == "review"
 
             message_repository = MessageRepository(database_url)
-            messages = asyncio.run(message_repository.list_by_session_and_channel(session_id, "review"))
+            messages = asyncio.run(
+                message_repository.list_by_session_and_channel(session_id, "review")
+            )
             assert [message.message_type for message in messages] == ["relay"]
             assert all(message.channel_key == "review" for message in messages)
     finally:

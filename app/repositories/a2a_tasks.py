@@ -59,7 +59,9 @@ class A2ATaskRepository(SQLiteRepositoryBase):
         return await self._run(self._list_sync)
 
     async def list_by_session(self, session_id: str) -> list[A2ATaskRecord]:
-        return await self._run(lambda connection: self._list_by_session_sync(connection, session_id))
+        return await self._run(
+            lambda connection: self._list_by_session_sync(connection, session_id)
+        )
 
     async def update(self, task: A2ATaskRecord) -> A2ATaskRecord:
         return await self._run(lambda connection: self._update_sync(connection, task))

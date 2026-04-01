@@ -147,9 +147,12 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
 
             channels_response = client.get(f"/api/v1/sessions/{session_id}/channels")
             assert channels_response.status_code == 200
-            assert [
-                channel["channel_key"] for channel in channels_response.json()["channels"]
-            ] == ["general", "planning", "review", "debug"]
+            assert [channel["channel_key"] for channel in channels_response.json()["channels"]] == [
+                "general",
+                "planning",
+                "review",
+                "debug",
+            ]
 
             create_channel_response = client.post(
                 f"/api/v1/sessions/{session_id}/channels",
@@ -453,9 +456,10 @@ def test_participant_and_message_api_log_session_events(tmp_path, monkeypatch) -
             session_repository = SessionRepository(database_url)
             stored_session = asyncio.run(session_repository.get(session_id))
             assert stored_session is not None
-            assert stored_session.last_message_at == general_message_response.json()["message"][
-                "created_at"
-            ]
+            assert (
+                stored_session.last_message_at
+                == general_message_response.json()["message"]["created_at"]
+            )
             assert len(fake_bridge.thread_start_calls) == 1
             assert len(fake_bridge.thread_resume_calls) == 1
             assert len(fake_bridge.turn_start_calls) == 2

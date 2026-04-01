@@ -273,8 +273,7 @@ class PublicEventStreamService:
         if previous_task is None:
             return current_task.status.state == "completed"
         return (
-            previous_task.status.state != "completed"
-            and current_task.status.state == "completed"
+            previous_task.status.state != "completed" and current_task.status.state == "completed"
         )
 
     def _phase_snapshot(

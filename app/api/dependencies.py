@@ -26,6 +26,7 @@ from app.repositories.relay_edges import RelayEdgeRepository
 from app.repositories.reviews import ReviewRepository
 from app.repositories.rules import RuleRepository
 from app.repositories.session_events import SessionEventRepository
+from app.repositories.session_templates import SessionTemplateRepository
 from app.repositories.sessions import SessionRepository
 from app.repositories.transcript_exports import TranscriptExportRepository
 from app.services.a2a_adapter import A2AAdapterService
@@ -50,6 +51,7 @@ from app.services.relay_templates import RelayTemplatesService
 from app.services.review_mode import ReviewModeService
 from app.services.rule_engine import RuleEngineService
 from app.services.runtime_service import RuntimeService
+from app.services.session_template_service import SessionTemplateService
 from app.services.streaming import StreamingService
 from app.services.system_status import SystemStatusService
 from app.services.thread_mapping import ThreadMappingService, ThreadMappingStore
@@ -68,6 +70,13 @@ def get_session_repository(
 ) -> SessionRepository:
     """Provide a session repository bound to the configured database."""
     return SessionRepository(database_url)
+
+
+def get_session_template_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> SessionTemplateRepository:
+    """Provide a session template repository bound to the configured database."""
+    return SessionTemplateRepository(database_url)
 
 
 def get_agent_repository(
@@ -147,7 +156,6 @@ def get_system_status_service(
     )
 
 
-
 def get_debug_service(
     session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
     runtime_repository: Annotated[AgentRuntimeRepository, Depends(get_agent_runtime_repository)],
@@ -163,7 +171,6 @@ def get_debug_service(
         approval_repository=approval_repository,
         system_status_service=system_status_service,
     )
-
 
 
 def get_presence_repository(
@@ -482,6 +489,30 @@ def get_channel_service(
     return ChannelService(channel_repository)
 
 
+def get_session_template_service(
+    session_template_repository: Annotated[
+        SessionTemplateRepository,
+        Depends(get_session_template_repository),
+    ],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    channel_repository: Annotated[SessionChannelRepository, Depends(get_channel_repository)],
+    phase_repository: Annotated[PhaseRepository, Depends(get_phase_repository)],
+    agent_repository: Annotated[AgentRepository, Depends(get_agent_repository)],
+    phase_service: Annotated[PhaseService, Depends(get_phase_service)],
+    rule_engine_service: Annotated[RuleEngineService, Depends(get_rule_engine_service)],
+) -> SessionTemplateService:
+    """Provide the session template orchestration service."""
+    return SessionTemplateService(
+        session_template_repository=session_template_repository,
+        session_repository=session_repository,
+        channel_repository=channel_repository,
+        phase_repository=phase_repository,
+        agent_repository=agent_repository,
+        phase_service=phase_service,
+        rule_engine_service=rule_engine_service,
+    )
+
+
 def get_a2a_adapter_service(
     task_repository: Annotated[A2ATaskRepository, Depends(get_a2a_task_repository)],
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
@@ -683,5 +714,3 @@ def get_relay_edge_repository(
 ) -> RelayEdgeRepository:
     """Provide a relay edge repository bound to the configured database."""
     return RelayEdgeRepository(database_url)
-
-

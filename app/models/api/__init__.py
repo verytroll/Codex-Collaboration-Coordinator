@@ -100,6 +100,18 @@ from app.models.api.review import (
     ReviewResponse,
 )
 from app.models.api.rules import RuleCreateRequest, RuleEnvelope, RuleListEnvelope, RuleResponse
+from app.models.api.session_templates import (
+    SessionTemplateChannelSpec,
+    SessionTemplateCreateRequest,
+    SessionTemplateEnvelope,
+    SessionTemplateInstantiateEnvelope,
+    SessionTemplateInstantiateRequest,
+    SessionTemplateListEnvelope,
+    SessionTemplateOrchestrationSpec,
+    SessionTemplatePhaseSpec,
+    SessionTemplateResponse,
+    SessionTemplateRulePresetSpec,
+)
 from app.models.api.sessions import (
     SessionCreateRequest,
     SessionEnvelope,
@@ -197,6 +209,16 @@ __all__ = [
     "SessionCreateRequest",
     "SessionEnvelope",
     "SessionListEnvelope",
+    "SessionTemplateChannelSpec",
+    "SessionTemplateCreateRequest",
+    "SessionTemplateEnvelope",
+    "SessionTemplateInstantiateEnvelope",
+    "SessionTemplateInstantiateRequest",
+    "SessionTemplateListEnvelope",
+    "SessionTemplateOrchestrationSpec",
+    "SessionTemplatePhaseSpec",
+    "SessionTemplateResponse",
+    "SessionTemplateRulePresetSpec",
     "SessionResponse",
     "SessionUpdateRequest",
     "A2AAgentCardCapabilities",

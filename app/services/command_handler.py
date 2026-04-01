@@ -15,10 +15,10 @@ from app.services.job_service import JobService
 from app.services.mention_router import MentionRouter, ResolvedMention
 from app.services.message_parser import MessageParser, ParsedCommand, ParsedMessage
 from app.services.offline_queue import OfflineQueueService
-from app.services.phase_service import PhaseService
-from app.services.review_mode import ReviewModeService
 from app.services.permissions import CommandPermissions
+from app.services.phase_service import PhaseService
 from app.services.relay_engine import RelayEngine
+from app.services.review_mode import ReviewModeService
 
 
 def _utc_now() -> str:
@@ -107,7 +107,8 @@ class CommandHandler:
                 session_id=session_id,
                 objective=command.arguments or message.content,
                 source_role=source_role,
-                target_role=target_role or (target_agent.role if target_agent is not None else None),
+                target_role=target_role
+                or (target_agent.role if target_agent is not None else None),
                 notes=command.arguments or message.content,
             )
             job = await self.job_service.create_job_for_agent(
@@ -154,7 +155,7 @@ class CommandHandler:
             )
 
         if command.command_name == "review":
-            review_result = await self.review_mode_service.request_review(
+            await self.review_mode_service.request_review(
                 source_job_id=target_job.id,
                 requested_by_agent_id=sender_id if sender_type == "agent" else None,
                 notes=command.arguments or None,

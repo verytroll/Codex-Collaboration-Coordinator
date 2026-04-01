@@ -22,9 +22,7 @@ router = APIRouter(prefix="/api/v1/a2a", tags=["a2a"])
 async def _event_stream(events) -> AsyncIterator[str]:
     for event in events:
         yield (
-            f"id: {event.sequence}\n"
-            f"event: {event.event_type}\n"
-            f"data: {event.model_dump_json()}\n\n"
+            f"id: {event.sequence}\nevent: {event.event_type}\ndata: {event.model_dump_json()}\n\n"
         )
 
 

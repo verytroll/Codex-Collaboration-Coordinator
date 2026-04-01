@@ -32,7 +32,9 @@ class CommandPermissions:
     ) -> None:
         self.participant_repository = participant_repository
         self.participant_policy_service = (
-            participant_policy_service if participant_policy_service is not None else ParticipantPolicyService()
+            participant_policy_service
+            if participant_policy_service is not None
+            else ParticipantPolicyService()
         )
 
     async def resolve_sender(
@@ -91,9 +93,13 @@ class CommandPermissions:
         }
         if command_name == "review":
             if policy.review_only_actions:
-                if target_agent_id != sender.participant.agent_id and not policy.can_target_other_agents:
+                if (
+                    target_agent_id != sender.participant.agent_id
+                    and not policy.can_target_other_agents
+                ):
                     raise CommandPermissionError(
-                        f"Agent {sender.participant.agent_id} cannot run /{command_name} on {target_agent_id}"
+                        f"Agent {sender.participant.agent_id} cannot run /{command_name} "
+                        f"on {target_agent_id}"
                     )
                 return
             raise CommandPermissionError(
@@ -105,6 +111,7 @@ class CommandPermissions:
             )
         if target_agent_id != sender.participant.agent_id and not policy.can_target_other_agents:
             raise CommandPermissionError(
-                f"Agent {sender.participant.agent_id} cannot run /{command_name} on {target_agent_id}"
+                f"Agent {sender.participant.agent_id} cannot run /{command_name} "
+                f"on {target_agent_id}"
             )
         return

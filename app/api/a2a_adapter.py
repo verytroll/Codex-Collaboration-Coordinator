@@ -60,9 +60,7 @@ def _task_response(projection: A2ATaskProjection) -> A2ATaskResponse:
     artifacts = []
     if isinstance(artifacts_payload, list):
         artifacts = [
-            _artifact_response(item)
-            for item in artifacts_payload
-            if isinstance(item, dict)
+            _artifact_response(item) for item in artifacts_payload if isinstance(item, dict)
         ]
     metadata = _parse_json(payload.get("metadata"))
     return A2ATaskResponse(

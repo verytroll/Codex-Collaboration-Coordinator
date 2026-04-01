@@ -32,9 +32,7 @@ class A2APublicTaskSubscriptionResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     api_version: Literal["v1"] = "v1"
-    contract_version: Literal["a2a.public.task.subscription.v1"] = (
-        "a2a.public.task.subscription.v1"
-    )
+    contract_version: Literal["a2a.public.task.subscription.v1"] = "a2a.public.task.subscription.v1"
     subscription_id: str
     task_id: str
     cursor_sequence: int

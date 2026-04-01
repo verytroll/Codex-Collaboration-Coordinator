@@ -137,18 +137,19 @@ def test_phase_api_and_phase_aware_new_jobs(tmp_path, monkeypatch) -> None:
             assert "phase_key" in planning_job.instructions
             assert "planning" in planning_job.instructions
 
-            activate_response = client.post(
-                f"/api/v1/sessions/{session_id}/phases/review/activate"
-            )
+            activate_response = client.post(f"/api/v1/sessions/{session_id}/phases/review/activate")
             assert activate_response.status_code == 200
             assert activate_response.json()["phase"]["phase_key"] == "review"
 
             refreshed_phases_response = client.get(f"/api/v1/sessions/{session_id}/phases")
             assert refreshed_phases_response.status_code == 200
             refreshed_phases = refreshed_phases_response.json()["phases"]
-            assert next(phase for phase in refreshed_phases if phase["phase_key"] == "review")[
-                "is_active"
-            ] is True
+            assert (
+                next(phase for phase in refreshed_phases if phase["phase_key"] == "review")[
+                    "is_active"
+                ]
+                is True
+            )
 
             review_message_response = client.post(
                 f"/api/v1/sessions/{session_id}/messages",

@@ -101,8 +101,7 @@ class SystemStatusService:
             return {
                 "status": "degraded",
                 "detail": (
-                    f"CodexBridge mode={self.codex_bridge_mode}; "
-                    f"command not found: {executable}"
+                    f"CodexBridge mode={self.codex_bridge_mode}; command not found: {executable}"
                 ),
             }
         return {
@@ -144,9 +143,7 @@ class SystemStatusService:
             blocked = jobs["input_required"] + jobs["auth_required"]
             diagnostics.append(f"{blocked} job(s) waiting for input or approval.")
         if jobs["paused_by_loop_guard"] > 0:
-            diagnostics.append(
-                f"{jobs['paused_by_loop_guard']} job(s) paused by loop guard."
-            )
+            diagnostics.append(f"{jobs['paused_by_loop_guard']} job(s) paused by loop guard.")
         if jobs["failed"] > 0:
             diagnostics.append(f"{jobs['failed']} job(s) failed and may need intervention.")
         if aggregates["pending_approvals"] > 0:

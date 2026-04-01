@@ -11,7 +11,6 @@ from uuid import uuid4
 from app.repositories.jobs import JobRecord
 from app.repositories.rules import RuleRecord, RuleRepository
 
-
 RULE_TYPES = {
     "relay",
     "review_required",
@@ -73,7 +72,9 @@ class RuleEngineService:
             description=description,
             is_active=1 if is_active else 0,
             priority=priority,
-            conditions_json=json.dumps(conditions, sort_keys=True) if conditions is not None else None,
+            conditions_json=json.dumps(conditions, sort_keys=True)
+            if conditions is not None
+            else None,
             actions_json=json.dumps(actions, sort_keys=True) if actions is not None else None,
             created_at=now,
             updated_at=now,
@@ -142,7 +143,9 @@ class RuleEngineService:
         for rule in active_rules:
             if rule.rule_type not in {"relay", "channel_routing_preference"}:
                 continue
-            if not self._matches_rule(rule, channel_key=channel_key, agent_id=agent_id, content=content):
+            if not self._matches_rule(
+                rule, channel_key=channel_key, agent_id=agent_id, content=content
+            ):
                 continue
             overridden_channel = self._resolve_target_channel(rule)
             if overridden_channel is not None:

@@ -70,7 +70,9 @@ class ReviewRepository(SQLiteRepositoryBase):
         return await self._run(self._list_sync)
 
     async def list_by_session(self, session_id: str) -> list[ReviewRecord]:
-        return await self._run(lambda connection: self._list_by_session_sync(connection, session_id))
+        return await self._run(
+            lambda connection: self._list_by_session_sync(connection, session_id)
+        )
 
     async def list_by_job(self, job_id: str) -> list[ReviewRecord]:
         return await self._run(lambda connection: self._list_by_job_sync(connection, job_id))

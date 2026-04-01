@@ -4,8 +4,8 @@ import asyncio
 from dataclasses import replace
 
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
-from app.repositories.agents import AgentRecord, AgentRepository
 from app.repositories.a2a_tasks import A2ATaskRecord, A2ATaskRepository
+from app.repositories.agents import AgentRecord, AgentRepository
 from app.repositories.approvals import ApprovalRepository, ApprovalRequestRecord
 from app.repositories.artifacts import ArtifactRecord, ArtifactRepository
 from app.repositories.job_inputs import JobInputRecord, JobInputRepository

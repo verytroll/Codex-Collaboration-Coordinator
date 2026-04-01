@@ -185,7 +185,9 @@ class ArtifactManager:
             job_id=job.id,
             session_id=job.session_id,
             channel_key=channel_key or job.channel_key,
-            source_message_id=source_message_id if source_message_id is not None else job.source_message_id,
+            source_message_id=source_message_id
+            if source_message_id is not None
+            else job.source_message_id,
             artifact_type=artifact_type,
             title=title[:120],
             content_text=content_text,
@@ -194,9 +196,7 @@ class ArtifactManager:
             mime_type=mime_type,
             size_bytes=len(payload_text.encode("utf-8")) if content_text is not None else None,
             checksum_sha256=_sha256_hex(payload_text) if content_text is not None else None,
-            metadata_json=(
-                json.dumps(metadata, sort_keys=True) if metadata is not None else None
-            ),
+            metadata_json=(json.dumps(metadata, sort_keys=True) if metadata is not None else None),
             created_at=now,
             updated_at=now,
         )

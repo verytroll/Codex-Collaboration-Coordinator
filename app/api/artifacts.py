@@ -132,9 +132,7 @@ async def create_session_transcript_export(
         )
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
-    return TranscriptExportEnvelope(
-        transcript_export=_transcript_export_response(bundle.export)
-    )
+    return TranscriptExportEnvelope(transcript_export=_transcript_export_response(bundle.export))
 
 
 @router.get("/transcript-exports/{export_id}", response_model=TranscriptExportEnvelope)

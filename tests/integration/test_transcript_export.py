@@ -6,7 +6,6 @@ from fastapi.testclient import TestClient
 
 import app.main as app_main
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
-from app.repositories.agents import AgentRecord
 from app.repositories.artifacts import ArtifactRecord, ArtifactRepository
 from app.repositories.jobs import JobRecord, JobRepository
 from app.repositories.messages import (
@@ -157,18 +156,14 @@ def test_session_transcript_export_and_artifact_listing(tmp_path, monkeypatch) -
             assert export_payload["metadata"]["artifact_count"] == 1
             assert export_payload["content_text"].startswith("{")
 
-            session_artifacts_response = client.get(
-                f"/api/v1/sessions/{session_id}/artifacts"
-            )
+            session_artifacts_response = client.get(f"/api/v1/sessions/{session_id}/artifacts")
             assert session_artifacts_response.status_code == 200
             session_artifacts = session_artifacts_response.json()
             assert len(session_artifacts["artifacts"]) == 1
             assert len(session_artifacts["transcript_exports"]) == 1
             assert session_artifacts["transcript_exports"][0]["id"] == export_payload["id"]
 
-            detail_response = client.get(
-                f"/api/v1/transcript-exports/{export_payload['id']}"
-            )
+            detail_response = client.get(f"/api/v1/transcript-exports/{export_payload['id']}")
             assert detail_response.status_code == 200
             assert detail_response.json()["transcript_export"]["id"] == export_payload["id"]
 

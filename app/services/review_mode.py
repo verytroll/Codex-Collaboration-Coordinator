@@ -430,7 +430,8 @@ class ReviewModeService:
                 and explicit_reviewer_agent_id != session.lead_agent_id
             ):
                 raise LookupError(
-                    f"Reviewer agent {explicit_reviewer_agent_id} is not a participant of session {session.id}"
+                    f"Reviewer agent {explicit_reviewer_agent_id} is not a participant "
+                    f"of session {session.id}"
                 )
             return explicit_reviewer_agent_id
         if reviewer_ids:

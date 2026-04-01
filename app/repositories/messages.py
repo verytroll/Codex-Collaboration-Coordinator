@@ -113,9 +113,9 @@ class MessageRepository(SQLiteRepositoryBase):
                     content_format, reply_to_message_id, source_message_id,
                     visibility, created_at, updated_at
                 ) VALUES (
-                    :id, :session_id, :channel_key, :sender_type, :sender_id, :message_type, :content,
-                    :content_format, :reply_to_message_id, :source_message_id,
-                    :visibility, :created_at, :updated_at
+                    :id, :session_id, :channel_key, :sender_type, :sender_id,
+                    :message_type, :content, :content_format, :reply_to_message_id,
+                    :source_message_id, :visibility, :created_at, :updated_at
                 )
                 """,
                 asdict(message),

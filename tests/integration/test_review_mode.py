@@ -95,7 +95,9 @@ def _create_session(client: TestClient, *, title: str, goal: str, lead_agent_id:
     return response.json()["session"]["id"]
 
 
-def _add_participant(client: TestClient, *, session_id: str, agent_id: str, role: str | None = None) -> None:
+def _add_participant(
+    client: TestClient, *, session_id: str, agent_id: str, role: str | None = None
+) -> None:
     payload: dict[str, object] = {"agent_id": agent_id}
     if role is not None:
         payload["role"] = role
@@ -131,7 +133,9 @@ def test_review_command_request_and_decision_flow(tmp_path, monkeypatch) -> None
                 lead_agent_id=lead_agent_id,
             )
             _add_participant(client, session_id=session_id, agent_id=lead_agent_id, role="planner")
-            _add_participant(client, session_id=session_id, agent_id=builder_agent_id, role="builder")
+            _add_participant(
+                client, session_id=session_id, agent_id=builder_agent_id, role="builder"
+            )
             _add_participant(
                 client,
                 session_id=session_id,
@@ -184,7 +188,9 @@ def test_review_command_request_and_decision_flow(tmp_path, monkeypatch) -> None
                         file_path=None,
                         file_name="job_review_001-output.txt",
                         mime_type="text/plain",
-                        size_bytes=len("Implemented the feature and covered the path.".encode("utf-8")),
+                        size_bytes=len(
+                            "Implemented the feature and covered the path.".encode("utf-8")
+                        ),
                         checksum_sha256="checksum-review-001",
                         metadata_json=json.dumps(
                             {
@@ -237,7 +243,10 @@ def test_review_command_request_and_decision_flow(tmp_path, monkeypatch) -> None
             assert review_detail_response.status_code == 200
             review_detail = review_detail_response.json()["review"]
             assert review_detail["request_payload"]["template_key"] == "builder_to_reviewer"
-            assert review_detail["request_payload"]["metadata"]["reviewer_agent_id"] == reviewer_agent_id
+            assert (
+                review_detail["request_payload"]["metadata"]["reviewer_agent_id"]
+                == reviewer_agent_id
+            )
 
             request_message = asyncio.run(message_repository.get(review.request_message_id))
             assert request_message is not None
@@ -276,7 +285,9 @@ def test_review_command_request_and_decision_flow(tmp_path, monkeypatch) -> None
             assert summary_artifact.artifact_type == "json"
             assert "review_summary" in (summary_artifact.metadata_json or "")
 
-            decision_message = asyncio.run(message_repository.get(decision_review["decision_message_id"]))
+            decision_message = asyncio.run(
+                message_repository.get(decision_review["decision_message_id"])
+            )
             assert decision_message is not None
             assert decision_message.channel_key == "review"
             assert decision_message.message_type == "artifact_notice"

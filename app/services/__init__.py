@@ -36,6 +36,7 @@ from app.services.review_mode import ReviewDecisionResult, ReviewModeService, Re
 from app.services.rule_engine import RuleEngineService, RuleEvaluationResult
 from app.services.runtime_service import RuntimeService
 from app.services.session_events import record_session_event
+from app.services.session_template_service import SessionTemplateDefinition, SessionTemplateService
 from app.services.streaming import StreamingService
 from app.services.thread_mapping import (
     ThreadMappingRecord,
@@ -94,6 +95,8 @@ __all__ = [
     "ReviewDecisionResult",
     "ReviewModeService",
     "ReviewStartResult",
+    "SessionTemplateDefinition",
+    "SessionTemplateService",
     "TranscriptExportBundle",
     "TranscriptExportService",
     "StreamingService",

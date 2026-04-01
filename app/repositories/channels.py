@@ -52,7 +52,9 @@ class SessionChannelRepository(SQLiteRepositoryBase):
         channel_key: str,
     ) -> SessionChannelRecord | None:
         return await self._run(
-            lambda connection: self._get_by_session_and_key_sync(connection, session_id, channel_key)
+            lambda connection: self._get_by_session_and_key_sync(
+                connection, session_id, channel_key
+            )
         )
 
     async def list(self) -> list[SessionChannelRecord]:

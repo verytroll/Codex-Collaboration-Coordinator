@@ -80,7 +80,9 @@ async def list_rules(
     )
 
 
-@router.post("/sessions/{session_id}/rules", response_model=RuleEnvelope, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/sessions/{session_id}/rules", response_model=RuleEnvelope, status_code=status.HTTP_201_CREATED
+)
 async def create_rule(
     session_id: str,
     payload: RuleCreateRequest,

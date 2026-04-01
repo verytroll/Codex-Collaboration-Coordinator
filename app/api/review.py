@@ -87,7 +87,9 @@ async def list_templates(
     review_mode_service: Annotated[ReviewModeService, Depends(get_review_mode_service)],
 ) -> RelayTemplateListEnvelope:
     return RelayTemplateListEnvelope(
-        templates=[_template_response(template) for template in await review_mode_service.list_templates()]
+        templates=[
+            _template_response(template) for template in await review_mode_service.list_templates()
+        ]
     )
 
 
@@ -112,12 +114,17 @@ async def list_reviews(
     await _ensure_session_exists(session_repository, session_id)
     return ReviewListEnvelope(
         reviews=[
-            _review_response(review) for review in await review_mode_service.list_reviews(session_id)
+            _review_response(review)
+            for review in await review_mode_service.list_reviews(session_id)
         ]
     )
 
 
-@router.post("/sessions/{session_id}/reviews", response_model=ReviewEnvelope, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/sessions/{session_id}/reviews",
+    response_model=ReviewEnvelope,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_review(
     session_id: str,
     payload: ReviewCreateRequest,

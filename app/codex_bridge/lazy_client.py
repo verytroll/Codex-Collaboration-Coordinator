@@ -110,9 +110,7 @@ class LazyCodexBridgeClient:
 
         client = await self._ensure_client()
         try:
-            self._initialized_response = await client.initialize(
-                self._build_initialize_params()
-            )
+            self._initialized_response = await client.initialize(self._build_initialize_params())
             self._raise_for_error(self._initialized_response)
         except Exception:
             await self.aclose()

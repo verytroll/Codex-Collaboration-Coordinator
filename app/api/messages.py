@@ -10,9 +10,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.dependencies import (
     get_agent_repository,
+    get_channel_service,
     get_command_handler,
     get_command_permissions,
-    get_channel_service,
     get_message_mention_repository,
     get_message_repository,
     get_message_routing_service,
@@ -211,10 +211,13 @@ async def create_message(
                         f"{session_id}"
                     ),
                 )
-            if any(
-                mention.mentioned_agent_id != sender_check.participant.agent_id
-                for mention in routing_plan.resolved_mentions
-            ) and not sender_check.policy.can_target_other_agents:
+            if (
+                any(
+                    mention.mentioned_agent_id != sender_check.participant.agent_id
+                    for mention in routing_plan.resolved_mentions
+                )
+                and not sender_check.policy.can_target_other_agents
+            ):
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail=(

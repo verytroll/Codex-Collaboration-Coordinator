@@ -117,6 +117,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "012_phases.sql",
         "013_a2a_tasks.sql",
         "014_public_subscriptions.sql",
+        "015_session_templates.sql",
     ]
     assert second_run == []
 
@@ -150,6 +151,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "a2a_tasks",
         "a2a_public_subscriptions",
         "a2a_public_events",
+        "session_templates",
     }.issubset(tables)
     assert {
         "idx_messages_session_id_created_at",
@@ -188,5 +190,6 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "idx_a2a_public_subscriptions_cursor_sequence",
         "idx_a2a_public_events_task_id_sequence",
         "idx_a2a_public_events_event_type",
+        "idx_session_templates_is_default",
     }.issubset(indexes)
-    assert version_count == 14
+    assert version_count == 15

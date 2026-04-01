@@ -30,16 +30,16 @@ from app.models.api.jobs import (
     ApprovalRequestResponse,
     ArtifactListEnvelope,
     ArtifactResponse,
-    JobCreateRequest,
     JobControlRequest,
+    JobCreateRequest,
     JobDetailResponse,
     JobEnvelope,
     JobEventListEnvelope,
     JobEventResponse,
-    JobInputResponse,
     JobInputRequest,
-    JobResponse,
+    JobInputResponse,
     JobListEnvelope,
+    JobResponse,
 )
 from app.repositories.approvals import ApprovalRepository, ApprovalRequestRecord
 from app.repositories.artifacts import ArtifactRecord, ArtifactRepository

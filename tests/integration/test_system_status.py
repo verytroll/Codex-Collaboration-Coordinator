@@ -228,4 +228,3 @@ def test_system_status_and_debug_surface(tmp_path, monkeypatch) -> None:
             assert any("no heartbeat timestamp" in item for item in debug_payload["diagnostics"])
     finally:
         app_main.get_config.cache_clear()
-

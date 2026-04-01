@@ -59,9 +59,7 @@ class DebugService:
             "codex_bridge": status["checks"]["codex_bridge"],
             "runtime_statuses": status["aggregates"]["runtimes_by_status"],
             "active_sessions": [
-                self._session_item(session)
-                for session in sessions
-                if session.status == "active"
+                self._session_item(session) for session in sessions if session.status == "active"
             ],
             "queued_jobs": [self._job_item(job) for job in jobs if job.status == "queued"],
             "running_jobs": [self._job_item(job) for job in jobs if job.status == "running"],

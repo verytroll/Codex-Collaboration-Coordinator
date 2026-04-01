@@ -54,7 +54,9 @@ class RuleRepository(SQLiteRepositoryBase):
         return await self._run(self._list_sync)
 
     async def list_by_session(self, session_id: str) -> list[RuleRecord]:
-        return await self._run(lambda connection: self._list_by_session_sync(connection, session_id))
+        return await self._run(
+            lambda connection: self._list_by_session_sync(connection, session_id)
+        )
 
     async def list_active_by_session(self, session_id: str) -> list[RuleRecord]:
         return await self._run(
@@ -88,7 +90,9 @@ class RuleRepository(SQLiteRepositoryBase):
         return RuleRecord.from_row(row) if row else None
 
     def _list_sync(self, connection: sqlite3.Connection) -> list[RuleRecord]:
-        rows = connection.execute("SELECT * FROM rules ORDER BY session_id, priority, id").fetchall()
+        rows = connection.execute(
+            "SELECT * FROM rules ORDER BY session_id, priority, id"
+        ).fetchall()
         return [RuleRecord.from_row(row) for row in rows]
 
     def _list_by_session_sync(

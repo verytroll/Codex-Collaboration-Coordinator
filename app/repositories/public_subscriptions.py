@@ -49,9 +49,7 @@ class PublicTaskSubscriptionRepository(SQLiteRepositoryBase):
         return await self._run(self._list_sync)
 
     async def list_by_task(self, task_id: str) -> list[PublicTaskSubscriptionRecord]:
-        return await self._run(
-            lambda connection: self._list_by_task_sync(connection, task_id)
-        )
+        return await self._run(lambda connection: self._list_by_task_sync(connection, task_id))
 
     async def update(
         self,

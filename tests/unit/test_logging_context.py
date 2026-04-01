@@ -25,7 +25,6 @@ def test_request_id_filter_injects_default_operator_fields() -> None:
     assert record.event_type == "-"
 
 
-
 def test_request_id_filter_uses_bound_operator_fields() -> None:
     tokens = bind_log_context(
         session_id="ses_1",

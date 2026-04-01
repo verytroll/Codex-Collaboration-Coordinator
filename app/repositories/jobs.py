@@ -125,11 +125,12 @@ class JobRepository(SQLiteRepositoryBase):
                     last_known_turn_status, result_summary, error_code, error_message,
                     started_at, completed_at, created_at, updated_at
                 ) VALUES (
-                    :id, :session_id, :channel_key, :assigned_agent_id, :runtime_id, :source_message_id,
-                    :parent_job_id, :title, :instructions, :status, :hop_count, :priority,
-                    :codex_runtime_id, :codex_thread_id, :active_turn_id,
-                    :last_known_turn_status, :result_summary, :error_code, :error_message,
-                    :started_at, :completed_at, :created_at, :updated_at
+                    :id, :session_id, :channel_key, :assigned_agent_id, :runtime_id,
+                    :source_message_id, :parent_job_id, :title, :instructions, :status,
+                    :hop_count, :priority, :codex_runtime_id, :codex_thread_id,
+                    :active_turn_id, :last_known_turn_status, :result_summary,
+                    :error_code, :error_message, :started_at, :completed_at,
+                    :created_at, :updated_at
                 )
                 """,
                 asdict(job),

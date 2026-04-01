@@ -80,8 +80,9 @@ class TranscriptExportRepository(SQLiteRepositoryBase):
                     id, session_id, export_kind, export_format, title, file_name, mime_type,
                     content_text, size_bytes, checksum_sha256, metadata_json, created_at, updated_at
                 ) VALUES (
-                    :id, :session_id, :export_kind, :export_format, :title, :file_name, :mime_type,
-                    :content_text, :size_bytes, :checksum_sha256, :metadata_json, :created_at, :updated_at
+                    :id, :session_id, :export_kind, :export_format, :title, :file_name,
+                    :mime_type, :content_text, :size_bytes, :checksum_sha256,
+                    :metadata_json, :created_at, :updated_at
                 )
                 """,
                 asdict(export),

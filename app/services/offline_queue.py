@@ -10,8 +10,8 @@ from uuid import uuid4
 
 from app.repositories.job_inputs import JobInputRecord, JobInputRepository
 from app.repositories.jobs import JobRecord, JobRepository
-from app.services.rule_engine import RuleEngineService
 from app.services.relay_engine import RelayEngine, RelayExecutionResult
+from app.services.rule_engine import RuleEngineService
 from app.services.runtime_service import RuntimeService
 
 DISPATCHABLE_RUNTIME_STATUSES = {"starting", "online", "busy"}

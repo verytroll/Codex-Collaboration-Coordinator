@@ -14,9 +14,9 @@ from app.repositories.messages import (
 )
 from app.repositories.participants import ParticipantRepository
 from app.services.job_service import JobService
-from app.services.rule_engine import RuleEngineService
 from app.services.mention_router import MentionRouter, ResolvedMention
 from app.services.message_parser import MessageParser, ParsedCommand
+from app.services.rule_engine import RuleEngineService
 
 
 def _utc_now() -> str:

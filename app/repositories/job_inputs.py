@@ -47,7 +47,9 @@ class JobInputRepository(SQLiteRepositoryBase):
         return await self._run(lambda connection: self._list_by_job_sync(connection, job_id))
 
     async def list_by_session(self, session_id: str) -> list[JobInputRecord]:
-        return await self._run(lambda connection: self._list_by_session_sync(connection, session_id))
+        return await self._run(
+            lambda connection: self._list_by_session_sync(connection, session_id)
+        )
 
     async def update(self, job_input: JobInputRecord) -> JobInputRecord:
         return await self._run(lambda connection: self._update_sync(connection, job_input))

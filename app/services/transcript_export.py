@@ -143,11 +143,7 @@ class TranscriptExportService:
         mentions = await self.message_mention_repository.list()
         session_message_ids = {message.id for message in messages}
         mentions_by_message = _parse_mentions_by_message(
-            [
-                asdict(mention)
-                for mention in mentions
-                if mention.message_id in session_message_ids
-            ]
+            [asdict(mention) for mention in mentions if mention.message_id in session_message_ids]
         )
         mention_count = sum(len(items) for items in mentions_by_message.values())
 

@@ -107,10 +107,15 @@ def _error_payload(
     error_message: str | None,
     job_payload: dict[str, object],
 ) -> A2APublicTaskErrorResponse | None:
-    if error_code is None and error_message is None and internal_status not in {
-        "failed",
-        "canceled",
-    }:
+    if (
+        error_code is None
+        and error_message is None
+        and internal_status
+        not in {
+            "failed",
+            "canceled",
+        }
+    ):
         return None
     if error_code is not None:
         code = error_code
