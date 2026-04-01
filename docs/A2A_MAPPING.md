@@ -57,9 +57,36 @@ Public v1 task routes:
 - `GET /api/v1/a2a/tasks`
 - `GET /api/v1/a2a/tasks/{task_id}`
 
+Public v1 event routes:
+
+- `POST /api/v1/a2a/tasks/{task_id}/subscriptions`
+- `GET /api/v1/a2a/tasks/{task_id}/events`
+- `GET /api/v1/a2a/subscriptions/{subscription_id}`
+- `GET /api/v1/a2a/subscriptions/{subscription_id}/events`
+
 ## Phase link
 
 The adapter includes the current active phase metadata when a job is projected. That lets the task view stay aligned with the session phase presets.
+
+## Public v1 mapping
+
+The public A2A contract is the recommended external integration surface.
+
+| Internal model | Public v1 field | Notes |
+|---|---|---|
+| `session.id` | `context_id`, `session_id` | Stable session identity |
+| `job.id` | `job_id` | Primary task source |
+| `job.status` | `status.internal_status`, `status.state` | Normalized for external clients |
+| `job.result_summary` / `job.instructions` | `summary` | Summary fallback is stable |
+| `job.error_code` / `job.error_message` | `error` | Only present on failed/canceled tasks |
+| `artifact.*` | `artifacts[]` | Artifact list is replayed on task refresh |
+| public task refresh | `events` | Projection changes are recorded as replayable events |
+
+Compatibility notes:
+
+- `POST /api/v1/a2a/tasks` is effectively a public refresh/project operation for an internal job.
+- Event replay is cursor-based and ordered by sequence.
+- Subscription streams use the same replayable event log underneath.
 
 ## Scope
 

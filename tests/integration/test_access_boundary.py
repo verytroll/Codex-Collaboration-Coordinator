@@ -75,6 +75,10 @@ def test_operator_and_public_surfaces_allow_local_mode_without_token(tmp_path, m
             public_response = client.get("/.well-known/agent-card.json")
             assert public_response.status_code == 200
             assert public_response.json()["name"] == "Codex Collaboration Coordinator"
+
+            public_tasks_response = client.get("/api/v1/a2a/tasks")
+            assert public_tasks_response.status_code == 200
+            assert public_tasks_response.json()["tasks"] == []
     finally:
         app_main.get_config.cache_clear()
 
@@ -95,6 +99,9 @@ def test_operator_and_public_surfaces_allow_trusted_local_clients_without_token(
 
             public_response = client.get("/.well-known/agent-card.json")
             assert public_response.status_code == 200
+
+            public_tasks_response = client.get("/api/v1/a2a/tasks")
+            assert public_tasks_response.status_code == 200
     finally:
         app_main.get_config.cache_clear()
 
@@ -147,10 +154,19 @@ def test_operator_and_public_surfaces_require_service_token_in_protected_mode(
             unauthorized_public_response = client.get("/.well-known/agent-card.json")
             _assert_access_error(unauthorized_public_response, code="access_unauthorized")
 
+            unauthorized_public_tasks_response = client.get("/api/v1/a2a/tasks")
+            _assert_access_error(unauthorized_public_tasks_response, code="access_unauthorized")
+
             allowed_public_response = client.get(
                 "/.well-known/agent-card.json",
                 headers={"X-Access-Token": "service-token"},
             )
             assert allowed_public_response.status_code == 200
+
+            allowed_public_tasks_response = client.get(
+                "/api/v1/a2a/tasks",
+                headers={"X-Access-Token": "service-token"},
+            )
+            assert allowed_public_tasks_response.status_code == 200
     finally:
         app_main.get_config.cache_clear()

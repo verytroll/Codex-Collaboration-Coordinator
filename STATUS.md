@@ -3,12 +3,16 @@
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-01
 - Pha hiện tại: V5 implementation
-- Đang tập trung vào: thin operator UI shell sau PR38
+- Đang tập trung vào: small-team deployment profile sau PR41
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F39 - A2A interoperability và adoption kit - 2026-04-01
+- [x] PR41 - A2A interoperability và adoption kit - 2026-04-01
+- [x] F38 - Realtime operator surface - 2026-04-01
+- [x] PR40 - Realtime operator surface - 2026-04-01
 - [x] F37 - Thin operator UI shell - 2026-04-01
 - [x] PR39 - Thin operator UI shell - 2026-04-01
 - [x] F36 - Access boundary và external safety baseline - 2026-04-01
@@ -52,8 +56,8 @@
 
 ### Tiếp theo
 - [x] PR39 / F37: thin operator UI shell - 2026-04-01
-- [ ] Sau PR39, mở PR40 / F38: realtime operator surface
-- [ ] Sau PR40, mở PR41 / F39: A2A interoperability và adoption kit
+- [x] PR40 / F38: realtime operator surface - 2026-04-01
+- [x] PR41 / F39: A2A interoperability và adoption kit - 2026-04-01
 - [ ] Sau PR41, mở PR42 / F40: small-team deployment profile và release packaging
 
 ### Blockers / Rủi ro
@@ -62,8 +66,9 @@
 - Rủi ro phụ là tăng deployment complexity cho small-team profile trước khi smoke/release path đủ rõ
 
 ### Kiểm chứng gần nhất
-- `pytest` - 86 passed - 2026-04-01
-- `python -m ruff check .` - passed - 2026-04-01
+- `python -m pytest tests/integration/test_a2a_interoperability.py tests/integration/test_a2a_surface.py tests/integration/test_a2a_event_stream.py tests/integration/test_a2a_public_api.py tests/integration/test_access_boundary.py` - 7 passed - 2026-04-01
+- `python -m ruff check app tests` - passed - 2026-04-01
+- `python -m compileall app tests` - passed - 2026-04-01
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`

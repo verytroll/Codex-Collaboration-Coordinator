@@ -200,6 +200,33 @@ Assert-Condition ($taskEnvelope.task.status -eq "queued") "A2A projection return
 $taskList = Invoke-ApiGet "/api/v1/a2a/sessions/ses_demo/tasks"
 Assert-Condition (@($taskList.tasks | Where-Object { $_.task_id -eq $taskEnvelope.task.task_id }).Count -ge 1) "projected A2A task missing from session task list"
 
+Write-Host "Checking public A2A discovery and task flow..."
+$publicAgentCard = Invoke-ApiGet "/.well-known/agent-card.json"
+Assert-Condition ($publicAgentCard.api_version -eq "v1") "agent-card api_version missing"
+Assert-Condition ($publicAgentCard.contract_version -eq "a2a.agent-card.v1") "agent-card contract_version missing"
+Assert-Condition ($publicAgentCard.public_api_base_url -match "/api/v1/a2a$") "agent-card public API base URL missing"
+Assert-Condition (@($publicAgentCard.endpoints | Where-Object { $_.name -eq "create_task" }).Count -ge 1) "agent-card public task endpoint missing"
+
+$publicTaskEnvelope = Invoke-ApiPost "/api/v1/a2a/tasks" @{
+    job_id = $smokeJob.id
+}
+Assert-Condition ($publicTaskEnvelope.task.job_id -eq $smokeJob.id) "public A2A task returned the wrong job id"
+Assert-Condition ($publicTaskEnvelope.task.contract_version -eq "a2a.public.task.v1") "public A2A task contract missing"
+Assert-Condition ($publicTaskEnvelope.task.status.state -eq "queued") "public A2A task status was wrong"
+
+$publicTaskList = Invoke-ApiGet "/api/v1/a2a/tasks?session_id=ses_demo"
+Assert-Condition (@($publicTaskList.tasks | Where-Object { $_.task_id -eq $publicTaskEnvelope.task.task_id }).Count -ge 1) "public A2A task missing from task list"
+
+$publicSubscription = Invoke-ApiPost "/api/v1/a2a/tasks/$($publicTaskEnvelope.task.task_id)/subscriptions" @{
+    since_sequence = 0
+}
+Assert-Condition ($publicSubscription.subscription.task_id -eq $publicTaskEnvelope.task.task_id) "public subscription returned the wrong task"
+Assert-Condition ($publicSubscription.subscription.cursor_sequence -eq 0) "public subscription cursor should start at 0"
+
+$publicTaskEvents = Invoke-ApiGet "/api/v1/a2a/tasks/$($publicTaskEnvelope.task.task_id)/events?since_sequence=0"
+Assert-Condition (@($publicTaskEvents.events).Count -ge 1) "public A2A task events should include replayable data"
+Assert-Condition ($publicTaskEvents.events[0].event_type -eq "created") "public A2A task events should start with created"
+
 Write-Host "Checking operator shell..."
 $shellPage = Invoke-PageGet "/operator"
 Assert-Condition ($shellPage.Content -match "Operator Shell") "operator shell page did not render"

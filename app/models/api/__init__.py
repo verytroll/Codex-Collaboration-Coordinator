@@ -184,6 +184,7 @@ from app.models.api.sessions import (
 )
 from app.models.api.system import (
     A2AAgentCardCapabilities,
+    A2AAgentCardEndpointResponse,
     A2AAgentCardResponse,
     A2AAgentCardSkill,
     HealthResponse,
@@ -338,6 +339,7 @@ __all__ = [
     "SessionResponse",
     "SessionUpdateRequest",
     "A2AAgentCardCapabilities",
+    "A2AAgentCardEndpointResponse",
     "A2AAgentCardResponse",
     "A2AAgentCardSkill",
     "HealthResponse",

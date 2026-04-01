@@ -74,3 +74,4 @@ The event payload excludes coordinator-internal state such as raw Codex bridge d
 - The event log is persisted in SQLite.
 - The public task projection remains the source of truth.
 - Event replay is intentionally minimal but stable enough for client polling and SSE consumption.
+- For a public client demo and example cursor flow, see `docs/A2A_QUICKSTART.md`.

@@ -74,8 +74,14 @@ For a deployment-style startup, use `.\scripts\run.ps1`. That script binds to
 - `GET /api/v1/healthz`
 - `GET /api/v1/readinessz`
 - `GET /.well-known/agent-card.json`
+- `POST /api/v1/a2a/tasks`
+- `GET /api/v1/a2a/tasks`
+- `GET /api/v1/a2a/tasks/{task_id}/events`
+- `GET /api/v1/a2a/subscriptions/{subscription_id}/events`
 - `GET /operator`
 - `GET /api/v1/operator/shell`
 - `GET /api/v1/operator/sessions/{session_id}/activity`
 - `GET /api/v1/sessions`
 - `GET /api/v1/jobs/{job_id}`
+
+For a guided public A2A demo, run `.\scripts\a2a_quickstart.ps1`.

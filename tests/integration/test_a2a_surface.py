@@ -29,16 +29,26 @@ def test_agent_card_placeholder_and_healthz(tmp_path, monkeypatch) -> None:
             agent_card_response = client.get("/.well-known/agent-card.json")
             assert agent_card_response.status_code == 200
             body = agent_card_response.json()
+            assert body["api_version"] == "v1"
+            assert body["contract_version"] == "a2a.agent-card.v1"
             assert body["name"] == "Codex Collaboration Coordinator"
+            assert body["public_api_base_url"].endswith("/api/v1/a2a")
             assert body["capabilities"] == {
                 "streaming": True,
                 "push_notifications": True,
                 "task_delegation": True,
                 "artifacts": True,
             }
+            assert {endpoint["name"] for endpoint in body["endpoints"]} >= {
+                "discover",
+                "create_task",
+                "list_tasks",
+                "list_task_events",
+            }
             assert [skill["id"] for skill in body["skills"]] == [
                 "collaboration",
                 "codex-execution",
+                "public-a2a",
             ]
     finally:
         app_main.get_config.cache_clear()

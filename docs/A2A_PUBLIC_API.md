@@ -80,3 +80,4 @@ Key mappings:
 - The adapter bridge remains the implementation layer underneath.
 - Legacy experimental routes still exist for compatibility, but the public contract should use the endpoints above.
 - For task lifecycle push/replay details, see `docs/A2A_PUBLIC_EVENTS.md`.
+- For a copy-paste setup flow and demo script, see `docs/A2A_QUICKSTART.md`.

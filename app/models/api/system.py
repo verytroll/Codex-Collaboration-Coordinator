@@ -225,13 +225,29 @@ class A2AAgentCardSkill(BaseModel):
     description: str
 
 
+class A2AAgentCardEndpointResponse(BaseModel):
+    """Endpoint descriptor advertised in the agent card."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    method: Literal["GET", "POST"]
+    path: str
+    description: str
+
+
 class A2AAgentCardResponse(BaseModel):
     """Agent card payload for discovery clients."""
 
     model_config = ConfigDict(extra="forbid")
 
+    api_version: Literal["v1"] = "v1"
+    contract_version: Literal["a2a.agent-card.v1"] = "a2a.agent-card.v1"
     name: str
     description: str
     version: str
+    public_api_base_url: str
     capabilities: A2AAgentCardCapabilities
+    endpoints: list[A2AAgentCardEndpointResponse] = Field(default_factory=list)
     skills: list[A2AAgentCardSkill] = Field(default_factory=list)
+    compatibility_notes: list[str] = Field(default_factory=list)

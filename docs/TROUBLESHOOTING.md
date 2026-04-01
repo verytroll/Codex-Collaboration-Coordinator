@@ -23,6 +23,14 @@
 - SSE endpoints return `text/event-stream`.
 - If a client disconnects immediately, verify the client keeps the HTTP connection open.
 
+## A2A problems
+
+- If `/.well-known/agent-card.json` or `/api/v1/a2a/*` returns `401` or `403`, check `ACCESS_BOUNDARY_MODE` and whether `ACCESS_TOKEN` is set correctly.
+- If `POST /api/v1/a2a/tasks` returns a task but the event list is empty, confirm the job was refreshed after the last state change.
+- If `GET /api/v1/a2a/tasks/{task_id}/events?since_sequence=0` returns only `created`, create or update the underlying job or artifact before calling the route again.
+- If the subscription SSE endpoint returns no frames, make sure the subscription cursor points at the same task and that the request is not filtered by a newer `since_sequence`.
+- If the public A2A surface looks stale, re-run `.\scripts\a2a_quickstart.ps1` or `.\scripts\smoke.ps1` to confirm the public contract still replays correctly.
+
 ## Presence and recovery
 
 - Presence is driven by `POST /api/v1/agents/{agent_id}/heartbeat`.
