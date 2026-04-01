@@ -54,6 +54,20 @@ class ServiceUnavailableError(AppError, RuntimeError):
     error_code = "service_unavailable"
 
 
+class UnauthorizedAccessError(AppError, PermissionError):
+    """Raised when a protected surface is missing valid credentials."""
+
+    status_code = 401
+    error_code = "access_unauthorized"
+
+
+class ForbiddenAccessError(AppError, PermissionError):
+    """Raised when supplied credentials are not allowed."""
+
+    status_code = 403
+    error_code = "access_forbidden"
+
+
 class ApiError(BaseModel):
     """Standard API error payload."""
 

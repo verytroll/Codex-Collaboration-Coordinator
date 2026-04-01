@@ -19,7 +19,12 @@ $BaseUrl = $BaseUrl.TrimEnd("/")
 
 function Invoke-ApiGet {
     param([string]$Path)
-    Invoke-RestMethod -Method Get -Uri "$BaseUrl$Path" -TimeoutSec 30
+    $headers = Get-AccessHeaders
+    if ($headers.Count -gt 0) {
+        Invoke-RestMethod -Method Get -Uri "$BaseUrl$Path" -Headers $headers -TimeoutSec 30
+    } else {
+        Invoke-RestMethod -Method Get -Uri "$BaseUrl$Path" -TimeoutSec 30
+    }
 }
 
 function Invoke-ApiPost {
@@ -32,7 +37,33 @@ function Invoke-ApiPost {
     } else {
         $Body | ConvertTo-Json -Depth 10
     }
-    Invoke-RestMethod -Method Post -Uri "$BaseUrl$Path" -ContentType "application/json" -Body $payload -TimeoutSec 30
+    $headers = Get-AccessHeaders
+    if ($headers.Count -gt 0) {
+        Invoke-RestMethod -Method Post -Uri "$BaseUrl$Path" -Headers $headers -ContentType "application/json" -Body $payload -TimeoutSec 30
+    } else {
+        Invoke-RestMethod -Method Post -Uri "$BaseUrl$Path" -ContentType "application/json" -Body $payload -TimeoutSec 30
+    }
+}
+
+function Get-AccessHeaders {
+    if ([string]::IsNullOrWhiteSpace($env:ACCESS_TOKEN)) {
+        return @{}
+    }
+
+    $headerName = if ([string]::IsNullOrWhiteSpace($env:ACCESS_TOKEN_HEADER)) {
+        "X-Access-Token"
+    } else {
+        $env:ACCESS_TOKEN_HEADER
+    }
+
+    $headers = @{}
+    if ($headerName -ieq "Authorization") {
+        $headers["Authorization"] = "Bearer $($env:ACCESS_TOKEN)"
+        return $headers
+    }
+
+    $headers[$headerName] = $env:ACCESS_TOKEN
+    return $headers
 }
 
 function Assert-Condition {

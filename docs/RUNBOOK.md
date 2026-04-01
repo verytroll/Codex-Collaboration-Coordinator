@@ -24,11 +24,13 @@ pip install -e .[dev]
 
 1. Keep `DATABASE_URL` pointed at a writable local SQLite file.
 2. Set `CODEX_BRIDGE_MODE=local` unless you are explicitly testing another bridge mode.
-3. Run the app with `.\scripts\run.ps1` or your preferred ASGI host command.
-4. Confirm `GET /api/v1/healthz` returns `{"status":"ok"}`.
-5. Confirm `GET /api/v1/readinessz` returns a ready response with `checks.db.status=ok`
+3. Set `ACCESS_BOUNDARY_MODE=trusted` for the default external-safety baseline, or
+   `protected` with `ACCESS_TOKEN` when you want operator/public routes locked down.
+4. Run the app with `.\scripts\run.ps1` or your preferred ASGI host command.
+5. Confirm `GET /api/v1/healthz` returns `{"status":"ok"}`.
+6. Confirm `GET /api/v1/readinessz` returns a ready response with `checks.db.status=ok`
    and `checks.migrations.status=ok`.
-6. Confirm `GET /api/v1/system/status` reports the expected aggregates and bridge state.
+7. Confirm `GET /api/v1/system/status` reports the expected aggregates and bridge state.
 
 ## Release candidate
 
@@ -51,8 +53,10 @@ The release gate performs:
 1. Check `GET /api/v1/system/status` first.
 2. Check `GET /api/v1/system/debug` for queued jobs, blocked jobs, and runtime state.
 3. Check `GET /api/v1/operator/dashboard` for higher-level operator diagnostics.
-4. Correlate logs by `request_id` from the request headers or the request log.
-5. If the bridge is degraded, check the latest `bridge` samples in telemetry and restart the app after confirming the Codex binary is available.
+4. If operator/public routes return `401`, verify `ACCESS_TOKEN` and the request header name.
+5. If operator/public routes return `403`, verify the token value being sent.
+6. Correlate logs by `request_id` from the request headers or the request log.
+7. If the bridge is degraded, check the latest `bridge` samples in telemetry and restart the app after confirming the Codex binary is available.
 
 ## SQLite backup and restore
 

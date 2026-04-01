@@ -17,6 +17,9 @@ if ([string]::IsNullOrWhiteSpace($env:APP_PORT)) {
 if ([string]::IsNullOrWhiteSpace($env:APP_RELOAD)) {
     $env:APP_RELOAD = "true"
 }
+if ([string]::IsNullOrWhiteSpace($env:ACCESS_BOUNDARY_MODE)) {
+    $env:ACCESS_BOUNDARY_MODE = "local"
+}
 
 if ($env:APP_RELOAD.ToLowerInvariant() -eq "true") {
     python -m uvicorn app.main:app --reload --host $env:APP_HOST --port $env:APP_PORT

@@ -64,6 +64,26 @@ EVENT_TYPE_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
     "event_type",
     default=LOG_CONTEXT_DEFAULT,
 )
+ACCESS_MODE_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "access_mode",
+    default=LOG_CONTEXT_DEFAULT,
+)
+ACCESS_SURFACE_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "access_surface",
+    default=LOG_CONTEXT_DEFAULT,
+)
+ACCESS_RESULT_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "access_result",
+    default=LOG_CONTEXT_DEFAULT,
+)
+ACCESS_REASON_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "access_reason",
+    default=LOG_CONTEXT_DEFAULT,
+)
+CLIENT_HOST_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "client_host",
+    default=LOG_CONTEXT_DEFAULT,
+)
 
 
 def set_request_id(request_id: str) -> contextvars.Token[str]:
@@ -98,6 +118,11 @@ def get_log_context() -> dict[str, str]:
         "task_id": TASK_ID_CONTEXT.get(),
         "subscription_id": SUBSCRIPTION_ID_CONTEXT.get(),
         "event_type": EVENT_TYPE_CONTEXT.get(),
+        "access_mode": ACCESS_MODE_CONTEXT.get(),
+        "access_surface": ACCESS_SURFACE_CONTEXT.get(),
+        "access_result": ACCESS_RESULT_CONTEXT.get(),
+        "access_reason": ACCESS_REASON_CONTEXT.get(),
+        "client_host": CLIENT_HOST_CONTEXT.get(),
     }
 
 
@@ -116,6 +141,11 @@ def bind_log_context(
     task_id: str | None = None,
     subscription_id: str | None = None,
     event_type: str | None = None,
+    access_mode: str | None = None,
+    access_surface: str | None = None,
+    access_result: str | None = None,
+    access_reason: str | None = None,
+    client_host: str | None = None,
 ) -> dict[str, contextvars.Token[str]]:
     """Bind operator-relevant logging fields into the current context."""
     tokens: dict[str, contextvars.Token[str]] = {}
@@ -145,6 +175,16 @@ def bind_log_context(
         tokens["subscription_id"] = SUBSCRIPTION_ID_CONTEXT.set(subscription_id)
     if event_type is not None:
         tokens["event_type"] = EVENT_TYPE_CONTEXT.set(event_type)
+    if access_mode is not None:
+        tokens["access_mode"] = ACCESS_MODE_CONTEXT.set(access_mode)
+    if access_surface is not None:
+        tokens["access_surface"] = ACCESS_SURFACE_CONTEXT.set(access_surface)
+    if access_result is not None:
+        tokens["access_result"] = ACCESS_RESULT_CONTEXT.set(access_result)
+    if access_reason is not None:
+        tokens["access_reason"] = ACCESS_REASON_CONTEXT.set(access_reason)
+    if client_host is not None:
+        tokens["client_host"] = CLIENT_HOST_CONTEXT.set(client_host)
     return tokens
 
 
@@ -173,10 +213,29 @@ def reset_log_context(tokens: dict[str, contextvars.Token[str]]) -> None:
             SUBSCRIPTION_ID_CONTEXT.reset(token)
         elif key == "event_type":
             EVENT_TYPE_CONTEXT.reset(token)
+        elif key == "access_mode":
+            ACCESS_MODE_CONTEXT.reset(token)
+        elif key == "access_surface":
+            ACCESS_SURFACE_CONTEXT.reset(token)
+        elif key == "access_result":
+            ACCESS_RESULT_CONTEXT.reset(token)
+        elif key == "access_reason":
+            ACCESS_REASON_CONTEXT.reset(token)
+        elif key == "client_host":
+            CLIENT_HOST_CONTEXT.reset(token)
         elif key == "request_method":
             REQUEST_METHOD_CONTEXT.reset(token)
         elif key == "request_path":
             REQUEST_PATH_CONTEXT.reset(token)
+
+
+def clear_access_context() -> None:
+    """Reset access-related logging fields to their defaults."""
+    ACCESS_MODE_CONTEXT.set(LOG_CONTEXT_DEFAULT)
+    ACCESS_SURFACE_CONTEXT.set(LOG_CONTEXT_DEFAULT)
+    ACCESS_RESULT_CONTEXT.set(LOG_CONTEXT_DEFAULT)
+    ACCESS_REASON_CONTEXT.set(LOG_CONTEXT_DEFAULT)
+    CLIENT_HOST_CONTEXT.set(LOG_CONTEXT_DEFAULT)
 
 
 class RequestIdFilter(logging.Filter):
@@ -198,6 +257,11 @@ class RequestIdFilter(logging.Filter):
         record.task_id = context["task_id"]
         record.subscription_id = context["subscription_id"]
         record.event_type = context["event_type"]
+        record.access_mode = context["access_mode"]
+        record.access_surface = context["access_surface"]
+        record.access_result = context["access_result"]
+        record.access_reason = context["access_reason"]
+        record.client_host = context["client_host"]
         return True
 
 
@@ -227,6 +291,11 @@ def configure_logging(level: str) -> None:
                 "task_id=%(task_id)s "
                 "subscription_id=%(subscription_id)s "
                 "event_type=%(event_type)s "
+                "access_mode=%(access_mode)s "
+                "access_surface=%(access_surface)s "
+                "access_result=%(access_result)s "
+                "access_reason=%(access_reason)s "
+                "client_host=%(client_host)s "
                 "%(message)s"
             )
         )

@@ -22,9 +22,20 @@ Recommended deployment defaults:
 - `APP_RELOAD=false`
 - `DATABASE_URL=sqlite:///./data/codex_coordinator.db`
 - `CODEX_BRIDGE_MODE=local`
+- `ACCESS_BOUNDARY_MODE=trusted`
 - `LOG_LEVEL=INFO`
 
 Development defaults keep `APP_HOST=127.0.0.1` and `APP_RELOAD=true`.
+
+Access boundary profiles:
+
+- `local` keeps operator/public routes open for local development and tests.
+- `trusted` allows local clients without a token and requires a token for non-local access.
+- `protected` requires `ACCESS_TOKEN` on operator/public routes.
+
+The default profile is `local` in development/testing and `trusted` outside that path.
+If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
+(`X-Access-Token` by default).
 
 ## Startup contract
 
@@ -62,4 +73,6 @@ The health check in `Dockerfile` polls `GET /api/v1/readinessz`.
 - The local SQLite file must persist between restarts if you want the state to survive.
 - `readinessz` does not replace `system/status`; use both for basic external readiness and
   operator diagnostics.
+- Protected operator/public routes return `401` when the token is missing and `403` when
+  the token is wrong.
 - If you need a new migration, add a new `.sql` file instead of editing an existing one in place.

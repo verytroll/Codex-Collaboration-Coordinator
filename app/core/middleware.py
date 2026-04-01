@@ -13,6 +13,7 @@ from starlette.types import ASGIApp
 
 from app.core.logging import (
     bind_log_context,
+    clear_access_context,
     get_logger,
     reset_log_context,
     reset_request_id,
@@ -57,6 +58,7 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
             raise
         finally:
             reset_log_context(context_tokens)
+            clear_access_context()
             reset_request_id(token)
 
         response.headers[self.header_name] = request_id

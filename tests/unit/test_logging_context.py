@@ -31,6 +31,11 @@ def test_request_id_filter_injects_default_operator_fields() -> None:
     assert record.task_id == "-"
     assert record.subscription_id == "-"
     assert record.event_type == "-"
+    assert record.access_mode == "-"
+    assert record.access_surface == "-"
+    assert record.access_result == "-"
+    assert record.access_reason == "-"
+    assert record.client_host == "-"
 
 
 def test_request_id_filter_uses_bound_operator_fields() -> None:
@@ -48,6 +53,11 @@ def test_request_id_filter_uses_bound_operator_fields() -> None:
         task_id="task_1",
         subscription_id="sub_1",
         event_type="turn.started",
+        access_mode="protected",
+        access_surface="operator",
+        access_result="allowed",
+        access_reason="service_token",
+        client_host="127.0.0.1",
     )
     try:
         record = logging.LogRecord(
@@ -73,5 +83,10 @@ def test_request_id_filter_uses_bound_operator_fields() -> None:
         assert record.task_id == "task_1"
         assert record.subscription_id == "sub_1"
         assert record.event_type == "turn.started"
+        assert record.access_mode == "protected"
+        assert record.access_surface == "operator"
+        assert record.access_result == "allowed"
+        assert record.access_reason == "service_token"
+        assert record.client_host == "127.0.0.1"
     finally:
         reset_log_context(tokens)

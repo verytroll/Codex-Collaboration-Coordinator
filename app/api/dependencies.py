@@ -6,7 +6,7 @@ from collections.abc import AsyncIterator
 from contextlib import suppress
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Request
 
 from app.codex_bridge import CodexProcessManager, LazyCodexBridgeClient
 from app.core.config import get_config
@@ -35,6 +35,7 @@ from app.repositories.sessions import SessionRepository
 from app.repositories.transcript_exports import TranscriptExportRepository
 from app.services.a2a_adapter import A2AAdapterService
 from app.services.a2a_public_service import A2APublicService
+from app.services.access_boundary import AccessBoundaryService
 from app.services.approval_manager import ApprovalManager
 from app.services.artifact_manager import ArtifactManager
 from app.services.channel_service import ChannelService
@@ -74,6 +75,38 @@ _THREAD_MAPPING_STORE = ThreadMappingStore()
 def get_database_url() -> str:
     """Return the active database URL from application config."""
     return get_config().database_url
+
+
+def get_access_boundary_service() -> AccessBoundaryService:
+    """Provide the configured access boundary service."""
+    config = get_config()
+    return AccessBoundaryService(
+        access_boundary_mode=config.access_boundary_mode,
+        access_token=config.access_token,
+        access_token_header=config.access_token_header,
+    )
+
+
+async def require_operator_access(
+    request: Request,
+    access_boundary_service: Annotated[
+        AccessBoundaryService,
+        Depends(get_access_boundary_service),
+    ],
+) -> None:
+    """Authorize access to operator-facing routes."""
+    await access_boundary_service.require_operator_access(request)
+
+
+async def require_public_access(
+    request: Request,
+    access_boundary_service: Annotated[
+        AccessBoundaryService,
+        Depends(get_access_boundary_service),
+    ],
+) -> None:
+    """Authorize access to public and A2A routes."""
+    await access_boundary_service.require_public_access(request)
 
 
 def get_session_repository(
