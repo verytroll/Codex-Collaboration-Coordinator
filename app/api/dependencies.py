@@ -20,6 +20,7 @@ from app.repositories.messages import MessageMentionRepository, MessageRepositor
 from app.repositories.orchestration_runs import OrchestrationRunRepository
 from app.repositories.participants import ParticipantRepository
 from app.repositories.phases import PhaseRepository
+from app.repositories.policies import PolicyRepository
 from app.repositories.presence import PresenceRepository
 from app.repositories.public_events import PublicTaskEventRepository
 from app.repositories.public_subscriptions import PublicTaskSubscriptionRepository
@@ -48,6 +49,7 @@ from app.services.participant_policy import ParticipantPolicyService
 from app.services.permissions import CommandPermissions
 from app.services.phase_gate_service import PhaseGateService
 from app.services.phase_service import PhaseService
+from app.services.policy_engine_v2 import PolicyEngineV2Service
 from app.services.presence import PresenceService
 from app.services.public_event_stream import PublicEventStreamService
 from app.services.recovery import RecoveryService
@@ -315,6 +317,13 @@ def get_work_context_repository(
     return WorkContextRepository(database_url)
 
 
+def get_policy_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> PolicyRepository:
+    """Provide a policy repository bound to the configured database."""
+    return PolicyRepository(database_url)
+
+
 def get_work_context_service(
     work_context_repository: Annotated[
         WorkContextRepository,
@@ -556,6 +565,26 @@ def get_session_event_repository(
     return SessionEventRepository(database_url)
 
 
+def get_policy_engine_v2_service(
+    policy_repository: Annotated[PolicyRepository, Depends(get_policy_repository)],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    phase_service: Annotated[PhaseService, Depends(get_phase_service)],
+    session_event_repository: Annotated[
+        SessionEventRepository,
+        Depends(get_session_event_repository),
+    ],
+) -> PolicyEngineV2Service:
+    """Provide the advanced policy engine service."""
+    return PolicyEngineV2Service(
+        policy_repository=policy_repository,
+        session_repository=session_repository,
+        job_repository=job_repository,
+        phase_service=phase_service,
+        session_event_repository=session_event_repository,
+    )
+
+
 def get_artifact_manager(
     artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
     job_event_repository: Annotated[JobEventRepository, Depends(get_job_event_repository)],
@@ -752,6 +781,10 @@ def get_phase_gate_service(
     ],
     review_mode_service: Annotated[ReviewModeService, Depends(get_review_mode_service)],
     approval_manager: Annotated[ApprovalManager, Depends(get_approval_manager)],
+    policy_engine_v2_service: Annotated[
+        PolicyEngineV2Service,
+        Depends(get_policy_engine_v2_service),
+    ],
     job_service: Annotated[JobService, Depends(get_job_service)],
     artifact_manager: Annotated[ArtifactManager, Depends(get_artifact_manager)],
     session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
@@ -776,6 +809,7 @@ def get_phase_gate_service(
         orchestration_engine_service=orchestration_engine_service,
         review_mode_service=review_mode_service,
         approval_manager=approval_manager,
+        policy_engine_v2_service=policy_engine_v2_service,
         job_service=job_service,
         artifact_manager=artifact_manager,
         session_repository=session_repository,

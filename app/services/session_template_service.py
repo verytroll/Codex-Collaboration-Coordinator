@@ -434,6 +434,7 @@ class SessionTemplateService:
             loop_guard_status="normal",
             loop_guard_reason=None,
             last_message_at=None,
+            template_key=template.template_key,
             created_at=now,
             updated_at=now,
         )
@@ -470,6 +471,7 @@ class SessionTemplateService:
                 loop_guard_status=created_session.loop_guard_status,
                 loop_guard_reason=created_session.loop_guard_reason,
                 last_message_at=created_session.last_message_at,
+                template_key=created_session.template_key,
                 created_at=created_session.created_at,
                 updated_at=now,
             )

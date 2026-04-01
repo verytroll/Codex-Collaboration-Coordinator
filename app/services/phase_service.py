@@ -311,6 +311,7 @@ class PhaseService:
             loop_guard_status=session.loop_guard_status,
             loop_guard_reason=session.loop_guard_reason,
             last_message_at=session.last_message_at,
+            template_key=session.template_key,
             created_at=session.created_at,
             updated_at=_utc_now(),
         )

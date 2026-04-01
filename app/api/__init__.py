@@ -17,6 +17,7 @@ from app.api.operator_dashboard import router as operator_dashboard_router
 from app.api.orchestration import router as orchestration_router
 from app.api.participants import router as participants_router
 from app.api.phases import router as phases_router
+from app.api.policies import router as policies_router
 from app.api.presence import router as presence_router
 from app.api.review import router as review_router
 from app.api.rules import router as rules_router
@@ -47,6 +48,7 @@ router.include_router(messages_router)
 router.include_router(jobs_router)
 router.include_router(approvals_router)
 router.include_router(orchestration_router)
+router.include_router(policies_router)
 router.include_router(operator_dashboard_router)
 
 __all__ = ["router"]

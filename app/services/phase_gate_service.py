@@ -22,6 +22,7 @@ from app.services.orchestration_engine import (
     OrchestrationRunResult,
 )
 from app.services.phase_service import PhaseRecord, PhaseService
+from app.services.policy_engine_v2 import PolicyEngineV2Service, PolicyEvaluationResult
 from app.services.relay_templates import RelayTemplatesService
 from app.services.review_mode import (
     ReviewDecisionResult,
@@ -65,6 +66,7 @@ class PhaseGateService:
         orchestration_engine_service: OrchestrationEngineService,
         review_mode_service: ReviewModeService,
         approval_manager: ApprovalManager,
+        policy_engine_v2_service: PolicyEngineV2Service,
         job_service: JobService,
         artifact_manager: ArtifactManager,
         session_repository: SessionRepository,
@@ -78,6 +80,7 @@ class PhaseGateService:
         self.orchestration_engine_service = orchestration_engine_service
         self.review_mode_service = review_mode_service
         self.approval_manager = approval_manager
+        self.policy_engine_v2_service = policy_engine_v2_service
         self.job_service = job_service
         self.artifact_manager = artifact_manager
         self.session_repository = session_repository
@@ -106,6 +109,7 @@ class PhaseGateService:
         success_phase_key: str = "finalize",
         failure_phase_key: str = "revise",
         notes: str | None = None,
+        policy_metadata: dict[str, object] | None = None,
     ) -> GateRequestResult:
         """Open a review-required transition."""
         session = await self._get_session(session_id)
@@ -120,6 +124,7 @@ class PhaseGateService:
             review_scope="job",
             review_channel_key="review",
             notes=notes,
+            policy_metadata=policy_metadata,
         )
         handoff_job = await self.job_service.create_job_for_agent(
             session_id=session.id,
@@ -144,6 +149,7 @@ class PhaseGateService:
                     "success_phase_key": success_phase_key,
                     "failure_phase_key": failure_phase_key,
                     "review_channel_key": review_result.review.review_channel_key,
+                    "policy_metadata": policy_metadata,
                 },
                 sort_keys=True,
             ),
@@ -155,11 +161,12 @@ class PhaseGateService:
                 "handoff_job_id": handoff_job.id,
                 "success_phase_key": success_phase_key,
                 "failure_phase_key": failure_phase_key,
+                "policy_metadata": policy_metadata,
             },
             source_message_id=review_result.review.request_message_id,
             channel_key=review_result.review.review_channel_key,
         )
-        run = await self.orchestration_engine_service.record_gate_request(
+        run_result = await self.orchestration_engine_service.record_gate_request(
             session_id=session_id,
             gate_type="review_required",
             success_phase_key=success_phase_key,
@@ -177,18 +184,19 @@ class PhaseGateService:
             actor_type="agent" if requested_by_agent_id is not None else "system",
             actor_id=requested_by_agent_id,
             payload={
-                "run_id": run.run.id,
+                "run_id": run_result.run.id,
                 "source_job_id": source_job.id,
                 "review_id": review_result.review.id,
                 "handoff_job_id": handoff_job.id,
                 "transition_artifact_id": transition_artifact.id,
                 "success_phase_key": success_phase_key,
                 "failure_phase_key": failure_phase_key,
+                "policy_metadata": policy_metadata,
             },
             created_at=_utc_now(),
         )
         return GateRequestResult(
-            run=run.run,
+            run=run_result.run,
             source_job=source_job,
             handoff_job=handoff_job,
             transition_artifact=transition_artifact,
@@ -222,6 +230,28 @@ class PhaseGateService:
             source_job=source_job,
             explicit_approver_agent_id=approver_agent_id,
         )
+        policy_result = await self.policy_engine_v2_service.evaluate_approval_gate(
+            session_id=session.id,
+            source_job_id=source_job.id,
+            success_phase_key=success_phase_key,
+            failure_phase_key=failure_phase_key,
+            approval_type="custom",
+            requested_by_agent_id=requested_by_agent_id,
+            approver_agent_id=assigned_agent_id,
+            notes=notes,
+        )
+        policy_metadata = self._policy_metadata(policy_result)
+        if policy_result.decision == "escalate_review":
+            return await self.request_review_gate(
+                session_id=session_id,
+                source_job_id=source_job_id,
+                reviewer_agent_id=assigned_agent_id,
+                requested_by_agent_id=requested_by_agent_id,
+                success_phase_key=success_phase_key,
+                failure_phase_key=failure_phase_key,
+                notes=notes,
+                policy_metadata=policy_metadata,
+            )
         instructions = self._build_approval_instructions(
             source_job=source_job,
             target_phase=target_phase,
@@ -248,7 +278,9 @@ class PhaseGateService:
                 "failure_phase_key": failure_phase_key,
                 "notes": notes,
             },
+            policy_metadata=policy_metadata,
         )
+        resolved = None
         transition_artifact = await self.artifact_manager.create_structured_artifact(
             job=source_job,
             artifact_type="json",
@@ -262,6 +294,7 @@ class PhaseGateService:
                     "success_phase_key": success_phase_key,
                     "failure_phase_key": failure_phase_key,
                     "notes": notes,
+                    "policy_metadata": policy_metadata,
                 },
                 sort_keys=True,
             ),
@@ -273,11 +306,12 @@ class PhaseGateService:
                 "handoff_job_id": handoff_job.id,
                 "success_phase_key": success_phase_key,
                 "failure_phase_key": failure_phase_key,
+                "policy_metadata": policy_metadata,
             },
             source_message_id=source_job.source_message_id,
             channel_key=target_phase.default_channel_key,
         )
-        run = await self.orchestration_engine_service.record_gate_request(
+        run_result = await self.orchestration_engine_service.record_gate_request(
             session_id=session_id,
             gate_type="approval_required",
             success_phase_key=success_phase_key,
@@ -289,24 +323,42 @@ class PhaseGateService:
             requested_by_agent_id=requested_by_agent_id,
             transition_reason=notes,
         )
+        if policy_result.decision == "auto_approve":
+            approval_decision = await self.approval_manager.accept(
+                approval.id,
+                decision_payload={
+                    "policy_metadata": policy_metadata,
+                    "auto_approved": True,
+                },
+            )
+            resolved = await self.resolve_approval_decision(
+                approval_decision,
+                decision_payload={
+                    "policy_metadata": policy_metadata,
+                    "auto_approved": True,
+                },
+            )
+        if resolved is not None:
+            run_result = resolved
         await self._record_session_event(
             session_id=session_id,
             event_type="orchestration.approval_requested",
             actor_type="agent" if requested_by_agent_id is not None else "system",
             actor_id=requested_by_agent_id,
             payload={
-                "run_id": run.run.id,
+                "run_id": run_result.run.id,
                 "source_job_id": source_job.id,
                 "approval_id": approval.id,
                 "handoff_job_id": handoff_job.id,
                 "transition_artifact_id": transition_artifact.id,
                 "success_phase_key": success_phase_key,
                 "failure_phase_key": failure_phase_key,
+                "policy_metadata": policy_metadata,
             },
             created_at=_utc_now(),
         )
         return GateRequestResult(
-            run=run.run,
+            run=run_result.run,
             source_job=source_job,
             handoff_job=handoff_job,
             transition_artifact=transition_artifact,
@@ -493,6 +545,18 @@ class PhaseGateService:
             ]
         )
         return "\n".join(lines).strip()
+
+    @staticmethod
+    def _policy_metadata(result: PolicyEvaluationResult) -> dict[str, object]:
+        return {
+            "decision": result.decision,
+            "reason": result.reason,
+            "policy_id": result.policy.id if result.policy is not None else None,
+            "policy_name": result.policy.name if result.policy is not None else None,
+            "policy_type": result.policy.policy_type if result.policy is not None else None,
+            "decision_record_id": result.decision_record.id,
+            "context": result.context,
+        }
 
     async def _get_session(self, session_id: str) -> SessionRecord:
         session = await self.session_repository.get(session_id)

@@ -125,6 +125,7 @@ class ReviewModeService:
         review_scope: str = "job",
         review_channel_key: str = "review",
         notes: str | None = None,
+        policy_metadata: dict[str, object] | None = None,
     ) -> ReviewStartResult:
         """Create a review request for a job."""
         job = await self._get_job(source_job_id)
@@ -154,6 +155,8 @@ class ReviewModeService:
             review_focus=notes,
             notes=notes,
         )
+        if policy_metadata is not None:
+            request_payload["policy_metadata"] = policy_metadata
         now = _utc_now()
         review = await self.review_repository.create(
             ReviewRecord(
@@ -210,6 +213,7 @@ class ReviewModeService:
                 "template_key": saved_review.template_key,
                 "review_channel_key": review_channel_key,
                 "request_message_id": request_message.id,
+                "policy_metadata": policy_metadata,
             },
             created_at=now,
         )
@@ -385,6 +389,7 @@ class ReviewModeService:
                 loop_guard_status=session.loop_guard_status,
                 loop_guard_reason=session.loop_guard_reason,
                 last_message_at=created_at,
+                template_key=session.template_key,
                 created_at=session.created_at,
                 updated_at=created_at,
             )

@@ -106,6 +106,7 @@ class LoopGuardService:
                 loop_guard_status="paused",
                 loop_guard_reason=reason,
                 last_message_at=session.last_message_at,
+                template_key=session.template_key,
                 created_at=session.created_at,
                 updated_at=now,
             )

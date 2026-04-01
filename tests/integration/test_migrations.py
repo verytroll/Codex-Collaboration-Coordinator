@@ -120,6 +120,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "015_session_templates.sql",
         "016_orchestration_runs.sql",
         "017_runtime_pools.sql",
+        "018_policy_conditions.sql",
     ]
     assert second_run == []
 
@@ -157,6 +158,8 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "orchestration_runs",
         "runtime_pools",
         "work_contexts",
+        "policies",
+        "policy_decisions",
     }.issubset(tables)
     assert {
         "idx_messages_session_id_created_at",
@@ -173,6 +176,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "idx_session_events_event_type",
         "idx_session_channels_session_id_sort_order",
         "idx_session_participants_session_id_role",
+        "idx_sessions_template_key",
         "idx_job_inputs_job_id_created_at",
         "idx_job_inputs_session_id_created_at",
         "idx_jobs_assigned_agent_id_status",
@@ -211,5 +215,11 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "idx_work_contexts_runtime_id",
         "idx_work_contexts_context_status",
         "idx_work_contexts_ownership_state",
+        "idx_policies_session_id_priority",
+        "idx_policies_template_key_priority",
+        "idx_policies_phase_key_priority",
+        "idx_policies_policy_type",
+        "idx_policy_decisions_policy_id_created_at",
+        "idx_policy_decisions_session_id_created_at",
     }.issubset(indexes)
-    assert version_count == 17
+    assert version_count == 18

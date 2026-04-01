@@ -49,17 +49,21 @@ class ApprovalManager:
         job: JobRecord,
         approval_type: str,
         request_payload: dict[str, object],
+        policy_metadata: dict[str, object] | None = None,
         requested_at: str | None = None,
     ) -> ApprovalRequestRecord:
         """Create a new approval request for a job."""
         created_at = requested_at or _utc_now()
+        payload = dict(request_payload)
+        if policy_metadata is not None:
+            payload["policy_metadata"] = policy_metadata
         approval = ApprovalRequestRecord(
             id=f"apr_{uuid4().hex}",
             job_id=job.id,
             agent_id=job.assigned_agent_id,
             approval_type=approval_type,
             status="pending",
-            request_payload_json=json.dumps(request_payload, sort_keys=True),
+            request_payload_json=json.dumps(payload, sort_keys=True),
             decision_payload_json=None,
             requested_at=created_at,
             resolved_at=None,
@@ -77,6 +81,7 @@ class ApprovalManager:
                     {
                         "approval_id": created.id,
                         "approval_type": approval_type,
+                        "policy_metadata": policy_metadata,
                     },
                     sort_keys=True,
                 ),
@@ -93,6 +98,7 @@ class ApprovalManager:
                 "job_id": job.id,
                 "approval_id": created.id,
                 "approval_type": approval_type,
+                "policy_metadata": policy_metadata,
             },
             created_at=created_at,
         )

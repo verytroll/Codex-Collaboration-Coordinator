@@ -80,6 +80,7 @@ async def create_session(
         loop_guard_status="normal",
         loop_guard_reason=None,
         last_message_at=None,
+        template_key=None,
         created_at=created_at,
         updated_at=created_at,
     )
@@ -153,6 +154,7 @@ async def update_session(
         loop_guard_status=session.loop_guard_status,
         loop_guard_reason=session.loop_guard_reason,
         last_message_at=session.last_message_at,
+        template_key=session.template_key,
         created_at=session.created_at,
         updated_at=_utc_now(),
     )

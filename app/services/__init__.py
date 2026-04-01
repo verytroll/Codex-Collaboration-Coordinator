@@ -38,6 +38,7 @@ from app.services.phase_service import (
     PhasePresetDefinition,
     PhaseService,
 )
+from app.services.policy_engine_v2 import PolicyEngineV2Service, PolicyEvaluationResult
 from app.services.presence import PresenceService, PresenceSnapshot
 from app.services.public_event_stream import PublicEventStreamService
 from app.services.recovery import RecoveryService, RecoverySummary
@@ -109,6 +110,8 @@ __all__ = [
     "PhaseActivationResult",
     "PhasePresetDefinition",
     "PhaseService",
+    "PolicyEngineV2Service",
+    "PolicyEvaluationResult",
     "DEFAULT_CHANNELS",
     "ResolvedMention",
     "RelayEngine",

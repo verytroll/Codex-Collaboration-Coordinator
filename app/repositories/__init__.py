@@ -24,6 +24,11 @@ from app.repositories.orchestration_runs import (
 )
 from app.repositories.participants import ParticipantRepository, SessionParticipantRecord
 from app.repositories.phases import PhaseRecord, PhaseRepository
+from app.repositories.policies import (
+    PolicyDecisionRecord,
+    PolicyRecord,
+    PolicyRepository,
+)
 from app.repositories.presence import PresenceHeartbeatRecord, PresenceRepository
 from app.repositories.public_events import PublicTaskEventRecord, PublicTaskEventRepository
 from app.repositories.public_subscriptions import (
@@ -77,6 +82,9 @@ __all__ = [
     "PresenceRepository",
     "PhaseRecord",
     "PhaseRepository",
+    "PolicyDecisionRecord",
+    "PolicyRecord",
+    "PolicyRepository",
     "PublicTaskEventRecord",
     "PublicTaskEventRepository",
     "PublicTaskSubscriptionRecord",

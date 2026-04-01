@@ -23,6 +23,7 @@ class SessionRecord:
     last_message_at: str | None
     created_at: str
     updated_at: str
+    template_key: str | None = None
 
     @classmethod
     def from_row(cls, row: sqlite3.Row) -> "SessionRecord":
@@ -36,6 +37,7 @@ class SessionRecord:
             loop_guard_status=row["loop_guard_status"],
             loop_guard_reason=row["loop_guard_reason"],
             last_message_at=row["last_message_at"],
+            template_key=row["template_key"],
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
@@ -65,11 +67,11 @@ class SessionRepository(SQLiteRepositoryBase):
                 """
                 INSERT INTO sessions (
                     id, title, goal, status, lead_agent_id, active_phase_id,
-                    loop_guard_status, loop_guard_reason, last_message_at,
+                    loop_guard_status, loop_guard_reason, last_message_at, template_key,
                     created_at, updated_at
                 ) VALUES (
                     :id, :title, :goal, :status, :lead_agent_id, :active_phase_id,
-                    :loop_guard_status, :loop_guard_reason, :last_message_at,
+                    :loop_guard_status, :loop_guard_reason, :last_message_at, :template_key,
                     :created_at, :updated_at
                 )
                 """,
@@ -102,6 +104,7 @@ class SessionRepository(SQLiteRepositoryBase):
                     loop_guard_status = :loop_guard_status,
                     loop_guard_reason = :loop_guard_reason,
                     last_message_at = :last_message_at,
+                    template_key = :template_key,
                     created_at = :created_at,
                     updated_at = :updated_at
                 WHERE id = :id
