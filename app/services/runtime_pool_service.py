@@ -20,6 +20,8 @@ from app.services.work_context_service import WorkContextPlan, WorkContextServic
 
 ACTIVE_CONTEXT_STATUSES = {"active", "fallback", "recovered"}
 DISPATCHABLE_RUNTIME_STATUSES = {"starting", "online", "busy"}
+VALID_POOL_STATUSES = {"ready", "degraded", "offline"}
+VALID_ISOLATION_MODES = {"shared", "isolated", "ephemeral"}
 
 
 def _utc_now() -> str:
@@ -173,6 +175,18 @@ class RuntimePoolService:
         sort_order: int = 100,
     ) -> RuntimePoolDefinition:
         """Create a custom runtime pool."""
+        if not pool_key.strip():
+            raise ValueError("Runtime pool key cannot be empty")
+        if not title.strip():
+            raise ValueError("Runtime pool title cannot be empty")
+        if max_active_contexts < 0:
+            raise ValueError("Runtime pool max_active_contexts must be greater than or equal to 0")
+        if default_isolation_mode not in VALID_ISOLATION_MODES:
+            raise ValueError(
+                f"Unsupported runtime pool isolation mode: {default_isolation_mode}"
+            )
+        if pool_status not in VALID_POOL_STATUSES:
+            raise ValueError(f"Unsupported runtime pool status: {pool_status}")
         if pool_key in self._builtin_pool_keys():
             raise ValueError(f"Runtime pool key is reserved for built-ins: {pool_key}")
         if await self.runtime_pool_repository.get_by_key(pool_key) is not None:
@@ -267,7 +281,7 @@ class RuntimePoolService:
             pools,
             preferred_pool_key=preferred_pool_key,
             agent_capabilities=self._parse_capabilities(agent.capabilities_json),
-            required_capabilities=required_capabilities or [],
+            required_capabilities=self._normalize_capabilities(required_capabilities),
         )
         runtime = await self._resolve_runtime(agent_id, selected_pool.runtime_kind)
         if runtime_id is not None:
@@ -547,7 +561,10 @@ class RuntimePoolService:
     def _parse_string_list(payload_json: str | None) -> list[str]:
         if payload_json is None:
             return []
-        payload = json.loads(payload_json)
+        try:
+            payload = json.loads(payload_json)
+        except json.JSONDecodeError:
+            return []
         if not isinstance(payload, list):
             return []
         return [item for item in payload if isinstance(item, str)]
@@ -556,7 +573,10 @@ class RuntimePoolService:
     def _parse_metadata(payload_json: str | None) -> dict[str, Any] | None:
         if payload_json is None:
             return None
-        payload = json.loads(payload_json)
+        try:
+            payload = json.loads(payload_json)
+        except json.JSONDecodeError:
+            return None
         return payload if isinstance(payload, dict) else None
 
     def _parse_capabilities(self, payload_json: str | None) -> dict[str, bool]:
@@ -566,3 +586,13 @@ class RuntimePoolService:
         if payload is None:
             return {}
         return {key: bool(value) for key, value in payload.items()}
+
+    @staticmethod
+    def _normalize_capabilities(capabilities: list[str] | None) -> list[str]:
+        if capabilities is None:
+            return []
+        return [
+            capability
+            for capability in capabilities
+            if isinstance(capability, str) and capability
+        ]

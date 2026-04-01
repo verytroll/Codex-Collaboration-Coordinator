@@ -145,6 +145,14 @@ class OrchestrationEngineService:
         """Persist a pending gate request."""
         run_result = await self.start_run(session_id)
         run = run_result.run
+        if self._matches_pending_gate(
+            run,
+            gate_type=gate_type,
+            source_job_id=source_job_id,
+            success_phase_key=success_phase_key,
+            failure_phase_key=failure_phase_key,
+        ):
+            return run_result
         now = _utc_now()
         updated = replace(
             run,
@@ -178,6 +186,16 @@ class OrchestrationEngineService:
         completed: bool = False,
     ) -> OrchestrationRunResult:
         """Persist a resolved gate decision."""
+        if self._matches_resolved_gate(
+            run,
+            resolved_phase_id=resolved_phase_id,
+            resolved_phase_key=resolved_phase_key,
+            gate_status=gate_status,
+            decision_artifact_id=decision_artifact_id,
+            revision_job_id=revision_job_id,
+            completed=completed,
+        ):
+            return OrchestrationRunResult(run=run)
         now = _utc_now()
         updated = replace(
             run,
@@ -201,3 +219,40 @@ class OrchestrationEngineService:
         if session is None:
             raise LookupError(f"Session not found: {session_id}")
         return session
+
+    @staticmethod
+    def _matches_pending_gate(
+        run: OrchestrationRunRecord,
+        *,
+        gate_type: str,
+        source_job_id: str,
+        success_phase_key: str,
+        failure_phase_key: str,
+    ) -> bool:
+        return (
+            run.gate_status == "pending"
+            and run.gate_type == gate_type
+            and run.source_job_id == source_job_id
+            and run.pending_phase_key == success_phase_key
+            and run.failure_phase_key == failure_phase_key
+        )
+
+    @staticmethod
+    def _matches_resolved_gate(
+        run: OrchestrationRunRecord,
+        *,
+        resolved_phase_id: str,
+        resolved_phase_key: str,
+        gate_status: str,
+        decision_artifact_id: str,
+        revision_job_id: str | None,
+        completed: bool,
+    ) -> bool:
+        return (
+            run.current_phase_id == resolved_phase_id
+            and run.current_phase_key == resolved_phase_key
+            and run.gate_status == gate_status
+            and run.decision_artifact_id == decision_artifact_id
+            and run.revision_job_id == revision_job_id
+            and ((completed and run.completed_at is not None) or not completed)
+        )

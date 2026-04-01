@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 
-from app.core.errors import install_error_handlers
+from app.core.errors import ConflictError, install_error_handlers
 from app.core.logging import RequestIdFilter, get_logger, reset_request_id, set_request_id
 from app.core.middleware import RequestIdMiddleware
 
@@ -48,6 +48,27 @@ def test_http_exception_uses_standard_error_envelope() -> None:
             "message": "Not Found",
             "request_id": "req-404",
             "details": None,
+        }
+    }
+
+
+def test_app_error_uses_standard_error_envelope() -> None:
+    app = build_test_app()
+
+    @app.get("/boom")
+    async def boom() -> dict[str, str]:
+        raise ConflictError("Pending orchestration gate", details={"gate": "review"})
+
+    client = TestClient(app)
+    response = client.get("/boom", headers={"X-Request-ID": "req-409"})
+
+    assert response.status_code == 409
+    assert response.json() == {
+        "error": {
+            "code": "conflict",
+            "message": "Pending orchestration gate",
+            "request_id": "req-409",
+            "details": {"gate": "review"},
         }
     }
 

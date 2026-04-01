@@ -284,6 +284,25 @@ class RelayEngine:
         job = await self._get_job(job_id)
         session = await self._get_session(job.session_id)
         agent = await self._get_agent(job.assigned_agent_id)
+        if (
+            job.status in {"canceled", "completed", "failed"}
+            or job.last_known_turn_status == "interrupted"
+        ):
+            thread_id = job.codex_thread_id
+            if thread_id is None:
+                mapping = self.thread_mapping_service.store.get(
+                    job.session_id, job.assigned_agent_id
+                )
+                thread_id = mapping.codex_thread_id if mapping is not None else None
+            return RelayExecutionResult(
+                job_id=job.id,
+                session_id=job.session_id,
+                agent_id=job.assigned_agent_id,
+                thread_id=thread_id,
+                turn_id=job.active_turn_id,
+                message_id=None,
+                event_type="turn.interrupted",
+            )
         thread_id = job.codex_thread_id
         if thread_id is None:
             mapping = self.thread_mapping_service.store.get(job.session_id, job.assigned_agent_id)

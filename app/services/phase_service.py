@@ -301,6 +301,8 @@ class PhaseService:
         phase: PhaseRecord,
     ) -> PhaseActivationResult:
         session = await self._get_session(session_id)
+        if session.active_phase_id == phase.id:
+            return PhaseActivationResult(session=session, phase=phase)
         updated_session = SessionRecord(
             id=session.id,
             title=session.title,

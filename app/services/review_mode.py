@@ -234,6 +234,8 @@ class ReviewModeService:
         """Record a review decision and optionally create a revise job."""
         review = await self._get_review(review_id)
         if review.review_status != "requested":
+            if review.review_status == decision:
+                return await self._load_existing_decision_result(review, decision=decision)
             raise ValueError(f"Review {review.id} is not awaiting a decision")
         job = await self._get_job(review.source_job_id)
         session = await self._get_session(review.session_id)
@@ -349,6 +351,34 @@ class ReviewModeService:
             revision_job=revision_job,
         )
 
+    async def _load_existing_decision_result(
+        self,
+        review: ReviewRecord,
+        *,
+        decision: str,
+    ) -> ReviewDecisionResult:
+        if review.decision_message_id is None or review.summary_artifact_id is None:
+            raise RuntimeError(
+                f"Review {review.id} was already resolved but missing persisted side effects"
+            )
+        decision_message = await self._get_message(review.decision_message_id)
+        summary_artifact = await self._get_artifact(review.summary_artifact_id)
+        revision_job = (
+            await self._get_job(review.revision_job_id)
+            if review.revision_job_id is not None
+            else None
+        )
+        if decision == "changes_requested" and revision_job is None:
+            raise RuntimeError(
+                f"Review {review.id} was already resolved but missing revision job state"
+            )
+        return ReviewDecisionResult(
+            review=review,
+            decision_message=decision_message,
+            summary_artifact=summary_artifact,
+            revision_job=revision_job,
+        )
+
     async def _publish_message(
         self,
         *,
@@ -458,6 +488,18 @@ class ReviewModeService:
         if review is None:
             raise LookupError(f"Review not found: {review_id}")
         return review
+
+    async def _get_message(self, message_id: str) -> MessageRecord:
+        message = await self.message_repository.get(message_id)
+        if message is None:
+            raise LookupError(f"Message not found: {message_id}")
+        return message
+
+    async def _get_artifact(self, artifact_id: str) -> ArtifactRecord:
+        artifact = await self.artifact_repository.get(artifact_id)
+        if artifact is None:
+            raise LookupError(f"Artifact not found: {artifact_id}")
+        return artifact
 
     async def _get_job(self, job_id: str) -> JobRecord:
         job = await self.job_repository.get(job_id)

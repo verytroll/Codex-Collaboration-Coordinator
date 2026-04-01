@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from contextlib import suppress
 from typing import Annotated
 
 from fastapi import Depends
@@ -455,7 +456,8 @@ async def get_codex_bridge_client() -> AsyncIterator[CodexRelayBridge]:
     try:
         yield client
     finally:
-        await client.aclose()
+        with suppress(Exception):
+            await client.aclose()
 
 
 def get_message_routing_service(

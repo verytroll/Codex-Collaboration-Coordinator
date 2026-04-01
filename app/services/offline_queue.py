@@ -96,6 +96,11 @@ class OfflineQueueService:
     ) -> OfflineQueueDispatchResult:
         """Retry a terminal job and dispatch or queue it again."""
         job = await self._ensure_job(job_id)
+        if self._is_duplicate_control_action(
+            job,
+            marker="retry_requested",
+        ):
+            return OfflineQueueDispatchResult(job_id=job.id, queued=True, relay_result=None)
         if job.status not in RETRYABLE_JOB_STATUSES:
             raise ValueError(f"Job {job.id} cannot be retried from status {job.status}")
         now = _utc_now()
@@ -124,6 +129,11 @@ class OfflineQueueService:
     ) -> OfflineQueueDispatchResult:
         """Resume a paused or blocked job."""
         job = await self._ensure_job(job_id)
+        if self._is_duplicate_control_action(
+            job,
+            marker="resumed",
+        ):
+            return OfflineQueueDispatchResult(job_id=job.id, queued=True, relay_result=None)
         if job.status not in RESUMABLE_JOB_STATUSES:
             raise ValueError(f"Job {job.id} cannot be resumed from status {job.status}")
         now = _utc_now()
@@ -195,3 +205,8 @@ class OfflineQueueService:
         if runtime is None:
             return False
         return runtime.runtime_status in DISPATCHABLE_RUNTIME_STATUSES
+
+    @staticmethod
+    def _is_duplicate_control_action(job: JobRecord, *, marker: str) -> bool:
+        """Return True when a retry/resume request has already been applied."""
+        return job.status == "queued" and job.last_known_turn_status == marker

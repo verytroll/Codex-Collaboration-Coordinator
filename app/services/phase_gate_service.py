@@ -6,6 +6,7 @@ import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
+from app.core.errors import ConflictError
 from app.repositories.artifacts import ArtifactRecord
 from app.repositories.jobs import JobRecord, JobRepository
 from app.repositories.orchestration_runs import OrchestrationRunRecord
@@ -116,6 +117,16 @@ class PhaseGateService:
         source_job = await self._get_job(source_job_id)
         if source_job.session_id != session.id:
             raise LookupError(f"Job {source_job.id} does not belong to session {session.id}")
+        existing_run = await self.get_run(session_id)
+        if existing_run is not None and existing_run.gate_status == "pending":
+            if self._run_matches_review_gate_request(
+                existing_run,
+                source_job_id=source_job.id,
+                success_phase_key=success_phase_key,
+                failure_phase_key=failure_phase_key,
+            ):
+                return await self._reuse_pending_review_gate(existing_run)
+            raise ConflictError(f"Session {session.id} already has a pending orchestration gate")
         await self.start_run(session_id)
         review_result = await self.review_mode_service.request_review(
             source_job_id=source_job.id,
@@ -219,6 +230,16 @@ class PhaseGateService:
         source_job = await self._get_job(source_job_id)
         if source_job.session_id != session.id:
             raise LookupError(f"Job {source_job.id} does not belong to session {session.id}")
+        existing_run = await self.get_run(session_id)
+        if existing_run is not None and existing_run.gate_status == "pending":
+            if self._run_matches_approval_gate_request(
+                existing_run,
+                source_job_id=source_job.id,
+                success_phase_key=success_phase_key,
+                failure_phase_key=failure_phase_key,
+            ):
+                return await self._reuse_pending_approval_gate(existing_run)
+            raise ConflictError(f"Session {session.id} already has a pending orchestration gate")
         await self.start_run(session_id)
         target_phase = await self._get_phase(session_id, success_phase_key)
         await self.channel_service.ensure_channel_exists(
@@ -377,6 +398,8 @@ class PhaseGateService:
         decision = result.review.review_status
         if decision not in {"approved", "changes_requested"}:
             return None
+        if run.gate_status in {"approved", "rejected"} and run.decision_artifact_id is not None:
+            return await self._reuse_resolved_review_gate(run)
         resolved_phase_key = (
             run.pending_phase_key if decision == "approved" else run.failure_phase_key
         )
@@ -438,6 +461,8 @@ class PhaseGateService:
         decision = approval.status
         if decision not in {"accepted", "declined"}:
             return None
+        if run.gate_status in {"approved", "rejected"} and run.decision_artifact_id is not None:
+            return await self._reuse_resolved_approval_gate(run)
         source_job = await self._get_job(run.source_job_id or approval.job_id)
         session = await self._get_session(source_job.session_id)
         resolved_phase_key = (
@@ -607,4 +632,123 @@ class PhaseGateService:
             actor_id=actor_id,
             payload=payload,
             created_at=created_at,
+        )
+
+    async def _reuse_pending_review_gate(self, run: OrchestrationRunRecord) -> GateRequestResult:
+        source_job = await self._get_job(run.source_job_id or "")
+        handoff_job = (
+            await self._get_job(run.handoff_job_id) if run.handoff_job_id is not None else None
+        )
+        transition_artifact = await self._get_artifact(run.transition_artifact_id)
+        review = await self._get_review(run.review_id)
+        return GateRequestResult(
+            run=run,
+            source_job=source_job,
+            handoff_job=handoff_job,
+            transition_artifact=transition_artifact,
+            review=review,
+        )
+
+    async def _reuse_pending_approval_gate(self, run: OrchestrationRunRecord) -> GateRequestResult:
+        source_job = await self._get_job(run.source_job_id or "")
+        handoff_job = (
+            await self._get_job(run.handoff_job_id) if run.handoff_job_id is not None else None
+        )
+        transition_artifact = await self._get_artifact(run.transition_artifact_id)
+        return GateRequestResult(
+            run=run,
+            source_job=source_job,
+            handoff_job=handoff_job,
+            transition_artifact=transition_artifact,
+            approval_id=run.approval_id,
+        )
+
+    async def _reuse_resolved_review_gate(
+        self,
+        run: OrchestrationRunRecord,
+    ) -> GateResolutionResult:
+        resolved_phase = await self._get_phase_or_current(run)
+        decision_artifact = await self._get_artifact(run.decision_artifact_id)
+        revision_job = (
+            await self._get_job(run.revision_job_id) if run.revision_job_id is not None else None
+        )
+        return GateResolutionResult(
+            run=run,
+            resolved_phase=resolved_phase,
+            decision_artifact=decision_artifact,
+            revision_job=revision_job,
+        )
+
+    async def _reuse_resolved_approval_gate(
+        self,
+        run: OrchestrationRunRecord,
+    ) -> GateResolutionResult:
+        resolved_phase = await self._get_phase_or_current(run)
+        decision_artifact = await self._get_artifact(run.decision_artifact_id)
+        revision_job = (
+            await self._get_job(run.revision_job_id) if run.revision_job_id is not None else None
+        )
+        return GateResolutionResult(
+            run=run,
+            resolved_phase=resolved_phase,
+            decision_artifact=decision_artifact,
+            revision_job=revision_job,
+        )
+
+    async def _get_review(self, review_id: str | None) -> ReviewRecord:
+        if review_id is None:
+            raise LookupError("Review id is missing from orchestration run")
+        review = await self.review_mode_service.get_review(review_id)
+        if review is None:
+            raise LookupError(f"Review not found: {review_id}")
+        return review
+
+    async def _get_artifact(self, artifact_id: str | None) -> ArtifactRecord:
+        if artifact_id is None:
+            raise LookupError("Artifact id is missing from orchestration run")
+        artifact = await self.artifact_manager.artifact_repository.get(artifact_id)
+        if artifact is None:
+            raise LookupError(f"Artifact not found: {artifact_id}")
+        return artifact
+
+    async def _get_phase_or_current(self, run: OrchestrationRunRecord) -> PhaseRecord:
+        if run.current_phase_id is not None:
+            phase = await self.phase_service.get_phase(run.current_phase_id)
+            if phase is not None:
+                return phase
+        return await self._get_phase(
+            run.session_id,
+            run.current_phase_key,
+        )
+
+    @staticmethod
+    def _run_matches_review_gate_request(
+        run: OrchestrationRunRecord,
+        *,
+        source_job_id: str,
+        success_phase_key: str,
+        failure_phase_key: str,
+    ) -> bool:
+        return (
+            run.gate_status == "pending"
+            and run.gate_type == "review_required"
+            and run.source_job_id == source_job_id
+            and run.pending_phase_key == success_phase_key
+            and run.failure_phase_key == failure_phase_key
+        )
+
+    @staticmethod
+    def _run_matches_approval_gate_request(
+        run: OrchestrationRunRecord,
+        *,
+        source_job_id: str,
+        success_phase_key: str,
+        failure_phase_key: str,
+    ) -> bool:
+        return (
+            run.gate_status == "pending"
+            and run.gate_type == "approval_required"
+            and run.source_job_id == source_job_id
+            and run.pending_phase_key == success_phase_key
+            and run.failure_phase_key == failure_phase_key
         )

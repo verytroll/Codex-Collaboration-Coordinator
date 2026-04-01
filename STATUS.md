@@ -2,14 +2,18 @@
 
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-01
-- Pha hiện tại: V3 planning
-- Đang tập trung vào: Bắt đầu PR34 với hardening, telemetry và release prep
+- Pha hiện tại: V4 planning
+- Đang tập trung vào: PR35 telemetry và observability sau khi khóa PR34
 - Người thực hiện: Codex
 
 ### Đang làm
-- [ ] PR34 - Hardening, telemetry và release prep
 
 ### Vừa hoàn thành
+- [x] F32 - Hardening và reliability cho public/orchestration/runtime surface - 2026-04-01
+- [x] PR34 - Hardening và reliability - 2026-04-01
+- [x] Chốt thứ tự triển khai V4 (`IMPLEMENTATION_ORDER_V4.md`) - 2026-04-01
+- [x] Chuẩn bị backlog V4 (`IMPLEMENTATION_TASKS_V4.md`) - 2026-04-01
+- [x] Chốt kế hoạch V4 (`PLAN_V4.md`) - 2026-04-01
 - [x] F31 - Tạo advanced policy engine và conditional automation - 2026-04-01
 - [x] PR33 - Advanced policy engine và conditional automation - 2026-04-01
 - [x] F30 - Mở rộng operator dashboard/debug surface - 2026-04-01
@@ -37,7 +41,6 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] PR34 - Hardening, telemetry và release prep
 
 ### Blockers / Rủi ro
 - Không có blocker hiện tại.
@@ -50,12 +53,15 @@
 - `PLAN.md`
 - `PLAN_V2.md`
 - `PLAN_V3.md`
+- `PLAN_V4.md`
 - `IMPLEMENTATION_TASKS.md`
 - `IMPLEMENTATION_TASKS_V2.md`
 - `IMPLEMENTATION_TASKS_V3.md`
+- `IMPLEMENTATION_TASKS_V4.md`
 - `IMPLEMENTATION_ORDER.md`
 - `IMPLEMENTATION_ORDER_V2.md`
 - `IMPLEMENTATION_ORDER_V3.md`
+- `IMPLEMENTATION_ORDER_V4.md`
 - `PRD.md`
 - `ARCHITECTURE.md`
 - `API.md`

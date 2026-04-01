@@ -79,14 +79,17 @@ class CodexProcessManager:
 
     def _start_sync(self) -> subprocess.Popen[bytes]:
         """Start the subprocess in a worker thread."""
-        process = subprocess.Popen(
-            self.command,
-            cwd=str(self.cwd) if self.cwd is not None else None,
-            env=self.env,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+        try:
+            process = subprocess.Popen(
+                self.command,
+                cwd=str(self.cwd) if self.cwd is not None else None,
+                env=self.env,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except FileNotFoundError as exc:
+            raise RuntimeError(f"Codex command not found: {' '.join(self.command)}") from exc
         self._stderr_thread = threading.Thread(
             target=self._drain_stderr_sync,
             args=(process,),
