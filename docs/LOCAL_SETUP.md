@@ -36,6 +36,15 @@ Use `-IncludeRelay` if you want to try the CodexBridge mention flow too.
 The smoke script waits up to 60 seconds for the app to become ready, so it can be
 run while `dev.ps1` is still starting.
 
+To run the full release-readiness checklist locally:
+
+```powershell
+.\scripts\release.ps1
+```
+
+`release.ps1` runs `pytest`, Ruff, migration verification, demo seed reset verification,
+and the smoke gate. It expects the local app to be reachable for the smoke step.
+
 ## Seed demo data
 
 ```powershell

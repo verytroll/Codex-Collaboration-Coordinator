@@ -3,12 +3,14 @@
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-01
 - Pha hiện tại: V4 planning
-- Đang tập trung vào: PR36 release readiness sau khi khóa PR35
+- Đang tập trung vào: PR37 deployment surface sau khi khóa PR36
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F34 - Release readiness và operational safety - 2026-04-01
+- [x] PR36 - Release readiness và operational safety - 2026-04-01
 - [x] F33 - Thêm telemetry và observability theo thời gian - 2026-04-01
 - [x] PR35 - Telemetry và observability - 2026-04-01
 - [x] F32 - Hardening và reliability cho public/orchestration/runtime surface - 2026-04-01
@@ -43,6 +45,8 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
+- [ ] F35 - Deployment surface và external readiness tối thiểu
+- [ ] PR37 - Deployment surface và external readiness tối thiểu
 
 ### Blockers / Rủi ro
 - Không có blocker hiện tại.

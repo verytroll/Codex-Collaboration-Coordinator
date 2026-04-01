@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 import sqlite3
 
+import pytest
+
 from app.db.connection import connect_sqlite
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, MIGRATION_TABLE_NAME, migrate_sqlite
 
@@ -223,3 +225,37 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "idx_policy_decisions_session_id_created_at",
     }.issubset(indexes)
     assert version_count == 18
+
+
+def test_migrate_sqlite_rejects_checksum_drift(tmp_path) -> None:
+    migrations_dir = tmp_path / "migrations"
+    migrations_dir.mkdir()
+    migration_path = migrations_dir / "001_create_example.sql"
+    migration_path.write_text(
+        """
+        CREATE TABLE example (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL
+        );
+        """.strip(),
+        encoding="utf-8",
+    )
+    database_path = tmp_path / "drift.db"
+    database_url = f"sqlite:///{database_path.as_posix()}"
+
+    first_run = asyncio.run(migrate_sqlite(database_url, migrations_dir=migrations_dir))
+    assert first_run == ["001_create_example.sql"]
+
+    migration_path.write_text(
+        """
+        CREATE TABLE example (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            description TEXT
+        );
+        """.strip(),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="checksum mismatch"):
+        asyncio.run(migrate_sqlite(database_url, migrations_dir=migrations_dir))

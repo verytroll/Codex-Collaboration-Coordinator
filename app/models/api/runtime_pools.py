@@ -170,4 +170,3 @@ class RuntimePoolAssignEnvelope(BaseModel):
     context: WorkContextResponse
     fallback_used: bool = False
     runtime_found: bool = False
-

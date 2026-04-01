@@ -5,6 +5,9 @@
 - If the app cannot open SQLite, confirm `DATABASE_URL` points at a writable local path.
 - If the schema looks stale, delete the local `.db` file and run `.\scripts\seed.ps1` again.
 - If migrations fail on startup, run `python -m pytest tests/integration/test_migrations.py` to confirm the schema runner still works.
+- If `scripts\release.ps1` fails with a migration checksum mismatch, do not edit the existing
+  SQL file in place. Restore the old migration, add a new migration file, and rerun against a
+  fresh SQLite database.
 
 ## CodexBridge problems
 
@@ -29,6 +32,8 @@
 - If `POST /api/v1/jobs/{job_id}/retry` or `/resume` is called twice in a row, only the first call should enqueue input.
 - If `POST /api/v1/reviews/{review_id}/decision` is replayed with the same decision, it should return the existing review state.
 - If runtime pool metadata is malformed in an old database snapshot, diagnostics should still render with safe defaults.
+- If `scripts\release.ps1` reports that demo seed reset verification failed, remove the local
+  SQLite file and rerun the release checklist. The demo seed should be stable across repeats.
 
 ## Telemetry checks
 

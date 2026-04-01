@@ -189,7 +189,7 @@ class PolicyRepository(SQLiteRepositoryBase):
             scope_clauses.append("phase_key = ?")
             params.append(phase_key)
         if scope_clauses:
-            clauses.append(f"({ ' OR '.join(scope_clauses) })")
+            clauses.append(f"({' OR '.join(scope_clauses)})")
 
         sql = "SELECT * FROM policies"
         if clauses:

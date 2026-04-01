@@ -313,9 +313,7 @@ class PolicyEngineV2Service:
             if policy.automation_paused:
                 if not self._matches_policy(policy, context=context):
                     continue
-                reason = (
-                    f"Policy {policy.name} is paused and gate handling fell back to manual"
-                )
+                reason = f"Policy {policy.name} is paused and gate handling fell back to manual"
                 record = await self._record_decision(
                     policy=policy,
                     session_id=session.id,

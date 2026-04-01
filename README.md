@@ -20,6 +20,7 @@ Multi-agent coordination system for session-based collaboration, routing, review
    - `./scripts/dev.ps1` auto-applies migrations, then starts uvicorn
    - `./scripts/seed.ps1`
    - `./scripts/smoke.ps1` waits for the app to become ready, then runs a smoke test
+   - `./scripts/release.ps1` runs the release checklist against a local checkout
    - `./scripts/test.ps1`
    - `./scripts/lint.ps1`
 
@@ -29,6 +30,9 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [A2A mapping note](docs/A2A_MAPPING.md)
 - [MVP release notes](docs/RELEASE_NOTES_MVP.md)
+- [V3 release notes](docs/RELEASE_NOTES_V3.md)
+- [V4 upgrade notes](docs/UPGRADE_NOTES_V4.md)
+- [Runbook](docs/RUNBOOK.md)
 - [Current status](STATUS.md)
 - [MVP plan](PLAN.md)
 - [Post-MVP plan (V2)](PLAN_V2.md)

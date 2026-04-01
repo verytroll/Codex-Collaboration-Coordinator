@@ -498,8 +498,7 @@ def test_operator_dashboard_and_debug_surface(tmp_path, monkeypatch) -> None:
             assert dashboard_payload["public_task_throughput"]["queued"] == 1
             assert dashboard_payload["public_task_throughput"]["completed"] == 1
             assert any(
-                item["phase_key"] == "review"
-                for item in dashboard_payload["phase_distribution"]
+                item["phase_key"] == "review" for item in dashboard_payload["phase_distribution"]
             )
             assert any(
                 item["kind"] == "phase" and item["key"] == "review"

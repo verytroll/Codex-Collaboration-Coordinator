@@ -22,6 +22,15 @@ class MigrationFile:
     checksum: str
 
 
+@dataclass(frozen=True, slots=True)
+class AppliedMigration:
+    """A migration already recorded in the database."""
+
+    version: str
+    filename: str
+    checksum: str
+
+
 def ensure_migration_table(connection: sqlite3.Connection) -> None:
     """Create the migration tracking table if it does not exist."""
     connection.execute(
@@ -39,7 +48,7 @@ def ensure_migration_table(connection: sqlite3.Connection) -> None:
 def list_migration_files(migrations_dir: Path) -> list[MigrationFile]:
     """Return sorted SQL migration files from the given directory."""
     if not migrations_dir.exists():
-        return []
+        raise FileNotFoundError(f"Migration directory not found: {migrations_dir}")
 
     files = [path for path in migrations_dir.iterdir() if path.is_file() and path.suffix == ".sql"]
     return [
@@ -48,10 +57,27 @@ def list_migration_files(migrations_dir: Path) -> list[MigrationFile]:
     ]
 
 
-def load_applied_versions(connection: sqlite3.Connection) -> set[str]:
+def load_applied_migrations(connection: sqlite3.Connection) -> dict[str, AppliedMigration]:
     """Read already applied migration versions."""
-    rows = connection.execute(f"SELECT version FROM {MIGRATION_TABLE_NAME}").fetchall()
-    return {row["version"] for row in rows}
+    rows = connection.execute(
+        f"SELECT version, filename, checksum FROM {MIGRATION_TABLE_NAME}"
+    ).fetchall()
+    return {
+        row["version"]: AppliedMigration(
+            version=row["version"],
+            filename=row["filename"],
+            checksum=row["checksum"],
+        )
+        for row in rows
+    }
+
+
+def _validate_applied_migration(applied: AppliedMigration, migration: MigrationFile) -> None:
+    if applied.checksum != migration.checksum:
+        raise RuntimeError(
+            f"Migration checksum mismatch for {migration.path.name}: "
+            f"database={applied.checksum} file={migration.checksum}"
+        )
 
 
 def apply_migration(connection: sqlite3.Connection, migration: MigrationFile) -> None:
@@ -77,10 +103,12 @@ def migrate_sqlite_sync(
     connection = connect_sqlite(database_url)
     try:
         ensure_migration_table(connection)
-        applied_versions = load_applied_versions(connection)
+        applied_versions = load_applied_migrations(connection)
         applied_now: list[str] = []
         for migration in list_migration_files(migration_dir):
-            if migration.path.name in applied_versions:
+            applied = applied_versions.get(migration.path.name)
+            if applied is not None:
+                _validate_applied_migration(applied, migration)
                 continue
             apply_migration(connection, migration)
             applied_now.append(migration.path.name)
