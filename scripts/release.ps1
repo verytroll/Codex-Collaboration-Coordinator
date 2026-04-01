@@ -16,11 +16,6 @@ Set-Location (Resolve-Path (Join-Path $PSScriptRoot ".."))
 
 $env:DATABASE_URL = $DatabaseUrl
 
-function Invoke-CheckedScript {
-    param([string]$Path, [string[]]$Arguments)
-    & $Path @Arguments
-}
-
 function New-ReleaseDatabaseUrl {
     param([string]$Prefix)
     $tempRoot = [System.IO.Path]::GetTempPath()
@@ -29,10 +24,10 @@ function New-ReleaseDatabaseUrl {
 }
 
 Write-Host "Running test suite..."
-Invoke-CheckedScript (Join-Path $PSScriptRoot "test.ps1") @()
+& (Join-Path $PSScriptRoot "test.ps1")
 
 Write-Host "Running lint checks..."
-Invoke-CheckedScript (Join-Path $PSScriptRoot "lint.ps1") @()
+& (Join-Path $PSScriptRoot "lint.ps1")
 
 $migrationDatabase = $null
 $seedDatabase = $null
@@ -40,38 +35,20 @@ $seedDatabase = $null
 try {
     Write-Host "Verifying migration idempotency..."
     $migrationDatabase = New-ReleaseDatabaseUrl -Prefix "codex-release-migrations"
-    Invoke-CheckedScript "python" @(
-        "-m",
-        "app.services.release_readiness",
-        "--database-url",
-        $migrationDatabase,
-        "--check",
-        "migrations"
-    )
+    & python -m app.services.release_readiness --database-url $migrationDatabase --check migrations
 
     Write-Host "Verifying demo seed reset..."
     $seedDatabase = New-ReleaseDatabaseUrl -Prefix "codex-release-seed"
-    Invoke-CheckedScript "python" @(
-        "-m",
-        "app.services.release_readiness",
-        "--database-url",
-        $seedDatabase,
-        "--check",
-        "seed"
-    )
+    & python -m app.services.release_readiness --database-url $seedDatabase --check seed
 
-Write-Host "Running smoke checks..."
-$env:DATABASE_URL = $DatabaseUrl
-$env:APP_ENV = "production"
-$smokeArgs = @(
-    "-BaseUrl", $BaseUrl,
-    "-DatabaseUrl", $DatabaseUrl,
-        "-StartupTimeoutSec", $StartupTimeoutSec.ToString()
-    )
+    Write-Host "Running smoke checks..."
+    $env:DATABASE_URL = $DatabaseUrl
+    $env:APP_ENV = "production"
     if ($IncludeRelay) {
-        $smokeArgs += "-IncludeRelay"
+        & (Join-Path $PSScriptRoot "smoke.ps1") -BaseUrl $BaseUrl -DatabaseUrl $DatabaseUrl -StartupTimeoutSec $StartupTimeoutSec -IncludeRelay
+    } else {
+        & (Join-Path $PSScriptRoot "smoke.ps1") -BaseUrl $BaseUrl -DatabaseUrl $DatabaseUrl -StartupTimeoutSec $StartupTimeoutSec
     }
-    Invoke-CheckedScript (Join-Path $PSScriptRoot "smoke.ps1") $smokeArgs
 } finally {
     foreach ($path in @($migrationDatabase, $seedDatabase)) {
         if (-not [string]::IsNullOrWhiteSpace($path)) {
