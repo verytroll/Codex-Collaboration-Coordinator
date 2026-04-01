@@ -33,22 +33,23 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - [MVP plan](PLAN.md)
 - [Post-MVP plan (V2)](PLAN_V2.md)
 - [V3 plan](PLAN_V3.md)
+- [V4 plan](PLAN_V4.md)
 - [MVP implementation backlog](IMPLEMENTATION_TASKS.md)
 - [Post-MVP implementation backlog (F17-F24)](IMPLEMENTATION_TASKS_V2.md)
 - [V3 implementation backlog (F25-F31)](IMPLEMENTATION_TASKS_V3.md)
+- [V4 implementation backlog (F32-F35)](IMPLEMENTATION_TASKS_V4.md)
 - [MVP implementation order](IMPLEMENTATION_ORDER.md)
 - [Post-MVP implementation order (PR19-PR26)](IMPLEMENTATION_ORDER_V2.md)
 - [V3 implementation order (PR27-PR33)](IMPLEMENTATION_ORDER_V3.md)
+- [V4 implementation order (PR34-PR37)](IMPLEMENTATION_ORDER_V4.md)
 
 ## Current status
 
 - Core coordinator, FastAPI API layer, and SQLite repository layer are in place.
-- Session channels, participant roles/policies, and structured permissions are in place.
-- Messages, jobs, artifacts, approvals, and session events are persisted and exposed through API routes.
-- Advanced job lifecycle support includes create, retry, resume, offline queueing, and streaming.
-- Rules engine, manual activation flow, transcript export, and review mode are implemented.
-- Structured relay templates support planner, builder, and reviewer handoffs.
-- Session phase presets and the experimental A2A adapter bridge are implemented.
+- Session channels, participant roles/policies, rules, review flows, and structured permissions are in place.
+- Messages, jobs, artifacts, approvals, session events, and public A2A task/event surfaces are persisted and exposed through API routes.
+- Advanced job lifecycle support includes create, retry, resume, offline queueing, templates, orchestration gates, runtime pools, and streaming.
+- Operator dashboard/debug surfaces and advanced policy automation are implemented.
 - CodexBridge subprocess manager and JSON-RPC client are in place.
 - `GET /.well-known/agent-card.json` remains available as an A2A-ready discovery placeholder.
-- Post-MVP V2 foundation is complete, the V3 backlog is documented, and PR27 A2A public API work is next.
+- V3 foundation is complete, `PLAN_V4.md` is defined, and PR34 hardening, telemetry, and release prep are next.
