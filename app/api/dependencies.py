@@ -42,6 +42,7 @@ from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardService
 from app.services.message_routing import MessageRoutingService
 from app.services.offline_queue import OfflineQueueService
+from app.services.operator_dashboard import OperatorDashboardService
 from app.services.orchestration_engine import OrchestrationEngineService
 from app.services.participant_policy import ParticipantPolicyService
 from app.services.permissions import CommandPermissions
@@ -176,6 +177,39 @@ def get_debug_service(
         job_repository=job_repository,
         approval_repository=approval_repository,
         system_status_service=system_status_service,
+    )
+
+
+def get_operator_dashboard_service(
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    phase_repository: Annotated[PhaseRepository, Depends(get_phase_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    review_repository: Annotated[ReviewRepository, Depends(get_review_repository)],
+    orchestration_run_repository: Annotated[
+        OrchestrationRunRepository,
+        Depends(get_orchestration_run_repository),
+    ],
+    runtime_pool_service: Annotated[RuntimePoolService, Depends(get_runtime_pool_service)],
+    work_context_repository: Annotated[
+        WorkContextRepository,
+        Depends(get_work_context_repository),
+    ],
+    a2a_task_repository: Annotated[A2ATaskRepository, Depends(get_a2a_task_repository)],
+    approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
+    debug_service: Annotated[DebugService, Depends(get_debug_service)],
+) -> OperatorDashboardService:
+    """Provide the operator dashboard service."""
+    return OperatorDashboardService(
+        session_repository=session_repository,
+        phase_repository=phase_repository,
+        job_repository=job_repository,
+        review_repository=review_repository,
+        orchestration_run_repository=orchestration_run_repository,
+        runtime_pool_service=runtime_pool_service,
+        work_context_repository=work_context_repository,
+        a2a_task_repository=a2a_task_repository,
+        approval_repository=approval_repository,
+        debug_service=debug_service,
     )
 
 

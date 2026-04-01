@@ -16,6 +16,11 @@ from app.services.message_routing import (
     MessageRoutingService,
 )
 from app.services.offline_queue import OfflineQueueDispatchResult, OfflineQueueService
+from app.services.operator_dashboard import (
+    OperatorDashboardFilters,
+    OperatorDashboardService,
+    OperatorDashboardSnapshot,
+)
 from app.services.orchestration_engine import OrchestrationEngineService, OrchestrationRunResult
 from app.services.participant_policy import ParticipantPolicy, ParticipantPolicyService
 from app.services.permissions import (
@@ -86,6 +91,9 @@ __all__ = [
     "OfflineQueueService",
     "OrchestrationRunResult",
     "OrchestrationEngineService",
+    "OperatorDashboardFilters",
+    "OperatorDashboardService",
+    "OperatorDashboardSnapshot",
     "GateRequestResult",
     "GateResolutionResult",
     "PhaseGateService",

@@ -3,13 +3,15 @@
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-01
 - Pha hiện tại: V3 planning
-- Đang tập trung vào: Bắt đầu PR32 với operator dashboard/debug expansion
+- Đang tập trung vào: Bắt đầu PR33 với advanced policy engine và conditional automation
 - Người thực hiện: Codex
 
 ### Đang làm
-- [ ] PR32 - Operator dashboard/debug expansion
+- [ ] PR33 - Advanced policy engine và conditional automation
 
 ### Vừa hoàn thành
+- [x] F30 - Mở rộng operator dashboard/debug surface - 2026-04-01
+- [x] PR32 - Operator dashboard/debug expansion - 2026-04-01
 - [x] F29 - Thêm runtime pools và isolated work contexts - 2026-04-01
 - [x] PR31 - Runtime pools và isolated work contexts - 2026-04-01
 - [x] F28 - Nâng cấp review orchestration và gated phase transitions - 2026-04-01
@@ -33,7 +35,6 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] PR33 - Advanced policy engine và conditional automation
 - [ ] PR34 - Hardening, telemetry và release prep
 
 ### Blockers / Rủi ro
@@ -41,7 +42,7 @@
 - CodexBridge health trong `system/status` phản ánh trạng thái aggregate, chưa phải telemetry live dài hạn.
 
 ### Kiểm chứng gần nhất
-- `pytest` - 68 passed - 2026-04-01
+- `pytest` - 69 passed - 2026-04-01
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`

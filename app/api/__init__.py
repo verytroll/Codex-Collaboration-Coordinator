@@ -13,6 +13,7 @@ from app.api.channels import router as channels_router
 from app.api.health import router as health_router
 from app.api.jobs import router as jobs_router
 from app.api.messages import router as messages_router
+from app.api.operator_dashboard import router as operator_dashboard_router
 from app.api.orchestration import router as orchestration_router
 from app.api.participants import router as participants_router
 from app.api.phases import router as phases_router
@@ -46,5 +47,6 @@ router.include_router(messages_router)
 router.include_router(jobs_router)
 router.include_router(approvals_router)
 router.include_router(orchestration_router)
+router.include_router(operator_dashboard_router)
 
 __all__ = ["router"]

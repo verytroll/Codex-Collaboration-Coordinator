@@ -68,6 +68,17 @@ from app.models.api.messages import (
     MessageResponse,
     MessageRoutingResponse,
 )
+from app.models.api.operator_dashboard import (
+    OperatorBottleneckResponse,
+    OperatorDashboardFiltersResponse,
+    OperatorDashboardResponse,
+    OperatorDebugResponse,
+    OperatorPhaseDistributionResponse,
+    OperatorPublicTaskThroughputResponse,
+    OperatorQueueHeatResponse,
+    OperatorReviewBottleneckResponse,
+    OperatorRuntimePoolHealthResponse,
+)
 from app.models.api.orchestration import (
     OrchestrationGateEnvelope,
     OrchestrationGateRequest,
@@ -197,6 +208,15 @@ __all__ = [
     "OrchestrationRunListEnvelope",
     "OrchestrationRunResponse",
     "OrchestrationRunStatus",
+    "OperatorBottleneckResponse",
+    "OperatorDashboardFiltersResponse",
+    "OperatorDashboardResponse",
+    "OperatorDebugResponse",
+    "OperatorPhaseDistributionResponse",
+    "OperatorPublicTaskThroughputResponse",
+    "OperatorQueueHeatResponse",
+    "OperatorReviewBottleneckResponse",
+    "OperatorRuntimePoolHealthResponse",
     "RelayTemplateEnvelope",
     "RelayTemplateListEnvelope",
     "RelayTemplateResponse",
