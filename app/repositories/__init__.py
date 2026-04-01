@@ -1,12 +1,12 @@
 """Repository layer package."""
 
+from app.repositories.a2a_tasks import A2ATaskRecord, A2ATaskRepository
 from app.repositories.agents import (
     AgentRecord,
     AgentRepository,
     AgentRuntimeRecord,
     AgentRuntimeRepository,
 )
-from app.repositories.a2a_tasks import A2ATaskRecord, A2ATaskRepository
 from app.repositories.approvals import ApprovalRepository, ApprovalRequestRecord
 from app.repositories.artifacts import ArtifactRecord, ArtifactRepository
 from app.repositories.channels import SessionChannelRecord, SessionChannelRepository
@@ -21,9 +21,14 @@ from app.repositories.messages import (
 from app.repositories.participants import ParticipantRepository, SessionParticipantRecord
 from app.repositories.phases import PhaseRecord, PhaseRepository
 from app.repositories.presence import PresenceHeartbeatRecord, PresenceRepository
+from app.repositories.public_events import PublicTaskEventRecord, PublicTaskEventRepository
+from app.repositories.public_subscriptions import (
+    PublicTaskSubscriptionRecord,
+    PublicTaskSubscriptionRepository,
+)
 from app.repositories.relay_edges import RelayEdgeRecord, RelayEdgeRepository
-from app.repositories.rules import RuleRecord, RuleRepository
 from app.repositories.reviews import ReviewRecord, ReviewRepository
+from app.repositories.rules import RuleRecord, RuleRepository
 from app.repositories.session_events import SessionEventRecord, SessionEventRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
 from app.repositories.transcript_exports import (
@@ -59,6 +64,10 @@ __all__ = [
     "PresenceRepository",
     "PhaseRecord",
     "PhaseRepository",
+    "PublicTaskEventRecord",
+    "PublicTaskEventRepository",
+    "PublicTaskSubscriptionRecord",
+    "PublicTaskSubscriptionRepository",
     "RelayEdgeRecord",
     "RelayEdgeRepository",
     "RuleRecord",

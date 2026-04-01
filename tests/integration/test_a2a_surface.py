@@ -32,7 +32,7 @@ def test_agent_card_placeholder_and_healthz(tmp_path, monkeypatch) -> None:
             assert body["name"] == "Codex Collaboration Coordinator"
             assert body["capabilities"] == {
                 "streaming": True,
-                "push_notifications": False,
+                "push_notifications": True,
                 "task_delegation": True,
                 "artifacts": True,
             }

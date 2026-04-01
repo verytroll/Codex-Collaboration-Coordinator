@@ -105,7 +105,10 @@ class A2AAdapterService:
             created_at=existing.created_at if existing is not None else now,
             updated_at=now,
         )
-        saved = await (self.task_repository.update(record) if existing is not None else self.task_repository.create(record))
+        if existing is not None:
+            saved = await self.task_repository.update(record)
+        else:
+            saved = await self.task_repository.create(record)
         return A2ATaskProjection(record=saved, payload=payload)
 
     async def get_task(self, task_id: str) -> A2ATaskProjection | None:
@@ -118,7 +121,10 @@ class A2AAdapterService:
     async def list_tasks(self, session_id: str) -> list[A2ATaskProjection]:
         """Return projected tasks for a session."""
         records = await self.task_repository.list_by_session(session_id)
-        return [A2ATaskProjection(record=record, payload=self._parse_payload(record)) for record in records]
+        return [
+            A2ATaskProjection(record=record, payload=self._parse_payload(record))
+            for record in records
+        ]
 
     async def get_task_by_job(self, job_id: str) -> A2ATaskProjection | None:
         """Return a projected task by job id."""
@@ -157,6 +163,10 @@ class A2AAdapterService:
             "relay_template_key": phase.relay_template_key if phase is not None else None,
             "primary_artifact_id": primary_artifact.id if primary_artifact is not None else None,
             "artifacts": task_artifacts,
+            "started_at": job.started_at,
+            "completed_at": job.completed_at,
+            "error_code": job.error_code,
+            "error_message": job.error_message,
             "metadata": {
                 "channel_key": job.channel_key,
                 "priority": job.priority,

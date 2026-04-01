@@ -1,5 +1,29 @@
 """Pydantic API models."""
 
+from app.models.api.a2a_adapter import (
+    A2AAdapterArtifactResponse,
+    A2ATaskEnvelope,
+    A2ATaskListEnvelope,
+    A2ATaskResponse,
+)
+from app.models.api.a2a_events import (
+    A2APublicTaskEventEnvelope,
+    A2APublicTaskEventListEnvelope,
+    A2APublicTaskEventResponse,
+    A2APublicTaskEventType,
+    A2APublicTaskSubscriptionCreateRequest,
+    A2APublicTaskSubscriptionEnvelope,
+    A2APublicTaskSubscriptionResponse,
+)
+from app.models.api.a2a_public import (
+    A2APublicTaskArtifactResponse,
+    A2APublicTaskCreateRequest,
+    A2APublicTaskEnvelope,
+    A2APublicTaskErrorResponse,
+    A2APublicTaskListEnvelope,
+    A2APublicTaskResponse,
+    A2APublicTaskStatusResponse,
+)
 from app.models.api.agents import (
     AgentCreateRequest,
     AgentEnvelope,
@@ -13,12 +37,6 @@ from app.models.api.artifacts import (
     TranscriptExportListEnvelope,
     TranscriptExportResponse,
 )
-from app.models.api.a2a_adapter import (
-    A2AAdapterArtifactResponse,
-    A2ATaskEnvelope,
-    A2ATaskListEnvelope,
-    A2ATaskResponse,
-)
 from app.models.api.channels import (
     ChannelCreateRequest,
     ChannelEnvelope,
@@ -31,18 +49,17 @@ from app.models.api.jobs import (
     ApprovalRequestResponse,
     ArtifactListEnvelope,
     ArtifactResponse,
-    JobCreateRequest,
     JobControlRequest,
+    JobCreateRequest,
     JobDetailResponse,
     JobEnvelope,
     JobEventListEnvelope,
     JobEventResponse,
-    JobInputResponse,
     JobInputRequest,
+    JobInputResponse,
     JobListEnvelope,
     JobResponse,
 )
-from app.models.api.rules import RuleCreateRequest, RuleEnvelope, RuleListEnvelope, RuleResponse
 from app.models.api.messages import (
     MessageCreateEnvelope,
     MessageCreateRequest,
@@ -50,6 +67,27 @@ from app.models.api.messages import (
     MessageListEnvelope,
     MessageResponse,
     MessageRoutingResponse,
+)
+from app.models.api.participants import (
+    ParticipantCreateRequest,
+    ParticipantEnvelope,
+    ParticipantListEnvelope,
+    ParticipantPolicyRequest,
+    ParticipantPolicyResponse,
+    ParticipantResponse,
+    ParticipantUpdateRequest,
+)
+from app.models.api.phases import (
+    PhaseEnvelope,
+    PhaseListEnvelope,
+    PhasePresetListEnvelope,
+    PhasePresetResponse,
+    PhaseResponse,
+)
+from app.models.api.presence import (
+    PresenceEnvelope,
+    PresenceHeartbeatRequest,
+    PresenceHeartbeatResponse,
 )
 from app.models.api.review import (
     RelayTemplateEnvelope,
@@ -61,27 +99,7 @@ from app.models.api.review import (
     ReviewListEnvelope,
     ReviewResponse,
 )
-from app.models.api.phases import (
-    PhaseEnvelope,
-    PhaseListEnvelope,
-    PhasePresetListEnvelope,
-    PhasePresetResponse,
-    PhaseResponse,
-)
-from app.models.api.participants import (
-    ParticipantCreateRequest,
-    ParticipantEnvelope,
-    ParticipantListEnvelope,
-    ParticipantPolicyRequest,
-    ParticipantPolicyResponse,
-    ParticipantResponse,
-    ParticipantUpdateRequest,
-)
-from app.models.api.presence import (
-    PresenceEnvelope,
-    PresenceHeartbeatRequest,
-    PresenceHeartbeatResponse,
-)
+from app.models.api.rules import RuleCreateRequest, RuleEnvelope, RuleListEnvelope, RuleResponse
 from app.models.api.sessions import (
     SessionCreateRequest,
     SessionEnvelope,
@@ -107,6 +125,20 @@ __all__ = [
     "A2ATaskEnvelope",
     "A2ATaskListEnvelope",
     "A2ATaskResponse",
+    "A2APublicTaskArtifactResponse",
+    "A2APublicTaskEventEnvelope",
+    "A2APublicTaskEventListEnvelope",
+    "A2APublicTaskEventResponse",
+    "A2APublicTaskEventType",
+    "A2APublicTaskCreateRequest",
+    "A2APublicTaskEnvelope",
+    "A2APublicTaskErrorResponse",
+    "A2APublicTaskListEnvelope",
+    "A2APublicTaskSubscriptionCreateRequest",
+    "A2APublicTaskSubscriptionEnvelope",
+    "A2APublicTaskSubscriptionResponse",
+    "A2APublicTaskResponse",
+    "A2APublicTaskStatusResponse",
     "ChannelCreateRequest",
     "ChannelEnvelope",
     "ChannelListEnvelope",

@@ -1,8 +1,10 @@
 """Service layer package."""
 
+from app.services.a2a_adapter import A2AAdapterService, A2ATaskProjection
+from app.services.a2a_public_service import A2APublicService
 from app.services.approval_manager import ApprovalDecision, ApprovalManager
 from app.services.artifact_manager import ArtifactBundle, ArtifactManager
-from app.services.channel_service import ChannelService, DEFAULT_CHANNELS
+from app.services.channel_service import DEFAULT_CHANNELS, ChannelService
 from app.services.command_handler import CommandExecutionResult, CommandHandler
 from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardDecision, LoopGuardService
@@ -20,27 +22,27 @@ from app.services.permissions import (
     CommandPermissionError,
     CommandPermissions,
 )
-from app.services.a2a_adapter import A2AAdapterService, A2ATaskProjection
-from app.services.presence import PresenceService, PresenceSnapshot
-from app.services.recovery import RecoveryService, RecoverySummary
 from app.services.phase_service import (
     PhaseActivationResult,
     PhasePresetDefinition,
     PhaseService,
 )
-from app.services.relay_templates import RelayTemplateDefinition, RelayTemplatesService
+from app.services.presence import PresenceService, PresenceSnapshot
+from app.services.public_event_stream import PublicEventStreamService
+from app.services.recovery import RecoveryService, RecoverySummary
 from app.services.relay_engine import CodexRelayBridge, RelayEngine, RelayExecutionResult
+from app.services.relay_templates import RelayTemplateDefinition, RelayTemplatesService
+from app.services.review_mode import ReviewDecisionResult, ReviewModeService, ReviewStartResult
 from app.services.rule_engine import RuleEngineService, RuleEvaluationResult
 from app.services.runtime_service import RuntimeService
-from app.services.review_mode import ReviewDecisionResult, ReviewModeService, ReviewStartResult
 from app.services.session_events import record_session_event
-from app.services.transcript_export import TranscriptExportBundle, TranscriptExportService
 from app.services.streaming import StreamingService
 from app.services.thread_mapping import (
     ThreadMappingRecord,
     ThreadMappingService,
     ThreadMappingStore,
 )
+from app.services.transcript_export import TranscriptExportBundle, TranscriptExportService
 
 __all__ = [
     "CodexRelayBridge",
@@ -56,6 +58,8 @@ __all__ = [
     "ArtifactManager",
     "A2AAdapterService",
     "A2ATaskProjection",
+    "A2APublicService",
+    "PublicEventStreamService",
     "JobService",
     "LoopGuardDecision",
     "LoopGuardService",

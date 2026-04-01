@@ -9,8 +9,8 @@ from fastapi import Depends
 
 from app.codex_bridge import CodexProcessManager, LazyCodexBridgeClient
 from app.core.config import get_config
-from app.repositories.agents import AgentRepository, AgentRuntimeRepository
 from app.repositories.a2a_tasks import A2ATaskRepository
+from app.repositories.agents import AgentRepository, AgentRuntimeRepository
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.artifacts import ArtifactRepository
 from app.repositories.channels import SessionChannelRepository
@@ -20,36 +20,40 @@ from app.repositories.messages import MessageMentionRepository, MessageRepositor
 from app.repositories.participants import ParticipantRepository
 from app.repositories.phases import PhaseRepository
 from app.repositories.presence import PresenceRepository
+from app.repositories.public_events import PublicTaskEventRepository
+from app.repositories.public_subscriptions import PublicTaskSubscriptionRepository
 from app.repositories.relay_edges import RelayEdgeRepository
-from app.repositories.rules import RuleRepository
 from app.repositories.reviews import ReviewRepository
+from app.repositories.rules import RuleRepository
 from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRepository
 from app.repositories.transcript_exports import TranscriptExportRepository
+from app.services.a2a_adapter import A2AAdapterService
+from app.services.a2a_public_service import A2APublicService
 from app.services.approval_manager import ApprovalManager
 from app.services.artifact_manager import ArtifactManager
 from app.services.channel_service import ChannelService
 from app.services.command_handler import CommandHandler
+from app.services.debug_service import DebugService
 from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardService
-from app.services.offline_queue import OfflineQueueService
-from app.services.a2a_adapter import A2AAdapterService
-from app.services.participant_policy import ParticipantPolicyService
 from app.services.message_routing import MessageRoutingService
+from app.services.offline_queue import OfflineQueueService
+from app.services.participant_policy import ParticipantPolicyService
 from app.services.permissions import CommandPermissions
 from app.services.phase_service import PhaseService
-from app.services.rule_engine import RuleEngineService
 from app.services.presence import PresenceService
+from app.services.public_event_stream import PublicEventStreamService
 from app.services.recovery import RecoveryService
-from app.services.relay_templates import RelayTemplatesService
 from app.services.relay_engine import CodexRelayBridge, RelayEngine
+from app.services.relay_templates import RelayTemplatesService
 from app.services.review_mode import ReviewModeService
-from app.services.transcript_export import TranscriptExportService
+from app.services.rule_engine import RuleEngineService
 from app.services.runtime_service import RuntimeService
 from app.services.streaming import StreamingService
 from app.services.system_status import SystemStatusService
-from app.services.debug_service import DebugService
 from app.services.thread_mapping import ThreadMappingService, ThreadMappingStore
+from app.services.transcript_export import TranscriptExportService
 
 _THREAD_MAPPING_STORE = ThreadMappingStore()
 
@@ -248,6 +252,20 @@ def get_a2a_task_repository(
 ) -> A2ATaskRepository:
     """Provide an experimental A2A task repository bound to the configured database."""
     return A2ATaskRepository(database_url)
+
+
+def get_public_task_event_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> PublicTaskEventRepository:
+    """Provide a public A2A task event repository bound to the configured database."""
+    return PublicTaskEventRepository(database_url)
+
+
+def get_public_task_subscription_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> PublicTaskSubscriptionRepository:
+    """Provide a public A2A task subscription repository bound to the configured database."""
+    return PublicTaskSubscriptionRepository(database_url)
 
 
 def get_rule_engine_service(
@@ -478,6 +496,53 @@ def get_a2a_adapter_service(
         artifact_repository=artifact_repository,
         session_repository=session_repository,
         phase_service=phase_service,
+    )
+
+
+def get_a2a_public_service(
+    task_repository: Annotated[A2ATaskRepository, Depends(get_a2a_task_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    phase_service: Annotated[PhaseService, Depends(get_phase_service)],
+    event_stream_service: Annotated[
+        PublicEventStreamService,
+        Depends(get_a2a_public_event_stream_service),
+    ],
+) -> A2APublicService:
+    """Provide the public A2A task surface service."""
+    return A2APublicService(
+        adapter_service=A2AAdapterService(
+            task_repository=task_repository,
+            job_repository=job_repository,
+            artifact_repository=artifact_repository,
+            session_repository=session_repository,
+            phase_service=phase_service,
+        ),
+        task_repository=task_repository,
+        session_repository=session_repository,
+        event_stream_service=event_stream_service,
+    )
+
+
+def get_a2a_public_event_stream_service(
+    task_repository: Annotated[A2ATaskRepository, Depends(get_a2a_task_repository)],
+    event_repository: Annotated[
+        PublicTaskEventRepository,
+        Depends(get_public_task_event_repository),
+    ],
+    subscription_repository: Annotated[
+        PublicTaskSubscriptionRepository,
+        Depends(get_public_task_subscription_repository),
+    ],
+    review_repository: Annotated[ReviewRepository, Depends(get_review_repository)],
+) -> PublicEventStreamService:
+    """Provide the public A2A event stream service."""
+    return PublicEventStreamService(
+        task_repository=task_repository,
+        event_repository=event_repository,
+        subscription_repository=subscription_repository,
+        review_repository=review_repository,
     )
 
 

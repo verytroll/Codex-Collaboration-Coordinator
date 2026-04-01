@@ -22,7 +22,7 @@ def _agent_card() -> A2AAgentCardResponse:
         version="0.1.0",
         capabilities=A2AAgentCardCapabilities(
             streaming=True,
-            push_notifications=False,
+            push_notifications=True,
             task_delegation=True,
             artifacts=True,
         ),

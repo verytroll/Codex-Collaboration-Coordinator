@@ -1,6 +1,8 @@
 # A2A Mapping
 
 This document describes the experimental A2A adapter bridge used by F24.
+For the public v1 contract, see `docs/A2A_PUBLIC_API.md`.
+For the companion public event surface, see `docs/A2A_PUBLIC_EVENTS.md`.
 
 ## Internal model
 
@@ -37,15 +39,23 @@ The adapter uses a small translation layer:
 - `input_required` -> `blocked`
 - `auth_required` -> `blocked`
 - `paused_by_loop_guard` -> `blocked`
+- `blocked` -> `blocked`
 - `completed` -> `completed`
 - `failed` -> `failed`
 - `canceled` -> `canceled`
 
 ## Routes
 
+Legacy experimental bridge routes:
+
 - `POST /api/v1/a2a/jobs/{job_id}/project`
-- `GET /api/v1/a2a/tasks/{task_id}`
 - `GET /api/v1/a2a/sessions/{session_id}/tasks`
+
+Public v1 task routes:
+
+- `POST /api/v1/a2a/tasks`
+- `GET /api/v1/a2a/tasks`
+- `GET /api/v1/a2a/tasks/{task_id}`
 
 ## Phase link
 

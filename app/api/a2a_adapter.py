@@ -42,7 +42,9 @@ def _artifact_response(payload: dict[str, object]) -> A2AAdapterArtifactResponse
         title=str(payload.get("title", "")),
         file_name=payload.get("file_name") if isinstance(payload.get("file_name"), str) else None,
         mime_type=payload.get("mime_type") if isinstance(payload.get("mime_type"), str) else None,
-        size_bytes=payload.get("size_bytes") if isinstance(payload.get("size_bytes"), int) else None,
+        size_bytes=(
+            payload.get("size_bytes") if isinstance(payload.get("size_bytes"), int) else None
+        ),
         checksum_sha256=(
             payload.get("checksum_sha256")
             if isinstance(payload.get("checksum_sha256"), str)
@@ -100,7 +102,11 @@ async def _ensure_session_exists(
         )
 
 
-@router.post("/jobs/{job_id}/project", response_model=A2ATaskEnvelope, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/jobs/{job_id}/project",
+    response_model=A2ATaskEnvelope,
+    status_code=status.HTTP_201_CREATED,
+)
 async def project_job(
     job_id: str,
     adapter_service: Annotated[A2AAdapterService, Depends(get_a2a_adapter_service)],
@@ -112,20 +118,6 @@ async def project_job(
     return A2ATaskEnvelope(task=_task_response(projection))
 
 
-@router.get("/tasks/{task_id}", response_model=A2ATaskEnvelope)
-async def get_task(
-    task_id: str,
-    adapter_service: Annotated[A2AAdapterService, Depends(get_a2a_adapter_service)],
-) -> A2ATaskEnvelope:
-    projection = await adapter_service.get_task(task_id)
-    if projection is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"A2A task not found: {task_id}",
-        )
-    return A2ATaskEnvelope(task=_task_response(projection))
-
-
 @router.get("/sessions/{session_id}/tasks", response_model=A2ATaskListEnvelope)
 async def list_session_tasks(
     session_id: str,
@@ -134,5 +126,8 @@ async def list_session_tasks(
 ) -> A2ATaskListEnvelope:
     await _ensure_session_exists(session_repository, session_id)
     return A2ATaskListEnvelope(
-        tasks=[_task_response(projection) for projection in await adapter_service.list_tasks(session_id)]
+        tasks=[
+            _task_response(projection)
+            for projection in await adapter_service.list_tasks(session_id)
+        ]
     )

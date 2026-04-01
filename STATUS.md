@@ -1,15 +1,19 @@
 ﻿# STATUS.md
 
 ### Trạng thái hiện tại
-- Ngày cập nhật: 2026-03-31
+- Ngày cập nhật: 2026-04-01
 - Pha hiện tại: V3 planning
-- Đang tập trung vào: Bắt đầu PR27 với A2A public API v1 trên nền adapter bridge của V2
+- Đang tập trung vào: Bắt đầu PR29 với session templates và orchestration presets
 - Người thực hiện: Codex
 
 ### Đang làm
-- [ ] PR27 - A2A public API v1
+- [ ] PR29 - Session templates và orchestration presets
 
 ### Vừa hoàn thành
+- [x] F25 - Chuẩn hóa A2A public API v1 trên nền adapter bridge - 2026-04-01
+- [x] F26 - Thêm public subscribe/push event model cho task - 2026-04-01
+- [x] PR27 - A2A public API v1 - 2026-04-01
+- [x] PR28 - Public subscribe/push event surface - 2026-04-01
 - [x] Chuẩn bị backlog V3 - 2026-03-31
 - [x] F24 - Thêm phase presets và experimental A2A adapter bridge - 2026-03-31
 - [x] F23 - Tạo review mode và structured relay templates - 2026-03-31
@@ -23,9 +27,9 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] PR27 - A2A public API v1
-- [ ] PR28 - Public subscribe/push event surface
 - [ ] PR29 - Session templates và orchestration presets
+- [ ] PR30 - Advanced review orchestration và phase gates
+- [ ] PR31 - Runtime pools và isolated work contexts
 
 ### Blockers / Rủi ro
 - Không có blocker hiện tại.
