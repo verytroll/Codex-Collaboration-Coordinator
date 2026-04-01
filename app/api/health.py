@@ -35,6 +35,7 @@ async def readinessz(
             "name": request.app.title,
             "version": request.app.version,
             "env": config.app_env,
+            "deployment_profile": config.deployment_profile,
         },
         **payload,
     )

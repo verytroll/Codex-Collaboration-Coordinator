@@ -19,7 +19,14 @@ DEFAULT_ACCESS_BOUNDARY_MODE_LOCAL = "local"
 DEFAULT_ACCESS_BOUNDARY_MODE_TRUSTED = "trusted"
 DEFAULT_ACCESS_BOUNDARY_MODE_PROTECTED = "protected"
 DEFAULT_ACCESS_TOKEN_HEADER = "X-Access-Token"
-
+DEFAULT_DEPLOYMENT_PROFILE_LOCAL_DEV = "local-dev"
+DEFAULT_DEPLOYMENT_PROFILE_TRUSTED_DEMO = "trusted-demo"
+DEFAULT_DEPLOYMENT_PROFILE_SMALL_TEAM = "small-team"
+VALID_DEPLOYMENT_PROFILES = {
+    DEFAULT_DEPLOYMENT_PROFILE_LOCAL_DEV,
+    DEFAULT_DEPLOYMENT_PROFILE_TRUSTED_DEMO,
+    DEFAULT_DEPLOYMENT_PROFILE_SMALL_TEAM,
+}
 
 def _parse_bool(value: str | None, default: bool) -> bool:
     if value is None:
@@ -31,6 +38,19 @@ def _default_access_boundary_mode(app_env: str) -> str:
     if app_env.strip().lower() in {"development", "testing"}:
         return DEFAULT_ACCESS_BOUNDARY_MODE_LOCAL
     return DEFAULT_ACCESS_BOUNDARY_MODE_TRUSTED
+
+
+def _default_deployment_profile(app_env: str) -> str:
+    if app_env.strip().lower() in {"development", "testing"}:
+        return DEFAULT_DEPLOYMENT_PROFILE_LOCAL_DEV
+    return DEFAULT_DEPLOYMENT_PROFILE_TRUSTED_DEMO
+
+
+def _normalize_deployment_profile(value: str, app_env: str) -> str:
+    normalized = value.strip().lower()
+    if normalized in VALID_DEPLOYMENT_PROFILES:
+        return normalized
+    return _default_deployment_profile(app_env)
 
 
 def _normalize_access_boundary_mode(value: str) -> str:
@@ -45,11 +65,56 @@ def _normalize_access_boundary_mode(value: str) -> str:
 
 
 @dataclass(frozen=True, slots=True)
+class DeploymentProfileDefaults:
+    """Fallback values associated with a deployment profile."""
+
+    app_env: str
+    app_host: str
+    app_reload: bool
+    database_url: str
+    access_boundary_mode: str
+
+
+_DEPLOYMENT_PROFILE_DEFAULTS: dict[str, DeploymentProfileDefaults] = {
+    DEFAULT_DEPLOYMENT_PROFILE_LOCAL_DEV: DeploymentProfileDefaults(
+        app_env=DEFAULT_APP_ENV,
+        app_host="127.0.0.1",
+        app_reload=True,
+        database_url="sqlite:///./codex_coordinator.db",
+        access_boundary_mode=DEFAULT_ACCESS_BOUNDARY_MODE_LOCAL,
+    ),
+    DEFAULT_DEPLOYMENT_PROFILE_TRUSTED_DEMO: DeploymentProfileDefaults(
+        app_env="production",
+        app_host="127.0.0.1",
+        app_reload=False,
+        database_url="sqlite:///./codex_coordinator.db",
+        access_boundary_mode=DEFAULT_ACCESS_BOUNDARY_MODE_TRUSTED,
+    ),
+    DEFAULT_DEPLOYMENT_PROFILE_SMALL_TEAM: DeploymentProfileDefaults(
+        app_env="production",
+        app_host="0.0.0.0",
+        app_reload=False,
+        database_url="sqlite:///./data/codex_coordinator.db",
+        access_boundary_mode=DEFAULT_ACCESS_BOUNDARY_MODE_TRUSTED,
+    ),
+}
+
+
+def get_deployment_profile_defaults(deployment_profile: str) -> DeploymentProfileDefaults:
+    """Return canonical defaults for a deployment profile."""
+    return _DEPLOYMENT_PROFILE_DEFAULTS.get(
+        deployment_profile,
+        _DEPLOYMENT_PROFILE_DEFAULTS[DEFAULT_DEPLOYMENT_PROFILE_TRUSTED_DEMO],
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class AppConfig:
     """Runtime configuration loaded from environment variables."""
 
     app_name: str = DEFAULT_APP_NAME
     app_env: str = DEFAULT_APP_ENV
+    deployment_profile: str = DEFAULT_DEPLOYMENT_PROFILE_LOCAL_DEV
     app_host: str = DEFAULT_APP_HOST
     app_port: int = DEFAULT_APP_PORT
     app_reload: bool = DEFAULT_APP_RELOAD
@@ -64,11 +129,20 @@ class AppConfig:
 
 def load_config() -> AppConfig:
     """Load configuration from environment variables."""
-    app_env = os.getenv("APP_ENV", DEFAULT_APP_ENV)
+    app_env_value = os.getenv("APP_ENV")
+    deployment_profile_value = os.getenv("DEPLOYMENT_PROFILE")
+    if deployment_profile_value is None or not deployment_profile_value.strip():
+        deployment_profile = _default_deployment_profile(app_env_value or DEFAULT_APP_ENV)
+    else:
+        deployment_profile = _normalize_deployment_profile(
+            deployment_profile_value,
+            app_env_value or DEFAULT_APP_ENV,
+        )
+    profile_defaults = get_deployment_profile_defaults(deployment_profile)
     access_boundary_mode_value = os.getenv("ACCESS_BOUNDARY_MODE")
     access_token_header_value = os.getenv("ACCESS_TOKEN_HEADER")
     if access_boundary_mode_value is None or not access_boundary_mode_value.strip():
-        access_boundary_mode = _default_access_boundary_mode(app_env)
+        access_boundary_mode = profile_defaults.access_boundary_mode
     else:
         access_boundary_mode = _normalize_access_boundary_mode(access_boundary_mode_value)
     if access_token_header_value is None or not access_token_header_value.strip():
@@ -77,12 +151,13 @@ def load_config() -> AppConfig:
         access_token_header = access_token_header_value.strip()
     return AppConfig(
         app_name=os.getenv("APP_NAME", DEFAULT_APP_NAME),
-        app_env=app_env,
-        app_host=os.getenv("APP_HOST", DEFAULT_APP_HOST),
+        app_env=app_env_value or profile_defaults.app_env,
+        deployment_profile=deployment_profile,
+        app_host=os.getenv("APP_HOST", profile_defaults.app_host),
         app_port=int(os.getenv("APP_PORT", str(DEFAULT_APP_PORT))),
-        app_reload=_parse_bool(os.getenv("APP_RELOAD"), DEFAULT_APP_RELOAD),
+        app_reload=_parse_bool(os.getenv("APP_RELOAD"), profile_defaults.app_reload),
         log_level=os.getenv("LOG_LEVEL", DEFAULT_LOG_LEVEL).upper(),
-        database_url=os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL),
+        database_url=os.getenv("DATABASE_URL", profile_defaults.database_url),
         codex_bridge_mode=os.getenv("CODEX_BRIDGE_MODE", DEFAULT_CODEX_BRIDGE_MODE),
         request_id_header=os.getenv("REQUEST_ID_HEADER", DEFAULT_REQUEST_ID_HEADER),
         access_boundary_mode=access_boundary_mode,

@@ -155,6 +155,8 @@ def _seed_approval(database_url: str, *, approval_id: str, job_id: str, agent_id
 def test_system_status_and_debug_surface(tmp_path, monkeypatch) -> None:
     database_url = _database_url(tmp_path)
     monkeypatch.setenv("DATABASE_URL", database_url)
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("DEPLOYMENT_PROFILE", "trusted-demo")
     _migrate(database_url)
     app_main.get_config.cache_clear()
     app = app_main.create_app()
@@ -201,6 +203,7 @@ def test_system_status_and_debug_surface(tmp_path, monkeypatch) -> None:
             assert status_response.status_code == 200
             status_payload = status_response.json()
             assert status_payload["app"]["name"] == app.title
+            assert status_payload["app"]["deployment_profile"] == "trusted-demo"
             assert status_payload["aggregates"]["active_sessions"] == 1
             assert status_payload["aggregates"]["registered_agents"] == 2
             assert status_payload["aggregates"]["jobs"]["queued"] == 1

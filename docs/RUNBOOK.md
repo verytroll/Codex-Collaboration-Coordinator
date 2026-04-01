@@ -26,14 +26,16 @@ pip install -e .[dev]
 
 1. Keep `DATABASE_URL` pointed at a writable local SQLite file.
 2. Set `CODEX_BRIDGE_MODE=local` unless you are explicitly testing another bridge mode.
-3. Set `ACCESS_BOUNDARY_MODE=trusted` for the default external-safety baseline, or
+3. Use `DEPLOYMENT_PROFILE=small-team` for the packaged deployment path, or
+   `local-dev` / `trusted-demo` when you want a development or demo profile.
+4. Set `ACCESS_BOUNDARY_MODE=trusted` for the default external-safety baseline, or
    `protected` with `ACCESS_TOKEN` when you want operator/public routes locked down.
-4. Run the app with `.\scripts\run.ps1` or your preferred ASGI host command.
-5. Confirm `GET /api/v1/healthz` returns `{"status":"ok"}`.
-6. Confirm `GET /api/v1/readinessz` returns a ready response with `checks.db.status=ok`
+5. Run the app with `.\scripts\run.ps1` or your preferred ASGI host command.
+6. Confirm `GET /api/v1/healthz` returns `{"status":"ok"}`.
+7. Confirm `GET /api/v1/readinessz` returns a ready response with `checks.db.status=ok`
    and `checks.migrations.status=ok`.
-7. Confirm `GET /api/v1/system/status` reports the expected aggregates and bridge state.
-8. Confirm `GET /operator` renders the operator shell and `GET /api/v1/operator/shell`
+8. Confirm `GET /api/v1/system/status` reports the expected aggregates and bridge state.
+9. Confirm `GET /operator` renders the operator shell and `GET /api/v1/operator/shell`
    returns the bootstrap payload for a selected session.
 
 ## Release candidate
@@ -51,6 +53,7 @@ The release gate performs:
 3. migration checksum/idempotency verification
 4. demo seed reset verification
 5. smoke validation against the running app
+6. release packaging into `dist/release`
 
 ## Incident triage
 

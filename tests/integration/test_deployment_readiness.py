@@ -30,6 +30,7 @@ def test_deployment_readiness_returns_ready_payload(tmp_path, monkeypatch) -> No
             payload = response.json()
             assert payload["status"] == "ok"
             assert payload["app"]["env"] == "production"
+            assert payload["app"]["deployment_profile"] == "trusted-demo"
             assert payload["checks"]["db"]["status"] == "ok"
             assert payload["checks"]["migrations"]["status"] == "ok"
             assert "migration(s) applied" in payload["checks"]["migrations"]["detail"]

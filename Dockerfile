@@ -3,6 +3,7 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     APP_NAME=codex-collaboration-coordinator \
+    DEPLOYMENT_PROFILE=small-team \
     APP_ENV=production \
     APP_HOST=0.0.0.0 \
     APP_PORT=8000 \

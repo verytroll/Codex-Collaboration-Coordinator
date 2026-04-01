@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 
 import app.main as app_main
 from app.core.logging import RequestIdFilter
+from app.core.telemetry import reset_telemetry_service
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
 from app.repositories.a2a_tasks import A2ATaskRecord, A2ATaskRepository
 from app.repositories.agents import (
@@ -342,6 +343,7 @@ def _seed_run(
 def test_telemetry_surface_and_correlation(tmp_path, monkeypatch) -> None:
     database_url = _database_url(tmp_path)
     monkeypatch.setenv("DATABASE_URL", database_url)
+    reset_telemetry_service()
     _migrate(database_url)
     app_main.get_config.cache_clear()
     app = app_main.create_app()

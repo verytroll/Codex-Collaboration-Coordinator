@@ -198,6 +198,11 @@ class CoordinatorTelemetryService:
             )
         return merged
 
+    def clear(self) -> None:
+        """Remove all stored telemetry samples."""
+        with self._lock:
+            self._samples.clear()
+
 
 _TELEMETRY_SERVICE = CoordinatorTelemetryService()
 
@@ -205,3 +210,8 @@ _TELEMETRY_SERVICE = CoordinatorTelemetryService()
 def get_telemetry_service() -> CoordinatorTelemetryService:
     """Return the shared in-memory telemetry service."""
     return _TELEMETRY_SERVICE
+
+
+def reset_telemetry_service() -> None:
+    """Clear the shared telemetry timeline for test isolation."""
+    _TELEMETRY_SERVICE.clear()

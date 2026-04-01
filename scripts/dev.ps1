@@ -8,6 +8,9 @@ if ([string]::IsNullOrWhiteSpace($env:DATABASE_URL)) {
 if ([string]::IsNullOrWhiteSpace($env:APP_ENV)) {
     $env:APP_ENV = "development"
 }
+if ([string]::IsNullOrWhiteSpace($env:DEPLOYMENT_PROFILE)) {
+    $env:DEPLOYMENT_PROFILE = "local-dev"
+}
 if ([string]::IsNullOrWhiteSpace($env:APP_HOST)) {
     $env:APP_HOST = "127.0.0.1"
 }
@@ -16,9 +19,6 @@ if ([string]::IsNullOrWhiteSpace($env:APP_PORT)) {
 }
 if ([string]::IsNullOrWhiteSpace($env:APP_RELOAD)) {
     $env:APP_RELOAD = "true"
-}
-if ([string]::IsNullOrWhiteSpace($env:ACCESS_BOUNDARY_MODE)) {
-    $env:ACCESS_BOUNDARY_MODE = "local"
 }
 
 if ($env:APP_RELOAD.ToLowerInvariant() -eq "true") {

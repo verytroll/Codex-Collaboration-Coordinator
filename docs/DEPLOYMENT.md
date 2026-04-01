@@ -12,11 +12,23 @@ This project is intentionally conservative for external deployment:
 The container and script surface are designed for a small deployment profile first, not a
 distributed platform.
 
+## Deployment profiles
+
+| Profile | Intended use | Default host | Default reload | Default DB | Default access |
+| --- | --- | --- | --- | --- | --- |
+| `local-dev` | everyday development | `127.0.0.1` | `true` | `sqlite:///./codex_coordinator.db` | `local` |
+| `trusted-demo` | demo or reverse-proxy testing | `127.0.0.1` | `false` | `sqlite:///./codex_coordinator.db` | `trusted` |
+| `small-team` | packaged small-team deployment | `0.0.0.0` | `false` | `sqlite:///./data/codex_coordinator.db` | `trusted` |
+
+`DEPLOYMENT_PROFILE` selects one of these profiles. Any explicit environment variable
+still wins if you override an individual setting.
+
 ## Environment variables
 
 Recommended deployment defaults:
 
 - `APP_ENV=production`
+- `DEPLOYMENT_PROFILE=small-team`
 - `APP_HOST=0.0.0.0`
 - `APP_PORT=8000`
 - `APP_RELOAD=false`
@@ -33,7 +45,6 @@ Access boundary profiles:
 - `trusted` allows local clients without a token and requires a token for non-local access.
 - `protected` requires `ACCESS_TOKEN` on operator/public routes.
 
-The default profile is `local` in development/testing and `trusted` outside that path.
 If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
 (`X-Access-Token` by default).
 
@@ -71,6 +82,17 @@ docker run --rm -p 8000:8000 `
 ```
 
 The health check in `Dockerfile` polls `GET /api/v1/readinessz`.
+
+## Release packaging
+
+Run the release packager to build a curated bundle for the `small-team` profile:
+
+```powershell
+.\scripts\package_release.ps1
+```
+
+The bundle is written to `dist/release/` and includes a profile-specific env file plus
+`release-manifest.json` with the canonical deployment defaults.
 
 ## Operational assumptions
 

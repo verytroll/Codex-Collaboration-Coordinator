@@ -2,7 +2,7 @@
 param(
     [string]$BaseUrl = "http://127.0.0.1:8000",
     [string]$DatabaseUrl = $(if ([string]::IsNullOrWhiteSpace($env:DATABASE_URL)) {
-            "sqlite:///./codex_coordinator.db"
+            "sqlite:///./data/codex_coordinator.db"
         } else {
             $env:DATABASE_URL
         }),
@@ -44,11 +44,15 @@ try {
     Write-Host "Running smoke checks..."
     $env:DATABASE_URL = $DatabaseUrl
     $env:APP_ENV = "production"
+    $env:DEPLOYMENT_PROFILE = "small-team"
     if ($IncludeRelay) {
         & (Join-Path $PSScriptRoot "smoke.ps1") -BaseUrl $BaseUrl -DatabaseUrl $DatabaseUrl -StartupTimeoutSec $StartupTimeoutSec -IncludeRelay
     } else {
         & (Join-Path $PSScriptRoot "smoke.ps1") -BaseUrl $BaseUrl -DatabaseUrl $DatabaseUrl -StartupTimeoutSec $StartupTimeoutSec
     }
+
+    Write-Host "Building release package..."
+    & (Join-Path $PSScriptRoot "package_release.ps1") -OutputDir (Join-Path "dist" "release") -DeploymentProfile "small-team"
 } finally {
     foreach ($path in @($migrationDatabase, $seedDatabase)) {
         if (-not [string]::IsNullOrWhiteSpace($path)) {

@@ -17,9 +17,9 @@ pip install -e .[dev]
 1. Copy `.env.example` to `.env` if you want to override defaults.
 2. Keep `DATABASE_URL` pointed at a local SQLite file.
 3. Leave `CODEX_BRIDGE_MODE=local` for the MVP flow.
-4. Use `ACCESS_BOUNDARY_MODE=local` for everyday development, `trusted` for local-demo or
-   reverse-proxy testing, and `protected` only when you want operator/public routes to
-   require a token.
+4. Use `DEPLOYMENT_PROFILE=local-dev` for everyday development, `trusted-demo` for a
+   local demo or reverse-proxy test, and `small-team` for a packaged deployment-like
+   startup.
 5. If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
    (default: `X-Access-Token`).
 6. Open the operator shell at `http://127.0.0.1:8000/operator` after the app starts.
@@ -49,12 +49,14 @@ To run the full release-readiness checklist locally:
 ```
 
 `release.ps1` runs `pytest`, Ruff, migration verification, demo seed reset verification,
-and the smoke gate. It expects the local app to be reachable for the smoke step.
+the smoke gate, and the release packager. It expects the local app to be reachable for
+the smoke step and defaults to the small-team database path.
 If `ACCESS_TOKEN` is set in the environment, the smoke script sends it automatically to
 protected operator/public routes.
 
 For a deployment-style startup, use `.\scripts\run.ps1`. That script binds to
-`0.0.0.0` by default and keeps reload disabled unless you override `APP_RELOAD=true`.
+`0.0.0.0` by default, selects the `small-team` deployment profile, and keeps reload
+disabled unless you override `APP_RELOAD=true`.
 
 ## Seed demo data
 

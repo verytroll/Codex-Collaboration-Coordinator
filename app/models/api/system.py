@@ -26,6 +26,7 @@ class SystemAppInfoResponse(BaseModel):
     name: str
     version: str
     env: str
+    deployment_profile: str
 
 
 class SystemComponentResponse(BaseModel):

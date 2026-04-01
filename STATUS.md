@@ -3,12 +3,14 @@
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-01
 - Pha hiện tại: V5 implementation
-- Đang tập trung vào: small-team deployment profile sau PR41
+- Đang tập trung vào: next roadmap sau PR42
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F40 - Small-team deployment profile và release packaging - 2026-04-01
+- [x] PR42 - Small-team deployment profile và release packaging - 2026-04-01
 - [x] F39 - A2A interoperability và adoption kit - 2026-04-01
 - [x] PR41 - A2A interoperability và adoption kit - 2026-04-01
 - [x] F38 - Realtime operator surface - 2026-04-01
@@ -58,7 +60,7 @@
 - [x] PR39 / F37: thin operator UI shell - 2026-04-01
 - [x] PR40 / F38: realtime operator surface - 2026-04-01
 - [x] PR41 / F39: A2A interoperability và adoption kit - 2026-04-01
-- [ ] Sau PR41, mở PR42 / F40: small-team deployment profile và release packaging
+- [x] PR42 / F40: small-team deployment profile và release packaging - 2026-04-01
 
 ### Blockers / Rủi ro
 - Chưa có blocker hiện tại

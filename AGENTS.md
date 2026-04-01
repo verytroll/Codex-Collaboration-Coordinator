@@ -68,8 +68,8 @@ Naming:
 When implementing a feature:
 
 1. Read STATUS.md to confirm the active phase
-2. Read the matching implementation backlog (`IMPLEMENTATION_TASKS_V4.md`)
-3. Follow the matching implementation order document (`IMPLEMENTATION_ORDER_V4.md`)
+2. Read the matching implementation backlog (`IMPLEMENTATION_TASKS_V5.md`)
+3. Follow the matching implementation order document (`IMPLEMENTATION_ORDER_V5.md`)
 4. Implement the smallest working unit
 5. Add tests
 6. Run tests

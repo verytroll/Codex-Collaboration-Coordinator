@@ -20,6 +20,7 @@ Multi-agent coordination system for session-based collaboration, routing, review
    - `./scripts/dev.ps1` auto-applies migrations, then starts uvicorn
    - `./scripts/seed.ps1`
    - `./scripts/smoke.ps1` checks health, readiness, and the main smoke flow
+   - `./scripts/package_release.ps1` builds the curated small-team release bundle
    - `./scripts/release.ps1` runs the release checklist against a local checkout
    - `./scripts/test.ps1`
    - `./scripts/lint.ps1`
@@ -49,6 +50,7 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - [Post-MVP implementation order (PR19-PR26)](IMPLEMENTATION_ORDER_V2.md)
 - [V3 implementation order (PR27-PR33)](IMPLEMENTATION_ORDER_V3.md)
 - [V4 implementation order (PR34-PR37)](IMPLEMENTATION_ORDER_V4.md)
+- [V5 implementation order (PR38-PR42)](IMPLEMENTATION_ORDER_V5.md)
 
 ## Current status
 
@@ -62,3 +64,4 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - `GET /.well-known/agent-card.json` remains available as an A2A-ready discovery placeholder.
 - `GET /api/v1/readinessz` reports deployment readiness for a booted database-backed runtime.
 - V4 foundation is complete through PR37, including hardening, telemetry, release readiness, and deployment readiness.
+- V5 foundation is complete through PR42, including access boundary, operator UI shell, realtime operator surface, A2A interoperability, and small-team deployment packaging.

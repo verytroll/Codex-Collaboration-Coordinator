@@ -27,6 +27,7 @@ async def get_system_status(
             "name": request.app.title,
             "version": request.app.version,
             "env": config.app_env,
+            "deployment_profile": config.deployment_profile,
         },
         **payload,
     )
