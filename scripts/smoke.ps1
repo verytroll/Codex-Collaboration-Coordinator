@@ -69,9 +69,15 @@ Write-Host "Checking health endpoints..."
 $health = Wait-ForServer -Path "/api/v1/healthz" -TimeoutSec $StartupTimeoutSec
 Assert-Condition ($health.status -eq "ok") "healthz did not return ok"
 
+Write-Host "Checking deployment readiness..."
+$readiness = Wait-ForServer -Path "/api/v1/readinessz" -TimeoutSec $StartupTimeoutSec
+Assert-Condition ($readiness.status -eq "ok") "readinessz did not return ok"
+Assert-Condition ($readiness.checks.db.status -eq "ok") "readiness db check failed"
+Assert-Condition ($readiness.checks.migrations.status -eq "ok") "readiness migration check failed"
+
 $agentCard = Invoke-ApiGet "/.well-known/agent-card.json"
 Assert-Condition ($agentCard.capabilities.streaming -eq $true) "agent-card streaming capability missing"
-Assert-Condition ($agentCard.capabilities.push_notifications -eq $false) "agent-card push_notifications should be false"
+Assert-Condition ($agentCard.capabilities.push_notifications -eq $true) "agent-card push_notifications should be true"
 
 Write-Host "Seeding demo data..."
 & (Join-Path $PSScriptRoot "seed.ps1")
@@ -79,7 +85,24 @@ Write-Host "Seeding demo data..."
 Write-Host "Checking seeded objects..."
 $agents = Invoke-ApiGet "/api/v1/agents"
 $sessions = Invoke-ApiGet "/api/v1/sessions"
-Assert-Condition (@($agents.agents | Where-Object { $_.id -eq "agt_builder_demo" }).Count -ge 1) "builder demo agent missing"
+function Get-AgentIdByDisplayName {
+    param(
+        [object[]]$Items,
+        [string]$DisplayName
+    )
+    $match = @($Items | Where-Object { $_.display_name -eq $DisplayName })[0]
+    if ($null -eq $match) {
+        return $null
+    }
+    return $match.id
+}
+
+$plannerAgentId = Get-AgentIdByDisplayName -Items $agents.agents -DisplayName "Planner"
+$builderAgentId = Get-AgentIdByDisplayName -Items $agents.agents -DisplayName "Builder"
+$reviewerAgentId = Get-AgentIdByDisplayName -Items $agents.agents -DisplayName "Reviewer"
+Assert-Condition (-not [string]::IsNullOrWhiteSpace($plannerAgentId)) "planner demo agent missing"
+Assert-Condition (-not [string]::IsNullOrWhiteSpace($builderAgentId)) "builder demo agent missing"
+Assert-Condition (-not [string]::IsNullOrWhiteSpace($reviewerAgentId)) "reviewer demo agent missing"
 Assert-Condition (@($sessions.sessions | Where-Object { $_.id -eq "ses_demo" }).Count -ge 1) "demo session missing"
 
 Write-Host "Checking phase presets..."
@@ -99,7 +122,7 @@ Assert-Condition ($finalizePhase.phase.phase_key -eq "finalize") "finalize phase
 Write-Host "Posting a normal message..."
 $messageResponse = Invoke-ApiPost "/api/v1/sessions/ses_demo/messages" @{
     sender_type       = "agent"
-    sender_id         = "agt_builder_demo"
+    sender_id         = $plannerAgentId
     content           = "hello from smoke"
     reply_to_message_id = $null
 }
@@ -112,7 +135,7 @@ Write-Host "Creating a phase-aware command job..."
 $jobCountBefore = @((Invoke-ApiGet "/api/v1/jobs?session_id=ses_demo").jobs).Count
 $commandResponse = Invoke-ApiPost "/api/v1/sessions/ses_demo/messages" @{
     sender_type         = "agent"
-    sender_id           = "agt_planner_demo"
+    sender_id           = $plannerAgentId
     content             = "/new #builder smoke finalize handoff"
     reply_to_message_id = $null
     channel_key         = "general"
@@ -122,7 +145,7 @@ Assert-Condition ($commandResponse.message.message_type -eq "command") "command 
 $jobsAfter = @((Invoke-ApiGet "/api/v1/jobs?session_id=ses_demo").jobs)
 Assert-Condition ($jobsAfter.Count -gt $jobCountBefore) "command did not create a new job"
 $smokeJob = $jobsAfter | Sort-Object created_at, id | Select-Object -Last 1
-Assert-Condition ($smokeJob.assigned_agent_id -eq "agt_builder_demo") "new job targeted the wrong agent"
+Assert-Condition ($smokeJob.assigned_agent_id -eq $builderAgentId) "new job targeted the wrong agent"
 Assert-Condition ($smokeJob.instructions -match "builder_to_reviewer") "finalize phase did not use the expected relay template"
 Assert-Condition ($smokeJob.instructions -match "phase_key") "phase metadata missing from job instructions"
 Assert-Condition ($smokeJob.instructions -match "finalize") "finalize phase metadata missing from job instructions"
@@ -140,7 +163,7 @@ if ($IncludeRelay) {
     Write-Host "Posting a mention message to exercise relay..."
     $relayResponse = Invoke-ApiPost "/api/v1/sessions/ses_demo/messages" @{
         sender_type       = "agent"
-        sender_id         = "agt_builder_demo"
+        sender_id         = $builderAgentId
         content           = "#builder smoke relay"
         reply_to_message_id = $null
     }

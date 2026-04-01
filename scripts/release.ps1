@@ -60,11 +60,12 @@ try {
         "seed"
     )
 
-    Write-Host "Running smoke checks..."
-    $env:DATABASE_URL = $DatabaseUrl
-    $smokeArgs = @(
-        "-BaseUrl", $BaseUrl,
-        "-DatabaseUrl", $DatabaseUrl,
+Write-Host "Running smoke checks..."
+$env:DATABASE_URL = $DatabaseUrl
+$env:APP_ENV = "production"
+$smokeArgs = @(
+    "-BaseUrl", $BaseUrl,
+    "-DatabaseUrl", $DatabaseUrl,
         "-StartupTimeoutSec", $StartupTimeoutSec.ToString()
     )
     if ($IncludeRelay) {

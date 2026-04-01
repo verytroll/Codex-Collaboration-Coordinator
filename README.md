@@ -19,10 +19,11 @@ Multi-agent coordination system for session-based collaboration, routing, review
    - `./scripts/run.ps1`
    - `./scripts/dev.ps1` auto-applies migrations, then starts uvicorn
    - `./scripts/seed.ps1`
-   - `./scripts/smoke.ps1` waits for the app to become ready, then runs a smoke test
+   - `./scripts/smoke.ps1` checks health, readiness, and the main smoke flow
    - `./scripts/release.ps1` runs the release checklist against a local checkout
    - `./scripts/test.ps1`
    - `./scripts/lint.ps1`
+6. For a deployment-style container path, see `Dockerfile` and `docs/DEPLOYMENT.md`.
 
 ## Docs
 
@@ -33,6 +34,7 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - [V3 release notes](docs/RELEASE_NOTES_V3.md)
 - [V4 upgrade notes](docs/UPGRADE_NOTES_V4.md)
 - [Runbook](docs/RUNBOOK.md)
+- [Deployment](docs/DEPLOYMENT.md)
 - [Current status](STATUS.md)
 - [MVP plan](PLAN.md)
 - [Post-MVP plan (V2)](PLAN_V2.md)
@@ -56,4 +58,5 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - Operator dashboard/debug surfaces and advanced policy automation are implemented.
 - CodexBridge subprocess manager and JSON-RPC client are in place.
 - `GET /.well-known/agent-card.json` remains available as an A2A-ready discovery placeholder.
-- V3 foundation is complete, `PLAN_V4.md` is defined, and PR34 hardening, telemetry, and release prep are next.
+- `GET /api/v1/readinessz` reports deployment readiness for a booted database-backed runtime.
+- V4 foundation is complete through PR37, including hardening, telemetry, release readiness, and deployment readiness.

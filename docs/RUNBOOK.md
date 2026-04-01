@@ -26,7 +26,9 @@ pip install -e .[dev]
 2. Set `CODEX_BRIDGE_MODE=local` unless you are explicitly testing another bridge mode.
 3. Run the app with `.\scripts\run.ps1` or your preferred ASGI host command.
 4. Confirm `GET /api/v1/healthz` returns `{"status":"ok"}`.
-5. Confirm `GET /api/v1/system/status` reports the expected aggregates and bridge state.
+5. Confirm `GET /api/v1/readinessz` returns a ready response with `checks.db.status=ok`
+   and `checks.migrations.status=ok`.
+6. Confirm `GET /api/v1/system/status` reports the expected aggregates and bridge state.
 
 ## Release candidate
 

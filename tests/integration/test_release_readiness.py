@@ -3,11 +3,42 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
+from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
+from app.repositories.agents import AgentRecord, AgentRepository
+from app.services.demo_seed import seed_demo_data
 from app.services.release_readiness import verify_release_readiness
 
 
 def _database_url(tmp_path: Path, name: str) -> str:
     return f"sqlite:///{(tmp_path / name).as_posix()}"
+
+
+def test_demo_seed_handles_legacy_display_name_conflicts(tmp_path) -> None:
+    database_url = _database_url(tmp_path, "legacy_seed.db")
+    asyncio.run(migrate_sqlite(database_url, migrations_dir=DEFAULT_MIGRATIONS_DIR))
+    asyncio.run(
+        AgentRepository(database_url).create(
+            AgentRecord(
+                id="agt_legacy_builder",
+                display_name="Builder",
+                role="builder",
+                is_lead_default=0,
+                runtime_kind="codex",
+                capabilities_json=None,
+                default_config_json=None,
+                status="active",
+                created_at="2026-03-31T00:00:00Z",
+                updated_at="2026-03-31T00:00:00Z",
+            )
+        )
+    )
+
+    asyncio.run(seed_demo_data(database_url))
+
+    agents = asyncio.run(AgentRepository(database_url).list())
+    builder_agents = [agent for agent in agents if agent.display_name == "Builder"]
+    assert len(builder_agents) == 1
+    assert {agent.display_name for agent in agents} == {"Planner", "Builder", "Reviewer"}
 
 
 def test_release_readiness_checks_migrations_and_seed_reset(tmp_path) -> None:

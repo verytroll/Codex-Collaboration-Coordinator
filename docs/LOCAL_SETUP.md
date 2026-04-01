@@ -45,6 +45,9 @@ To run the full release-readiness checklist locally:
 `release.ps1` runs `pytest`, Ruff, migration verification, demo seed reset verification,
 and the smoke gate. It expects the local app to be reachable for the smoke step.
 
+For a deployment-style startup, use `.\scripts\run.ps1`. That script binds to
+`0.0.0.0` by default and keeps reload disabled unless you override `APP_RELOAD=true`.
+
 ## Seed demo data
 
 ```powershell
@@ -61,6 +64,7 @@ and the smoke gate. It expects the local app to be reachable for the smoke step.
 ## Useful endpoints
 
 - `GET /api/v1/healthz`
+- `GET /api/v1/readinessz`
 - `GET /.well-known/agent-card.json`
 - `GET /api/v1/sessions`
 - `GET /api/v1/jobs/{job_id}`

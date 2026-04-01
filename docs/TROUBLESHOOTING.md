@@ -8,6 +8,8 @@
 - If `scripts\release.ps1` fails with a migration checksum mismatch, do not edit the existing
   SQL file in place. Restore the old migration, add a new migration file, and rerun against a
   fresh SQLite database.
+- If `GET /api/v1/readinessz` returns `503`, check whether the database path is writable and
+  whether the migration table matches the bundled SQL files.
 
 ## CodexBridge problems
 
@@ -52,3 +54,6 @@
 If `smoke.ps1` reports that it cannot connect to the server, make sure `.\scripts\dev.ps1`
 is running in another terminal and let it finish startup. The smoke script waits up to
 60 seconds for the health endpoint before failing.
+
+If `Dockerfile` builds successfully but the container fails readiness, inspect the mounted
+SQLite volume and confirm the container can write the database file at startup.

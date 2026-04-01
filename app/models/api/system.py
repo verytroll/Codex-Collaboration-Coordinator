@@ -37,6 +37,34 @@ class SystemComponentResponse(BaseModel):
     detail: str | None = None
 
 
+class DeploymentReadinessCheckResponse(BaseModel):
+    """Readiness check for a single deployment dependency."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: SystemHealth
+    detail: str | None = None
+
+
+class DeploymentReadinessChecksResponse(BaseModel):
+    """Deployment readiness checks for the app runtime."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    db: DeploymentReadinessCheckResponse
+    migrations: DeploymentReadinessCheckResponse
+
+
+class DeploymentReadinessResponse(BaseModel):
+    """Readiness response for deployment and container probes."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: SystemHealth
+    app: SystemAppInfoResponse
+    checks: DeploymentReadinessChecksResponse
+
+
 class SystemJobSummaryResponse(BaseModel):
     """Aggregate counts for jobs by status."""
 

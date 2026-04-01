@@ -43,10 +43,14 @@ async def _ensure_agent_and_runtime(
     role: str,
     is_lead: bool,
     now: str,
-) -> None:
+) -> str:
     agent_repository = AgentRepository(database_url)
     runtime_repository = AgentRuntimeRepository(database_url)
-    if await agent_repository.get(agent_id) is None:
+    agent = await agent_repository.get(agent_id)
+    if agent is None:
+        agents = await agent_repository.list()
+        agent = next((item for item in agents if item.display_name == display_name), None)
+    if agent is None:
         await agent_repository.create(
             AgentRecord(
                 id=agent_id,
@@ -61,12 +65,36 @@ async def _ensure_agent_and_runtime(
                 updated_at=now,
             )
         )
-    runtime_id = f"rt_demo_{agent_id}"
+        actual_agent_id = agent_id
+    else:
+        actual_agent_id = agent.id
+        if (
+            agent.display_name != display_name
+            or agent.role != role
+            or agent.is_lead_default != int(is_lead)
+            or agent.runtime_kind != "codex"
+            or agent.status != "active"
+        ):
+            await agent_repository.update(
+                AgentRecord(
+                    id=agent.id,
+                    display_name=display_name,
+                    role=role,
+                    is_lead_default=int(is_lead),
+                    runtime_kind="codex",
+                    capabilities_json=agent.capabilities_json,
+                    default_config_json=agent.default_config_json,
+                    status="active",
+                    created_at=agent.created_at,
+                    updated_at=now,
+                )
+            )
+    runtime_id = f"rt_demo_{actual_agent_id}"
     if await runtime_repository.get(runtime_id) is None:
         await runtime_repository.create(
             AgentRuntimeRecord(
                 id=runtime_id,
-                agent_id=agent_id,
+                agent_id=actual_agent_id,
                 runtime_kind="codex",
                 transport_kind="stdio",
                 transport_config_json=None,
@@ -79,27 +107,49 @@ async def _ensure_agent_and_runtime(
                 updated_at=now,
             )
         )
+    return actual_agent_id
 
 
 async def _ensure_demo_session(
     *,
     database_url: str,
     now: str,
+    lead_agent_id: str,
 ) -> None:
     session_repository = SessionRepository(database_url)
-    if await session_repository.get(DEFAULT_DEMO_SESSION_ID) is None:
+    session = await session_repository.get(DEFAULT_DEMO_SESSION_ID)
+    if session is None:
         await session_repository.create(
             SessionRecord(
                 id=DEFAULT_DEMO_SESSION_ID,
                 title="Demo session",
                 goal="Show the local coordinator MVP",
                 status="active",
-                lead_agent_id="agt_planner_demo",
+                lead_agent_id=lead_agent_id,
                 active_phase_id=None,
                 loop_guard_status="normal",
                 loop_guard_reason=None,
                 last_message_at=None,
                 created_at=now,
+                updated_at=now,
+            )
+        )
+        return
+
+    if session.lead_agent_id != lead_agent_id or session.status != "active":
+        await session_repository.update(
+            SessionRecord(
+                id=session.id,
+                title="Demo session",
+                goal="Show the local coordinator MVP",
+                status="active",
+                lead_agent_id=lead_agent_id,
+                active_phase_id=session.active_phase_id,
+                loop_guard_status="normal",
+                loop_guard_reason=None,
+                last_message_at=session.last_message_at,
+                template_key=session.template_key,
+                created_at=session.created_at,
                 updated_at=now,
             )
         )
@@ -140,8 +190,9 @@ async def seed_demo_data(database_url: str) -> None:
     await migrate_sqlite(database_url, migrations_dir=DEFAULT_MIGRATIONS_DIR)
 
     now = _utc_now()
+    resolved_agent_ids: dict[str, str] = {}
     for agent_id, display_name, role, is_lead in DEFAULT_DEMO_AGENTS:
-        await _ensure_agent_and_runtime(
+        resolved_agent_ids[agent_id] = await _ensure_agent_and_runtime(
             database_url=database_url,
             agent_id=agent_id,
             display_name=display_name,
@@ -150,12 +201,16 @@ async def seed_demo_data(database_url: str) -> None:
             now=now,
         )
 
-    await _ensure_demo_session(database_url=database_url, now=now)
+    await _ensure_demo_session(
+        database_url=database_url,
+        now=now,
+        lead_agent_id=resolved_agent_ids["agt_planner_demo"],
+    )
 
     for agent_id, _, role, is_lead in DEFAULT_DEMO_AGENTS:
         await _ensure_demo_participant(
             database_url=database_url,
-            agent_id=agent_id,
+            agent_id=resolved_agent_ids[agent_id],
             role=role,
             is_lead=is_lead,
             now=now,

@@ -40,6 +40,7 @@ from app.services.artifact_manager import ArtifactManager
 from app.services.channel_service import ChannelService
 from app.services.command_handler import CommandHandler
 from app.services.debug_service import DebugService
+from app.services.deployment_readiness import DeploymentReadinessService
 from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardService
 from app.services.message_routing import MessageRoutingService
@@ -168,6 +169,13 @@ def get_system_status_service(
         phase_repository=phase_repository,
         review_repository=review_repository,
     )
+
+
+def get_deployment_readiness_service(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> DeploymentReadinessService:
+    """Provide the deployment readiness service."""
+    return DeploymentReadinessService(database_url=database_url)
 
 
 def get_debug_service(
