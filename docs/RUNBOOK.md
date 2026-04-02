@@ -44,7 +44,10 @@ pip install -e .[dev]
     and phase activation, and that the session event log records the matching audit trail.
 11. Confirm protected direct clients send actor identity headers, or rely on the shell's
     rendered defaults when using the operator UI page.
-12. In the packaged `small-team` path, confirm `RUNTIME_RECOVERY_ENABLED=true` so queued
+12. Confirm the operator live activity panel can reconnect through
+    `/api/v1/operator/sessions/{session_id}/activity/stream` when the browser supports
+    EventSource, and falls back to polling when it cannot send the configured access token.
+13. In the packaged `small-team` path, confirm `RUNTIME_RECOVERY_ENABLED=true` so queued
     jobs can be replayed after restart.
 
 ## Release candidate

@@ -71,6 +71,12 @@ def _agent_card(*, base_url: str) -> A2AAgentCardResponse:
                 description="Replay public task events after a sequence cursor.",
             ),
             A2AAgentCardEndpointResponse(
+                name="stream_task_events",
+                method="GET",
+                path="/api/v1/a2a/tasks/{task_id}/stream",
+                description="Stream public task events as SSE frames with reconnect support.",
+            ),
+            A2AAgentCardEndpointResponse(
                 name="stream_subscription_events",
                 method="GET",
                 path="/api/v1/a2a/subscriptions/{subscription_id}/events",

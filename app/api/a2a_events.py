@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 
 from app.api.dependencies import get_a2a_public_event_stream_service
@@ -17,13 +16,6 @@ from app.models.api.a2a_events import (
 from app.services.public_event_stream import PublicEventStreamService
 
 router = APIRouter(prefix="/api/v1/a2a", tags=["a2a"])
-
-
-async def _event_stream(events) -> AsyncIterator[str]:
-    for event in events:
-        yield (
-            f"id: {event.sequence}\nevent: {event.event_type}\ndata: {event.model_dump_json()}\n\n"
-        )
 
 
 @router.post(
@@ -99,14 +91,50 @@ async def list_task_events(
     )
 
 
+@router.get("/tasks/{task_id}/stream")
+async def stream_task_events(
+    task_id: str,
+    request: Request,
+    public_event_service: Annotated[
+        PublicEventStreamService,
+        Depends(get_a2a_public_event_stream_service),
+    ],
+    since_sequence: int = Query(default=0, ge=0),
+    last_event_id: Annotated[str | None, Header(alias="Last-Event-ID")] = None,
+) -> StreamingResponse:
+    """Stream replayable public task events over SSE."""
+    try:
+        await public_event_service.list_task_events(
+            task_id=task_id,
+            since_sequence=since_sequence,
+            record_telemetry=False,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    return StreamingResponse(
+        public_event_service.stream_task_events(
+            task_id=task_id,
+            since_sequence=since_sequence,
+            last_event_id=last_event_id,
+            request_is_disconnected=request.is_disconnected,
+        ),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
+    )
+
+
 @router.get("/subscriptions/{subscription_id}/events")
 async def stream_subscription_events(
     subscription_id: str,
+    request: Request,
     public_event_service: Annotated[
         PublicEventStreamService,
         Depends(get_a2a_public_event_stream_service),
     ],
     since_sequence: int | None = Query(default=None, ge=0),
+    last_event_id: Annotated[str | None, Header(alias="Last-Event-ID")] = None,
 ) -> StreamingResponse:
     subscription = await public_event_service.get_subscription(subscription_id)
     if subscription is None:
@@ -114,11 +142,13 @@ async def stream_subscription_events(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Public subscription not found: {subscription_id}",
         )
-    try:
-        events = await public_event_service.list_subscription_events(
+    return StreamingResponse(
+        public_event_service.stream_subscription(
             subscription_id,
-            since_sequence,
-        )
-    except LookupError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
-    return StreamingResponse(_event_stream(events), media_type="text/event-stream")
+            since_sequence=since_sequence,
+            last_event_id=last_event_id,
+            request_is_disconnected=request.is_disconnected,
+        ),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
+    )

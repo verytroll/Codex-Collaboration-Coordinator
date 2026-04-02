@@ -150,6 +150,7 @@ from app.models.api.presence import (
     PresenceHeartbeatRequest,
     PresenceHeartbeatResponse,
 )
+from app.models.api.realtime_stream import A2APublicTaskEventStreamEnvelope
 from app.models.api.review import (
     RelayTemplateEnvelope,
     RelayTemplateListEnvelope,
@@ -233,6 +234,7 @@ __all__ = [
     "A2APublicTaskEnvelope",
     "A2APublicTaskErrorResponse",
     "A2APublicTaskListEnvelope",
+    "A2APublicTaskEventStreamEnvelope",
     "A2APublicTaskSubscriptionCreateRequest",
     "A2APublicTaskSubscriptionEnvelope",
     "A2APublicTaskSubscriptionResponse",

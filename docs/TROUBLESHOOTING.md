@@ -22,6 +22,10 @@
 
 - SSE endpoints return `text/event-stream`.
 - If a client disconnects immediately, verify the client keeps the HTTP connection open.
+- If the operator shell falls back to polling, check whether the browser can use EventSource
+  without the configured access token headers.
+- If reconnects keep resuming from the wrong point, inspect the `Last-Event-ID` header and the
+  `since_sequence` query parameter on the stream request.
 
 ## A2A problems
 
@@ -29,6 +33,7 @@
 - If `POST /api/v1/a2a/tasks` returns a task but the event list is empty, confirm the job was refreshed after the last state change.
 - If `GET /api/v1/a2a/tasks/{task_id}/events?since_sequence=0` returns only `created`, create or update the underlying job or artifact before calling the route again.
 - If the subscription SSE endpoint returns no frames, make sure the subscription cursor points at the same task and that the request is not filtered by a newer `since_sequence`.
+- If `GET /api/v1/a2a/tasks/{task_id}/stream` keeps replaying from the beginning, confirm the client is sending the last seen cursor or `Last-Event-ID`.
 - If the public A2A surface looks stale, re-run `.\scripts\a2a_quickstart.ps1` or `.\scripts\smoke.ps1` to confirm the public contract still replays correctly.
 
 ## Presence and recovery

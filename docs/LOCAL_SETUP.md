@@ -86,10 +86,12 @@ recovery loop by default for restart replay.
 - `POST /api/v1/a2a/tasks`
 - `GET /api/v1/a2a/tasks`
 - `GET /api/v1/a2a/tasks/{task_id}/events`
+- `GET /api/v1/a2a/tasks/{task_id}/stream`
 - `GET /api/v1/a2a/subscriptions/{subscription_id}/events`
 - `GET /operator`
 - `GET /api/v1/operator/shell`
 - `GET /api/v1/operator/sessions/{session_id}/activity`
+- `GET /api/v1/operator/sessions/{session_id}/activity/stream`
 - `GET /api/v1/sessions`
 - `GET /api/v1/jobs/{job_id}`
 

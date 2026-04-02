@@ -40,3 +40,8 @@ Mỗi response có một khối `telemetry` với:
 - Nếu cần hiểu hệ thống đang chậm ở đâu, xem `telemetry.summary.queue_depth`, `runtime_pool_pressure`, `pending_review_bottlenecks`, và `public_task_throughput`.
 - Nếu cần hiểu bridge có lỗi gần đây không, xem `telemetry.summary.bridge`.
 - Nếu cần debug sâu, đối chiếu `latest` và `recent_samples` với `diagnostics` của system/debug/dashboard.
+## Streaming traces
+
+- `GET /api/v1/operator/sessions/{session_id}/activity/stream` uses SSE and resumes with `since_sequence` or `Last-Event-ID`.
+- `GET /api/v1/a2a/tasks/{task_id}/stream` and `GET /api/v1/a2a/subscriptions/{subscription_id}/events` expose the public task stream with the same resume pattern.
+- If a stream reconnects too often, inspect the response status, the `Last-Event-ID` header, and the stream-specific telemetry samples for `operator_session_activity` and `public_event_stream`.

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from datetime import datetime, timezone
 from typing import Any, cast
 from uuid import uuid4
@@ -19,6 +19,7 @@ from app.models.api.a2a_public import (
     A2APublicTaskArtifactResponse,
     A2APublicTaskResponse,
 )
+from app.models.api.realtime_stream import A2APublicTaskEventStreamEnvelope
 from app.repositories.a2a_tasks import A2ATaskRecord, A2ATaskRepository
 from app.repositories.public_events import PublicTaskEventRecord, PublicTaskEventRepository
 from app.repositories.public_subscriptions import (
@@ -26,8 +27,10 @@ from app.repositories.public_subscriptions import (
     PublicTaskSubscriptionRepository,
 )
 from app.repositories.reviews import ReviewRepository
+from app.services.realtime_transport import resolve_resume_sequence, stream_polling_sse
 
 _DELIVERY_MODE = "sse"
+_STREAM_EVENT_NAME = "a2a.public.task.events"
 
 logger = get_logger(__name__)
 
@@ -44,15 +47,6 @@ def _parse_json(payload: str | None) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {}
     return data if isinstance(data, dict) else {}
-
-
-def _sse(event: str, data: object, *, event_id: int | str | None = None) -> str:
-    lines: list[str] = []
-    if event_id is not None:
-        lines.append(f"id: {event_id}")
-    lines.append(f"event: {event}")
-    lines.append(f"data: {json.dumps(data, sort_keys=True)}")
-    return "\n".join(lines) + "\n\n"
 
 
 def _task_snapshot(task: A2APublicTaskResponse) -> dict[str, Any]:
@@ -131,21 +125,23 @@ class PublicEventStreamService:
         *,
         task_id: str,
         since_sequence: int = 0,
+        record_telemetry: bool = True,
     ) -> list[A2APublicTaskEventResponse]:
         """Return replayable public events for a task."""
         if since_sequence < 0:
             raise ValueError("since_sequence must be greater than or equal to 0")
         await self._get_task_record(task_id)
         events = await self.event_repository.list_since(task_id, since_sequence)
-        await get_telemetry_service().record_sample(
-            "public_event_stream",
-            metrics={
-                "task_id": task_id,
-                "since_sequence": since_sequence,
-                "event_count": len(events),
-                "delivery_mode": _DELIVERY_MODE,
-            },
-        )
+        if record_telemetry:
+            await get_telemetry_service().record_sample(
+                "public_event_stream",
+                metrics={
+                    "task_id": task_id,
+                    "since_sequence": since_sequence,
+                    "event_count": len(events),
+                    "delivery_mode": _DELIVERY_MODE,
+                },
+            )
         return [self._event_response(event) for event in events]
 
     async def list_subscription_events(
@@ -162,19 +158,102 @@ class PublicEventStreamService:
         self,
         subscription_id: str,
         since_sequence: int | None = None,
+        last_event_id: str | None = None,
+        request_is_disconnected: Callable[[], Awaitable[bool]] | None = None,
     ) -> AsyncIterator[str]:
         """Stream public task events as SSE frames."""
-        events = await self.list_subscription_events(subscription_id, since_sequence)
-        await get_telemetry_service().record_sample(
-            "public_event_stream",
-            metrics={
-                "subscription_id": subscription_id,
-                "event_count": len(events),
-                "delivery_mode": _DELIVERY_MODE,
-            },
-        )
-        for event in events:
-            yield _sse(event.event_type, event.model_dump(mode="json"), event_id=event.sequence)
+        subscription = await self._get_subscription_record(subscription_id)
+        base_cursor = subscription.cursor_sequence if since_sequence is None else since_sequence
+        resolved_cursor = resolve_resume_sequence(base_cursor, last_event_id)
+        emitted_bootstrap_sample = False
+
+        async def poll(cursor: int) -> tuple[dict[str, Any], int]:
+            nonlocal emitted_bootstrap_sample
+            events = await self.list_task_events(
+                task_id=subscription.task_id,
+                since_sequence=cursor,
+                record_telemetry=False,
+            )
+            next_cursor = events[-1].sequence if events else cursor
+            payload = A2APublicTaskEventStreamEnvelope(
+                task_id=subscription.task_id,
+                since_sequence=cursor,
+                next_cursor_sequence=next_cursor,
+                generated_at=_utc_now(),
+                events=events,
+            )
+            if events or (cursor == 0 and not emitted_bootstrap_sample):
+                await get_telemetry_service().record_sample(
+                    "public_event_stream",
+                    metrics={
+                        "subscription_id": subscription_id,
+                        "task_id": subscription.task_id,
+                        "since_sequence": cursor,
+                        "event_count": len(events),
+                        "next_cursor_sequence": next_cursor,
+                        "delivery_mode": _DELIVERY_MODE,
+                    },
+                )
+                emitted_bootstrap_sample = True
+            return payload.model_dump(mode="json"), next_cursor
+
+        async for frame in stream_polling_sse(
+            initial_sequence=resolved_cursor,
+            poll_once=poll,
+            event_name=_STREAM_EVENT_NAME,
+            request_is_disconnected=request_is_disconnected,
+            emit_initial=resolved_cursor == 0,
+        ):
+            yield frame
+
+    async def stream_task_events(
+        self,
+        task_id: str,
+        since_sequence: int = 0,
+        last_event_id: str | None = None,
+        request_is_disconnected: Callable[[], Awaitable[bool]] | None = None,
+    ) -> AsyncIterator[str]:
+        """Stream public task events directly for clients that already track a cursor."""
+        initial_cursor = resolve_resume_sequence(since_sequence, last_event_id)
+        emitted_bootstrap_sample = False
+
+        async def poll(cursor: int) -> tuple[dict[str, Any], int]:
+            nonlocal emitted_bootstrap_sample
+            events = await self.list_task_events(
+                task_id=task_id,
+                since_sequence=cursor,
+                record_telemetry=False,
+            )
+            next_cursor = events[-1].sequence if events else cursor
+            payload = A2APublicTaskEventStreamEnvelope(
+                task_id=task_id,
+                since_sequence=cursor,
+                next_cursor_sequence=next_cursor,
+                generated_at=_utc_now(),
+                events=events,
+            )
+            if events or (cursor == 0 and not emitted_bootstrap_sample):
+                await get_telemetry_service().record_sample(
+                    "public_event_stream",
+                    metrics={
+                        "task_id": task_id,
+                        "since_sequence": cursor,
+                        "event_count": len(events),
+                        "next_cursor_sequence": next_cursor,
+                        "delivery_mode": _DELIVERY_MODE,
+                    },
+                )
+                emitted_bootstrap_sample = True
+            return payload.model_dump(mode="json"), next_cursor
+
+        async for frame in stream_polling_sse(
+            initial_sequence=initial_cursor,
+            poll_once=poll,
+            event_name=_STREAM_EVENT_NAME,
+            request_is_disconnected=request_is_disconnected,
+            emit_initial=initial_cursor == 0,
+        ):
+            yield frame
 
     async def record_task_projection(
         self,

@@ -248,20 +248,14 @@ def test_public_a2a_event_stream_replay_and_ordering(tmp_path, monkeypatch) -> N
             ]
             assert [event["sequence"] for event in replay_events] == [6, 7]
 
-            subscription_stream_response = client.get(
-                f"/api/v1/a2a/subscriptions/{subscription['subscription_id']}/events"
-            )
-            assert subscription_stream_response.status_code == 200
-            assert subscription_stream_response.headers["content-type"].startswith(
-                "text/event-stream"
-            )
-            stream_text = subscription_stream_response.text
-            assert "event: created" in stream_text
-            assert "event: status_changed" in stream_text
-            assert "event: review_requested" in stream_text
-            assert "event: artifact_attached" in stream_text
-            assert "event: completed" in stream_text
-            assert "id: 7" in stream_text
-            assert stream_text.index("event: created") < stream_text.index("event: completed")
+            with client.stream("GET", f"/api/v1/a2a/tasks/{task_id}/stream") as stream_response:
+                assert stream_response.status_code == 200
+                assert stream_response.headers["content-type"].startswith("text/event-stream")
+                stream_text = next(stream_response.iter_text())
+                assert "event: a2a.public.task.events" in stream_text
+                assert '"next_cursor_sequence": 7' in stream_text
+                assert '"event_type": "created"' in stream_text
+                assert '"event_type": "completed"' in stream_text
+                assert '"id": "art_public_events_2"' in stream_text
     finally:
         app_main.get_config.cache_clear()

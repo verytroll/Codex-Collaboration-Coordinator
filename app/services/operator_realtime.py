@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import json
+from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
 from app.core.logging import get_logger
+from app.core.telemetry import get_telemetry_service
 from app.models.api.operator_realtime import (
     OperatorActivityCategory,
     OperatorActivitySeverity,
@@ -25,6 +27,7 @@ from app.repositories.runtime_pools import RuntimePoolRepository, WorkContextRep
 from app.repositories.session_events import SessionEventRecord, SessionEventRepository
 from app.repositories.sessions import SessionRepository
 from app.services.operator_dashboard import OperatorDashboardFilters, OperatorDashboardService
+from app.services.realtime_transport import resolve_resume_sequence, stream_polling_sse
 
 logger = get_logger(__name__)
 
@@ -190,6 +193,7 @@ class OperatorRealtimeService:
         session_id: str,
         since_sequence: int = 0,
         limit: int = 25,
+        record_telemetry: bool = True,
     ) -> OperatorSessionActivityResponse:
         """Return replayable activity for a selected session."""
         if since_sequence < 0:
@@ -267,6 +271,16 @@ class OperatorRealtimeService:
                 "total_events": len(drafts),
             },
         )
+        if record_telemetry:
+            await get_telemetry_service().record_sample(
+                "operator_session_activity",
+                metrics={
+                    "session_id": session_id,
+                    "since_sequence": since_sequence,
+                    "event_count": len(activity_events),
+                    "total_events": len(drafts),
+                },
+            )
         return OperatorSessionActivityResponse(
             session_id=session_id,
             since_sequence=since_sequence,
@@ -278,6 +292,36 @@ class OperatorRealtimeService:
             events=activity_events,
             signals=signals,
         )
+
+    async def stream_session_activity(
+        self,
+        *,
+        session_id: str,
+        since_sequence: int = 0,
+        limit: int = 25,
+        last_event_id: str | None = None,
+        request_is_disconnected: Callable[[], Awaitable[bool]] | None = None,
+    ) -> AsyncIterator[str]:
+        """Stream replayable activity snapshots over SSE."""
+        initial_cursor = resolve_resume_sequence(since_sequence, last_event_id)
+
+        async def poll(cursor: int) -> tuple[dict[str, Any], int]:
+            activity = await self.get_session_activity(
+                session_id=session_id,
+                since_sequence=cursor,
+                limit=limit,
+                record_telemetry=False,
+            )
+            return activity.model_dump(mode="json"), activity.next_cursor_sequence
+
+        async for frame in stream_polling_sse(
+            initial_sequence=initial_cursor,
+            poll_once=poll,
+            event_name="operator.activity",
+            request_is_disconnected=request_is_disconnected,
+            emit_initial=initial_cursor == 0,
+        ):
+            yield frame
 
     def _build_activity_drafts(
         self,

@@ -117,6 +117,7 @@ def test_public_a2a_interoperability_smoke(tmp_path, monkeypatch) -> None:
                 "/api/v1/a2a/tasks/{task_id}",
                 "/api/v1/a2a/tasks/{task_id}/subscriptions",
                 "/api/v1/a2a/tasks/{task_id}/events",
+                "/api/v1/a2a/tasks/{task_id}/stream",
                 "/api/v1/a2a/subscriptions/{subscription_id}/events",
             }.issubset(endpoint_paths)
 
@@ -220,10 +221,8 @@ def test_public_a2a_interoperability_smoke(tmp_path, monkeypatch) -> None:
             assert stream_response.status_code == 200
             assert stream_response.headers["content-type"].startswith("text/event-stream")
             stream_text = stream_response.text
-            assert "event: created" in stream_text
-            assert "event: status_changed" in stream_text
-            assert "event: artifact_attached" in stream_text
-            assert "event: completed" in stream_text
-            assert "id: 4" in stream_text
+            assert "event: a2a.public.task.events" in stream_text
+            assert '"contract_version": "a2a.public.task.event.stream.v1"' in stream_text
+            assert '"next_cursor_sequence": 4' in stream_text
     finally:
         app_main.get_config.cache_clear()

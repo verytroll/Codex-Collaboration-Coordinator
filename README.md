@@ -73,3 +73,4 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - V6 operator actions and audit trail are complete through PR44 / F42, with action endpoints, operator UI controls, and audited write paths.
 - V6 identity and team RBAC are complete through PR45 / F43, with actor identity headers, role-gated operator/public writes, and audit enrichment.
 - V6 durable runtime and persistence boundary are complete through PR46 / F44, with startup recovery, replayable queued jobs, and a packaged durable runtime loop.
+- V6 realtime streaming transport is complete through PR47 / F45, with SSE resume support for operator activity and public task events.

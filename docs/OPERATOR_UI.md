@@ -7,6 +7,7 @@ The operator UI shell is a thin operator surface for the coordinator.
 - `GET /operator`
 - `GET /api/v1/operator/shell`
 - `GET /api/v1/operator/sessions/{session_id}/activity`
+- `GET /api/v1/operator/sessions/{session_id}/activity/stream`
 - `POST /api/v1/operator/jobs/{job_id}/retry`
 - `POST /api/v1/operator/jobs/{job_id}/resume`
 - `POST /api/v1/operator/jobs/{job_id}/cancel`
@@ -63,8 +64,10 @@ The activity endpoint returns a replayable window for a single session.
 - `since_sequence=<cursor>` returns only events after that cursor
 - `next_cursor_sequence` is the cursor you should pass on the next poll
 - the feed includes signals for pending approvals, recent errors, stuck jobs, phase bottlenecks, and runtime health abnormalities
+- the stream route uses SSE with `Last-Event-ID` / `since_sequence` resume support
+- the shell prefers SSE in local/trusted modes and falls back to polling when EventSource cannot send the configured access token headers
 
-The shell uses that contract for its live activity panel and polls it while live mode is enabled.
+The shell uses that contract for its live activity panel and keeps the cursor in sync whether it is polling or streaming.
 
 ## Access boundary
 

@@ -160,6 +160,7 @@
       activityLoading: false,
       activityCursor: 0,
       activityLive: true,
+      activityTransport: "poll",
       activitySessionId: null,
       activityFeed: [],
       operatorNote: "",
@@ -196,6 +197,7 @@
     };
 
     let activityTimer = null;
+    let activitySource = null;
 
     init();
 
@@ -242,13 +244,13 @@
     function bindActivityEvents() {
       nodes.activityToggle.addEventListener("click", () => {
         state.activityLive = !state.activityLive;
-        syncActivityControls();
-        if (state.activityLive) {
-          scheduleActivityPolling();
-          void refreshActivity({ reset: false });
-        } else {
-          stopActivityPolling();
+        if (!state.activityLive) {
+          stopActivityTransport();
+          syncActivityControls();
+          return;
         }
+        ensureActivityTransport();
+        syncActivityControls();
       });
     }
 
@@ -268,10 +270,11 @@
         updateSelectedSessionFromBootstrap();
         render();
         await refreshActivity({ reset: true });
+        ensureActivityTransport();
       } catch (error) {
         state.loading = false;
         state.error = error instanceof Error ? error.message : String(error);
-        stopActivityPolling();
+        stopActivityTransport();
         render();
       }
     }
@@ -279,11 +282,13 @@
     function updateSelectedSessionFromBootstrap() {
       const selectedSessionId = state.data?.selected_session_id ?? null;
       if (selectedSessionId !== state.activitySessionId) {
+        stopActivityTransport();
         state.activitySessionId = selectedSessionId;
         state.activityCursor = 0;
         state.activityFeed = [];
         state.activity = null;
         state.activityError = null;
+        state.activityTransport = "poll";
       }
     }
 
@@ -315,13 +320,7 @@
         if (state.data?.selected_session_id !== sessionId) {
           return;
         }
-        state.activity = payload;
-        state.activityCursor = payload.next_cursor_sequence ?? state.activityCursor;
-        if (reset || sinceSequence === 0) {
-          state.activityFeed = [...(payload.events || [])].reverse();
-        } else if ((payload.events || []).length > 0) {
-          state.activityFeed = [...payload.events].reverse().concat(state.activityFeed);
-        }
+        applyActivityPayload(payload, { reset, sinceSequence });
         renderActivity();
       } catch (error) {
         state.activityError = error instanceof Error ? error.message : String(error);
@@ -329,9 +328,94 @@
         state.activityLoading = false;
         syncActivityControls();
         if (state.activityLive) {
-          scheduleActivityPolling();
+          ensureActivityTransport();
         }
       }
+    }
+
+    function applyActivityPayload(payload, { reset, sinceSequence }) {
+      state.activity = payload;
+      state.activityCursor = payload.next_cursor_sequence ?? state.activityCursor;
+      if (reset || sinceSequence === 0) {
+        state.activityFeed = [...(payload.events || [])].reverse();
+      } else if ((payload.events || []).length > 0) {
+        state.activityFeed = [...payload.events].reverse().concat(state.activityFeed);
+      }
+    }
+
+    function ensureActivityTransport() {
+      stopActivityPolling();
+      if (!state.activityLive || !state.data?.selected_session_id) {
+        return;
+      }
+      if (canUseActivityStream()) {
+        if (activitySource === null) {
+          openActivityStream();
+        }
+        return;
+      }
+      scheduleActivityPolling();
+    }
+
+    function canUseActivityStream() {
+      return typeof window.EventSource !== "undefined" && !ACCESS_TOKEN;
+    }
+
+    function openActivityStream() {
+      const sessionId = state.data?.selected_session_id ?? null;
+      if (!sessionId || !canUseActivityStream()) {
+        return;
+      }
+      const url = buildActivityStreamUrl(sessionId, state.activityCursor);
+      closeActivityStream();
+      state.activityTransport = "stream";
+      activitySource = new EventSource(url);
+      activitySource.addEventListener("operator.activity", (event) => {
+        if (state.data?.selected_session_id !== sessionId || typeof event.data !== "string") {
+          return;
+        }
+        try {
+          const payload = JSON.parse(event.data);
+          applyActivityPayload(payload, { reset: state.activityCursor === 0, sinceSequence: payload.since_sequence ?? state.activityCursor });
+          state.activityError = null;
+          state.activityTransport = "stream";
+          syncActivityControls();
+          renderActivity();
+        } catch (error) {
+          state.activityError = error instanceof Error ? error.message : String(error);
+          state.activityTransport = "poll";
+        }
+      });
+      activitySource.onopen = () => {
+        if (state.data?.selected_session_id === sessionId) {
+          state.activityError = null;
+          state.activityTransport = "stream";
+          syncActivityControls();
+        }
+      };
+      activitySource.onerror = () => {
+        if (activitySource !== null) {
+          closeActivityStream();
+          state.activityTransport = "poll";
+          if (state.activityLive) {
+            scheduleActivityPolling();
+          }
+          syncActivityControls();
+        }
+      };
+    }
+
+    function closeActivityStream() {
+      if (activitySource !== null) {
+        activitySource.close();
+        activitySource = null;
+      }
+    }
+
+    function stopActivityTransport() {
+      stopActivityPolling();
+      closeActivityStream();
+      state.activityTransport = "poll";
     }
 
     function scheduleActivityPolling() {
@@ -364,6 +448,13 @@
       params.set("since_sequence", String(sinceSequence));
       params.set("limit", String(ACTIVITY_LIMIT));
       return `/api/v1/operator/sessions/${encodeURIComponent(sessionId)}/activity?${params.toString()}`;
+    }
+
+    function buildActivityStreamUrl(sessionId, sinceSequence) {
+      const params = new URLSearchParams();
+      params.set("since_sequence", String(sinceSequence));
+      params.set("limit", String(ACTIVITY_LIMIT));
+      return `/api/v1/operator/sessions/${encodeURIComponent(sessionId)}/activity/stream?${params.toString()}`;
     }
 
     function buildHeaders() {
@@ -429,10 +520,14 @@
         nodes.activityStatusPill.textContent = "Activity error";
       } else if (state.activityLoading) {
         nodes.activityStatusPill.textContent = "Refreshing";
+      } else if (state.activityLive && state.activityTransport === "stream") {
+        nodes.activityStatusPill.textContent = state.activity
+          ? `Streaming #${state.activity.next_cursor_sequence}`
+          : "Streaming";
       } else if (state.activityLive) {
         nodes.activityStatusPill.textContent = state.activity
           ? `Cursor ${state.activity.next_cursor_sequence}`
-          : "Live";
+          : "Polling";
       } else {
         nodes.activityStatusPill.textContent = "Paused";
       }
