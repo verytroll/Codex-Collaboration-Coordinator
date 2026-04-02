@@ -33,9 +33,9 @@ RELEASE_PACKAGE_INCLUDE_PATHS = (
     "Dockerfile",
     "pyproject.toml",
     ".env.example",
-    "STATUS.md",
-    "IMPLEMENTATION_TASKS_V5.md",
-    "IMPLEMENTATION_ORDER_V5.md",
+    "docs/planning/STATUS.md",
+    "docs/planning/archive/IMPLEMENTATION_TASKS_V5.md",
+    "docs/planning/archive/IMPLEMENTATION_ORDER_V5.md",
     "AGENTS.md",
 )
 RELEASE_PACKAGE_IGNORE_PATTERNS = (

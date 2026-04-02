@@ -8,171 +8,174 @@ It is a multi-agent coordination system that:
 - manages sessions
 - routes messages between agents
 - integrates with Codex app-server
-- supports mention-based collaboration (#agent)
+- supports mention-based collaboration (`#agent`)
 
 Core architecture:
-- Coordinator-first
-- Codex is execution engine (via CodexBridge)
-- Session + Agent + Message + Job model
-
----
+- coordinator-first
+- Codex is the execution engine via `CodexBridge`
+- session + agent + message + job + artifact model
 
 ## 2. Tech Stack
 
 - Python 3.11+
-- FastAPI (API layer)
-- SQLite (MVP)
-- Async (async/await required)
+- FastAPI
+- SQLite for the current baseline
+- async/await for I/O paths
 
-DO NOT:
+Do not:
 - use Flask
-- use blocking I/O
-- introduce unnecessary frameworks
+- introduce blocking I/O in request or service paths
+- add dependencies without a concrete reason
 
----
+## 3. Repository Structure
 
-## 3. Project Structure
+Main code:
+- `app/api/` thin HTTP routes and request wiring
+- `app/services/` business logic and orchestration
+- `app/repositories/` persistence access
+- `app/models/` API and domain models
+- `app/codex_bridge/` Codex bridge integration
+- `app/core/` config, middleware, logging, telemetry, versioning
+- `app/db/` database connection and migrations
+- `ui/` operator-facing static UI assets
 
-Follow this structure:
+Docs:
+- `docs/planning/` status, plans, implementation backlog, implementation order
+- `docs/reference/` PRD, architecture, API, schema, strategy references
+- `docs/operations/`, `docs/operator/`, `docs/integrations/`, `docs/releases/`, `docs/features/`
+- `docs/_meta/documents.yaml` canonical docs metadata registry
 
-- app/
-  - api/
-  - services/
-  - repositories/
-  - models/
-  - codex_bridge/
-- tests/
-- docs/
+Tests:
+- `tests/unit/`
+- `tests/integration/`
 
-DO NOT:
-- mix business logic inside API layer
-- access DB directly from routes
+Do not:
+- mix business logic inside API routes
+- bypass repositories from API handlers
+- write raw SQL in services
 
----
+## 4. Context Discipline
 
-## 4. Coding Rules
+Assume the agent has a large but still limited context window. Do not load the entire docs history by default.
 
-- Use type hints everywhere
-- Use async functions for I/O
-- Keep functions small (<50 lines)
-- Prefer composition over inheritance
-
-Naming:
-- snake_case for functions
-- PascalCase for classes
-
----
-
-## 5. How to Work on a Task
-
-When implementing a feature:
-
-1. Read STATUS.md to confirm the active phase
-2. Read the matching implementation backlog (`IMPLEMENTATION_TASKS_V6.md`)
-3. Follow the matching implementation order document (`IMPLEMENTATION_ORDER_V6.md`)
-4. Implement the smallest working unit
-5. Add tests
-6. Run tests
-7. Update docs
-
----
-
-## 6. Testing
-
-Always run:
-
-pytest
+Read in this order:
+1. `README.md`
+2. `docs/planning/INDEX.md`
+3. `docs/planning/STATUS.md`
+4. The active phase docs named by `docs/planning/STATUS.md`
+5. `docs/reference/INDEX.md` only if deeper product, contract, schema, or architecture context is needed
+6. Only the specific code, tests, and domain docs touched by the task
 
 Rules:
-- Every new feature must have tests
-- Fix failing tests before continuing
-- Do not skip tests
+- do not read every `PLAN*`, `IMPLEMENTATION_TASKS*`, and `IMPLEMENTATION_ORDER*` file unless the task explicitly depends on historical progression
+- do not read `docs/planning/archive/` by default
+- use `rg` to find the exact module, route, test, or doc section before opening long files
+- prefer targeted reads from long files over full-file reads when possible
+- treat `docs/planning/STATUS.md` as the routing document for which phase matters now
+- use `docs/reference/ARCHITECTURE.md`, `docs/reference/API.md`, and `docs/reference/DB_SCHEMA.md` selectively for design or contract work
+- update `docs/_meta/documents.yaml` whenever a tracked doc is created, moved, replaced, or retired
 
----
+## 5. How To Work On A Task
+
+When implementing a feature or fix:
+
+1. Read `docs/planning/STATUS.md` to confirm the active phase.
+2. Read the active backlog doc under `docs/planning/`.
+3. Read the active implementation order doc under `docs/planning/` when sequencing matters.
+4. Inspect the affected code and tests before changing anything.
+5. Implement the smallest cohesive unit that moves the task forward.
+6. Add or update tests.
+7. Run `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1`
+8. Run `powershell -ExecutionPolicy Bypass -File .\scripts\lint.ps1`
+9. Update docs when behavior, contracts, or operator workflow change.
+
+## 6. Coding Rules
+
+- use type hints everywhere
+- keep functions small when practical
+- prefer composition over inheritance
+- keep route handlers thin
+- keep service boundaries explicit
+
+Naming:
+- `snake_case` for functions and variables
+- `PascalCase` for classes
 
 ## 7. Codex Integration Rules
 
-Use CodexBridge for ALL Codex interactions.
+Use `CodexBridge` for all Codex interactions.
 
-DO NOT:
-- call Codex directly from API
-- duplicate Codex logic
+Do not:
+- call Codex directly from API routes
+- duplicate Codex bridge logic in other modules
 
-Use:
-- thread/start
-- turn/start
-- turn/steer
-- turn/interrupt
+Use these primitives where relevant:
+- `thread/start`
+- `thread/resume`
+- `turn/start`
+- `turn/steer`
+- `turn/interrupt`
 
----
+## 8. Session And Agent Rules
 
-## 8. Session & Agent Rules
-
-- Session is the main coordination unit
-- Agents communicate via messages
-- Mentions (#agent_name) trigger routing
+- session is the main coordination unit
+- agents communicate through coordinator-managed messages
+- mentions trigger routing
+- loop protection must remain in place
 
 Rules:
-- Only lead agent can initiate relay
-- Prevent infinite loops (use loop guard)
-
----
+- only the allowed initiator should trigger relay flows
+- do not create direct agent-to-agent shortcuts that bypass coordinator logic
+- keep transcript, artifact, and audit behavior consistent with current coordinator flow
 
 ## 9. Commands Behavior
 
-Supported commands:
-- /new → create session
-- /interrupt → stop current turn
-- /compact → reduce context
+Supported commands include:
+- `/new` -> create session
+- `/interrupt` -> stop the current turn
+- `/compact` -> reduce context
 
 Ensure commands:
 - are parsed before routing
-- do not reach Codex directly
-
----
+- do not reach Codex directly as raw user input
 
 ## 10. Database Rules
 
-Use repository layer ONLY.
+Use the repository layer only.
 
-Tables:
-- sessions
-- agents
-- messages
-- jobs
-- artifacts
+Primary tables include:
+- `sessions`
+- `agents`
+- `messages`
+- `jobs`
+- `artifacts`
 
-DO NOT:
-- write raw SQL in services
-- bypass repository layer
+Do not:
+- bypass repositories for persistence writes
+- scatter persistence rules across unrelated services
 
----
+## 11. Testing And Completion
 
-## 11. PR Rules
-
-Before completing a task:
-
-- code compiles
+Before considering a task done:
 - tests pass
-- no lint errors
+- lint passes
+- changed APIs and operator flows are reflected in docs
+- new behavior has test coverage
 
-Commit format:
+Preferred commands:
+- `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1`
+- `powershell -ExecutionPolicy Bypass -File .\scripts\lint.ps1`
 
-[MODULE] Short description
+## 12. What Not To Do
 
----
-
-## 12. What NOT to Do
-
-- Do not rewrite architecture
-- Do not introduce new dependencies without reason
-- Do not skip tests
-- Do not break existing APIs
-
----
+- do not rewrite the architecture without an explicit request
+- do not break existing APIs without updating contract docs and tests
+- do not skip tests
+- do not introduce large speculative refactors during a scoped task
 
 ## 13. When Unsure
 
 If unclear:
-- ask for clarification
-- propose a plan before coding
+- inspect the current code and active docs first
+- prefer a small concrete plan over broad changes
+- ask for clarification only when local context cannot resolve the ambiguity safely

@@ -1,4 +1,4 @@
-﻿# Codex Collaboration Coordinator
+# Codex Collaboration Coordinator
 
 Multi-agent coordination system for session-based collaboration, routing, review, and job orchestration.
 
@@ -22,40 +22,38 @@ Multi-agent coordination system for session-based collaboration, routing, review
    - `./scripts/smoke.ps1` checks health, readiness, and the main smoke flow
    - `./scripts/package_release.ps1` builds the curated small-team release bundle
    - `./scripts/release.ps1` runs the release checklist against a local checkout
+   - `./scripts/docs_check.ps1` validates docs registry coverage and metadata references
    - `./scripts/test.ps1`
    - `./scripts/lint.ps1`
-6. For a deployment-style container path, see `Dockerfile` and `docs/DEPLOYMENT.md`.
+6. For a deployment-style container path, see `Dockerfile` and `docs/operations/DEPLOYMENT.md`.
 
 ## Docs
 
-- [Local setup](docs/LOCAL_SETUP.md)
-- [Troubleshooting](docs/TROUBLESHOOTING.md)
-- [A2A mapping note](docs/A2A_MAPPING.md)
-- [A2A compatibility matrix](docs/A2A_COMPATIBILITY_MATRIX.md)
-- [MVP release notes](docs/RELEASE_NOTES_MVP.md)
-- [V3 release notes](docs/RELEASE_NOTES_V3.md)
-- [V5 release notes](docs/RELEASE_NOTES_V5.md)
-- [V4 upgrade notes](docs/UPGRADE_NOTES_V4.md)
-- [V5 upgrade notes](docs/UPGRADE_NOTES_V5.md)
-- [Runbook](docs/RUNBOOK.md)
-- [Deployment](docs/DEPLOYMENT.md)
-- [Operator UI shell](docs/OPERATOR_UI.md)
-- [Current status](STATUS.md)
-- [MVP plan](PLAN.md)
-- [Post-MVP plan (V2)](PLAN_V2.md)
-- [V3 plan](PLAN_V3.md)
-- [V4 plan](PLAN_V4.md)
-- [MVP implementation backlog](IMPLEMENTATION_TASKS.md)
-- [Post-MVP implementation backlog (F17-F24)](IMPLEMENTATION_TASKS_V2.md)
-- [V3 implementation backlog (F25-F31)](IMPLEMENTATION_TASKS_V3.md)
-- [V4 implementation backlog (F32-F35)](IMPLEMENTATION_TASKS_V4.md)
-- [V6 implementation backlog (F41-F46)](IMPLEMENTATION_TASKS_V6.md)
-- [MVP implementation order](IMPLEMENTATION_ORDER.md)
-- [Post-MVP implementation order (PR19-PR26)](IMPLEMENTATION_ORDER_V2.md)
-- [V3 implementation order (PR27-PR33)](IMPLEMENTATION_ORDER_V3.md)
-- [V4 implementation order (PR34-PR37)](IMPLEMENTATION_ORDER_V4.md)
-- [V5 implementation order (PR38-PR42)](IMPLEMENTATION_ORDER_V5.md)
-- [V6 implementation order (PR43-PR48)](IMPLEMENTATION_ORDER_V6.md)
+- [Docs index](docs/README.md)
+- [Planning index](docs/planning/INDEX.md)
+- [Reference index](docs/reference/INDEX.md)
+- [Planning archive](docs/planning/archive/INDEX.md)
+- [Current status](docs/planning/STATUS.md)
+- [Active V7 plan](docs/planning/PLAN_V7.md)
+- [Active V7 implementation backlog](docs/planning/IMPLEMENTATION_TASKS_V7.md)
+- [Active V7 implementation order](docs/planning/IMPLEMENTATION_ORDER_V7.md)
+- [Local setup](docs/operations/LOCAL_SETUP.md)
+- [Runbook](docs/operations/RUNBOOK.md)
+- [Deployment](docs/operations/DEPLOYMENT.md)
+- [Operator UI shell](docs/operator/OPERATOR_UI.md)
+- [Troubleshooting](docs/operations/TROUBLESHOOTING.md)
+- [A2A mapping note](docs/integrations/a2a/A2A_MAPPING.md)
+- [A2A compatibility matrix](docs/integrations/a2a/A2A_COMPATIBILITY_MATRIX.md)
+- [MVP release notes](docs/releases/RELEASE_NOTES_MVP.md)
+- [V3 release notes](docs/releases/RELEASE_NOTES_V3.md)
+- [V5 release notes](docs/releases/RELEASE_NOTES_V5.md)
+- [V4 upgrade notes](docs/releases/UPGRADE_NOTES_V4.md)
+- [V5 upgrade notes](docs/releases/UPGRADE_NOTES_V5.md)
+- [PRD](docs/reference/PRD.md)
+- [Architecture](docs/reference/ARCHITECTURE.md)
+- [API reference](docs/reference/API.md)
+- [Database schema](docs/reference/DB_SCHEMA.md)
+- [Borrowed ideas](docs/reference/BORROWED_IDEAS.md)
 
 ## Current status
 
@@ -76,3 +74,4 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - V6 durable runtime and persistence boundary are complete through PR46 / F44, with startup recovery, replayable queued jobs, and a packaged durable runtime loop.
 - V6 realtime streaming transport is complete through PR47 / F45, with SSE resume support for operator activity and public task events.
 - V6 interop certification and external adoption baseline are complete through PR48 / F46, with contract tests, compatibility claims, and sample client guidance.
+

@@ -1,0 +1,865 @@
+schema_version: 1
+metadata_strategy:
+  embedded_front_matter: deferred
+  canonical_registry: docs/_meta/documents.yaml
+  rationale:
+    - Markdown files are consumed directly from Git and release bundles.
+    - The repository has no docs pipeline that parses front matter today.
+    - A central registry keeps metadata machine-readable without creating large noisy edits in every doc file.
+
+documents:
+  - path: AGENTS.md
+    title: Agent Workflow Instructions
+    doc_type: instructions
+    domain: governance
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/STATUS.md
+      - docs/planning/PLAN_V7.md
+      - docs/planning/IMPLEMENTATION_TASKS_V7.md
+      - docs/planning/IMPLEMENTATION_ORDER_V7.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: README.md
+    title: Project Overview
+    doc_type: overview
+    domain: project
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/STATUS.md
+      - docs/README.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: scripts/README.md
+    title: Scripts Guide
+    doc_type: tooling-guide
+    domain: tooling
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - README.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/planning/STATUS.md
+    title: Project Status
+    doc_type: status
+    domain: project
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/PLAN_V7.md
+      - docs/planning/IMPLEMENTATION_TASKS_V7.md
+      - docs/planning/IMPLEMENTATION_ORDER_V7.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/planning/INDEX.md
+    title: Planning Index
+    doc_type: index
+    domain: planning
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/STATUS.md
+      - docs/planning/PLAN_V7.md
+      - docs/planning/IMPLEMENTATION_TASKS_V7.md
+      - docs/planning/IMPLEMENTATION_ORDER_V7.md
+      - docs/planning/archive/INDEX.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/reference/PRD.md
+    title: Product Requirements
+    doc_type: requirements
+    domain: product
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on: []
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/reference/ARCHITECTURE.md
+    title: Architecture
+    doc_type: architecture
+    domain: architecture
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/reference/PRD.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/reference/API.md
+    title: API Reference
+    doc_type: api-reference
+    domain: api
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/reference/PRD.md
+      - docs/reference/ARCHITECTURE.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/reference/DB_SCHEMA.md
+    title: Database Schema
+    doc_type: schema-reference
+    domain: data
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/reference/ARCHITECTURE.md
+      - docs/reference/API.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/reference/BORROWED_IDEAS.md
+    title: Borrowed Ideas
+    doc_type: ideation
+    domain: strategy
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on: []
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/reference/INDEX.md
+    title: Reference Index
+    doc_type: index
+    domain: reference
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/reference/PRD.md
+      - docs/reference/ARCHITECTURE.md
+      - docs/reference/API.md
+      - docs/reference/DB_SCHEMA.md
+      - docs/reference/BORROWED_IDEAS.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/planning/archive/PLAN.md
+    title: MVP Plan
+    doc_type: plan
+    domain: planning
+    version: mvp
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/reference/PRD.md
+      - docs/reference/ARCHITECTURE.md
+      - docs/reference/API.md
+      - docs/reference/DB_SCHEMA.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by:
+      - docs/planning/archive/PLAN_V2.md
+
+  - path: docs/planning/archive/PLAN_V2.md
+    title: V2 Plan
+    doc_type: plan
+    domain: planning
+    version: v2
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN.md
+      - docs/planning/STATUS.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/PLAN.md
+    superseded_by:
+      - docs/planning/archive/PLAN_V3.md
+
+  - path: docs/planning/archive/PLAN_V3.md
+    title: V3 Plan
+    doc_type: plan
+    domain: planning
+    version: v3
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN_V2.md
+      - docs/planning/STATUS.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/PLAN_V2.md
+    superseded_by:
+      - docs/planning/archive/PLAN_V4.md
+
+  - path: docs/planning/archive/PLAN_V4.md
+    title: V4 Plan
+    doc_type: plan
+    domain: planning
+    version: v4
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN_V3.md
+      - docs/planning/STATUS.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/PLAN_V3.md
+    superseded_by:
+      - docs/planning/archive/PLAN_V5.md
+
+  - path: docs/planning/archive/PLAN_V5.md
+    title: V5 Plan
+    doc_type: plan
+    domain: planning
+    version: v5
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN_V4.md
+      - docs/planning/STATUS.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/PLAN_V4.md
+    superseded_by:
+      - docs/planning/archive/PLAN_V6.md
+
+  - path: docs/planning/archive/PLAN_V6.md
+    title: V6 Plan
+    doc_type: plan
+    domain: planning
+    version: v6
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN_V5.md
+      - docs/planning/STATUS.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/PLAN_V5.md
+    superseded_by:
+      - docs/planning/PLAN_V7.md
+
+  - path: docs/planning/PLAN_V7.md
+    title: V7 Plan
+    doc_type: plan
+    domain: planning
+    version: v7
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN_V6.md
+      - docs/planning/STATUS.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/PLAN_V6.md
+    superseded_by: []
+
+  - path: docs/planning/archive/IMPLEMENTATION_TASKS.md
+    title: MVP Implementation Backlog
+    doc_type: backlog
+    domain: implementation
+    version: mvp
+    status: historical
+    owner: project-maintainers
+    source_of_truth: docs/planning/archive/PLAN.md
+    depends_on:
+      - docs/planning/archive/PLAN.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by:
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V2.md
+
+  - path: docs/planning/archive/IMPLEMENTATION_TASKS_V2.md
+    title: V2 Implementation Backlog
+    doc_type: backlog
+    domain: implementation
+    version: v2
+    status: historical
+    owner: project-maintainers
+    source_of_truth: docs/planning/archive/PLAN_V2.md
+    depends_on:
+      - docs/planning/archive/PLAN_V2.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V2.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_TASKS.md
+    superseded_by:
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V3.md
+
+  - path: docs/planning/archive/IMPLEMENTATION_TASKS_V3.md
+    title: V3 Implementation Backlog
+    doc_type: backlog
+    domain: implementation
+    version: v3
+    status: historical
+    owner: project-maintainers
+    source_of_truth: docs/planning/archive/PLAN_V3.md
+    depends_on:
+      - docs/planning/archive/PLAN_V3.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V3.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V2.md
+    superseded_by:
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V4.md
+
+  - path: docs/planning/archive/IMPLEMENTATION_TASKS_V4.md
+    title: V4 Implementation Backlog
+    doc_type: backlog
+    domain: implementation
+    version: v4
+    status: historical
+    owner: project-maintainers
+    source_of_truth: docs/planning/archive/PLAN_V4.md
+    depends_on:
+      - docs/planning/archive/PLAN_V4.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V4.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V3.md
+    superseded_by:
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V5.md
+
+  - path: docs/planning/archive/IMPLEMENTATION_TASKS_V5.md
+    title: V5 Implementation Backlog
+    doc_type: backlog
+    domain: implementation
+    version: v5
+    status: historical
+    owner: project-maintainers
+    source_of_truth: docs/planning/archive/PLAN_V5.md
+    depends_on:
+      - docs/planning/archive/PLAN_V5.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V5.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V4.md
+    superseded_by:
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V6.md
+
+  - path: docs/planning/archive/IMPLEMENTATION_TASKS_V6.md
+    title: V6 Implementation Backlog
+    doc_type: backlog
+    domain: implementation
+    version: v6
+    status: historical
+    owner: project-maintainers
+    source_of_truth: docs/planning/archive/PLAN_V6.md
+    depends_on:
+      - docs/planning/archive/PLAN_V6.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V6.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V5.md
+    superseded_by:
+      - docs/planning/IMPLEMENTATION_TASKS_V7.md
+
+  - path: docs/planning/IMPLEMENTATION_TASKS_V7.md
+    title: V7 Implementation Backlog
+    doc_type: backlog
+    domain: implementation
+    version: v7
+    status: active
+    owner: project-maintainers
+    source_of_truth: docs/planning/PLAN_V7.md
+    depends_on:
+      - docs/planning/PLAN_V7.md
+      - docs/planning/IMPLEMENTATION_ORDER_V7.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V6.md
+    superseded_by: []
+
+  - path: docs/planning/archive/IMPLEMENTATION_ORDER.md
+    title: MVP Implementation Order
+    doc_type: implementation-order
+    domain: implementation
+    version: mvp
+    status: historical
+    owner: project-maintainers
+    source_of_truth: docs/planning/archive/PLAN.md
+    depends_on:
+      - docs/planning/archive/PLAN.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by:
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V2.md
+
+  - path: docs/planning/archive/IMPLEMENTATION_ORDER_V2.md
+    title: V2 Implementation Order
+    doc_type: implementation-order
+    domain: implementation
+    version: v2
+    status: historical
+    owner: project-maintainers
+    source_of_truth: docs/planning/archive/PLAN_V2.md
+    depends_on:
+      - docs/planning/archive/PLAN_V2.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_ORDER.md
+    superseded_by:
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V3.md
+
+  - path: docs/planning/archive/IMPLEMENTATION_ORDER_V3.md
+    title: V3 Implementation Order
+    doc_type: implementation-order
+    domain: implementation
+    version: v3
+    status: historical
+    owner: project-maintainers
+    source_of_truth: docs/planning/archive/PLAN_V3.md
+    depends_on:
+      - docs/planning/archive/PLAN_V3.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V2.md
+    superseded_by:
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V4.md
+
+  - path: docs/planning/archive/IMPLEMENTATION_ORDER_V4.md
+    title: V4 Implementation Order
+    doc_type: implementation-order
+    domain: implementation
+    version: v4
+    status: historical
+    owner: project-maintainers
+    source_of_truth: docs/planning/archive/PLAN_V4.md
+    depends_on:
+      - docs/planning/archive/PLAN_V4.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V3.md
+    superseded_by:
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V5.md
+
+  - path: docs/planning/archive/IMPLEMENTATION_ORDER_V5.md
+    title: V5 Implementation Order
+    doc_type: implementation-order
+    domain: implementation
+    version: v5
+    status: historical
+    owner: project-maintainers
+    source_of_truth: docs/planning/archive/PLAN_V5.md
+    depends_on:
+      - docs/planning/archive/PLAN_V5.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V4.md
+    superseded_by:
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V6.md
+
+  - path: docs/planning/archive/IMPLEMENTATION_ORDER_V6.md
+    title: V6 Implementation Order
+    doc_type: implementation-order
+    domain: implementation
+    version: v6
+    status: historical
+    owner: project-maintainers
+    source_of_truth: docs/planning/archive/PLAN_V6.md
+    depends_on:
+      - docs/planning/archive/PLAN_V6.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V5.md
+    superseded_by:
+      - docs/planning/IMPLEMENTATION_ORDER_V7.md
+
+  - path: docs/planning/archive/INDEX.md
+    title: Planning Archive Index
+    doc_type: index
+    domain: planning
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN.md
+      - docs/planning/archive/PLAN_V2.md
+      - docs/planning/archive/PLAN_V3.md
+      - docs/planning/archive/PLAN_V4.md
+      - docs/planning/archive/PLAN_V5.md
+      - docs/planning/archive/PLAN_V6.md
+      - docs/planning/archive/IMPLEMENTATION_TASKS.md
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V2.md
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V3.md
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V4.md
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V5.md
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V6.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V2.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V3.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V4.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V5.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V6.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/planning/IMPLEMENTATION_ORDER_V7.md
+    title: V7 Implementation Order
+    doc_type: implementation-order
+    domain: implementation
+    version: v7
+    status: active
+    owner: project-maintainers
+    source_of_truth: docs/planning/PLAN_V7.md
+    depends_on:
+      - docs/planning/PLAN_V7.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V6.md
+    superseded_by: []
+
+  - path: docs/README.md
+    title: Documentation Index
+    doc_type: index
+    domain: documentation
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on: []
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/operations/DEPLOYMENT.md
+    title: Deployment
+    doc_type: guide
+    domain: operations
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - README.md
+      - docs/planning/STATUS.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/operations/LOCAL_SETUP.md
+    title: Local Setup
+    doc_type: guide
+    domain: operations
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - README.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/operations/OBSERVABILITY.md
+    title: Observability
+    doc_type: reference
+    domain: operations
+    version: v4
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/STATUS.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/operations/RUNBOOK.md
+    title: Runbook
+    doc_type: runbook
+    domain: operations
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/operations/DEPLOYMENT.md
+      - docs/operator/OPERATOR_UI.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/operations/TROUBLESHOOTING.md
+    title: Troubleshooting
+    doc_type: runbook
+    domain: operations
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/operations/RUNBOOK.md
+      - docs/operations/DEPLOYMENT.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/operator/OPERATOR_DASHBOARD.md
+    title: Operator Dashboard
+    doc_type: reference
+    domain: operator
+    version: v4
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/operator/OPERATOR_UI.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/operator/OPERATOR_UI.md
+    title: Operator UI
+    doc_type: guide
+    domain: operator
+    version: v6
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/operations/RUNBOOK.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/integrations/a2a/A2A_COMPATIBILITY_MATRIX.md
+    title: A2A Compatibility Matrix
+    doc_type: matrix
+    domain: integrations/a2a
+    version: v6
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/integrations/a2a/A2A_PUBLIC_API.md
+      - docs/integrations/a2a/A2A_PUBLIC_EVENTS.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/integrations/a2a/A2A_MAPPING.md
+    title: A2A Mapping
+    doc_type: mapping
+    domain: integrations/a2a
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/integrations/a2a/A2A_PUBLIC_API.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/integrations/a2a/A2A_PUBLIC_API.md
+    title: A2A Public API
+    doc_type: reference
+    domain: integrations/a2a
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/integrations/a2a/A2A_COMPATIBILITY_MATRIX.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/integrations/a2a/A2A_PUBLIC_EVENTS.md
+    title: A2A Public Events
+    doc_type: reference
+    domain: integrations/a2a
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/integrations/a2a/A2A_COMPATIBILITY_MATRIX.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/integrations/a2a/A2A_QUICKSTART.md
+    title: A2A Quickstart
+    doc_type: quickstart
+    domain: integrations/a2a
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: docs/integrations/a2a/A2A_PUBLIC_API.md
+    depends_on:
+      - docs/integrations/a2a/A2A_PUBLIC_API.md
+      - docs/integrations/a2a/A2A_PUBLIC_EVENTS.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/features/ORCHESTRATION_V3.md
+    title: Orchestration V3
+    doc_type: capability-note
+    domain: orchestration
+    version: v3
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN_V3.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/features/POLICY_ENGINE_V2.md
+    title: Policy Engine V2
+    doc_type: capability-note
+    domain: policy
+    version: v2
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN_V4.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/features/RUNTIME_POOLS.md
+    title: Runtime Pools
+    doc_type: capability-note
+    domain: runtime
+    version: v3
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN_V3.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/features/SESSION_TEMPLATES.md
+    title: Session Templates
+    doc_type: capability-note
+    domain: orchestration
+    version: v3
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN_V3.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/releases/RELEASE_NOTES_MVP.md
+    title: MVP Release Notes
+    doc_type: release-note
+    domain: release
+    version: mvp
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/releases/RELEASE_NOTES_V3.md
+    title: V3 Release Notes
+    doc_type: release-note
+    domain: release
+    version: v3
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN_V3.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/releases/RELEASE_NOTES_V5.md
+    title: V5 Release Notes
+    doc_type: release-note
+    domain: release
+    version: v5
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN_V5.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/releases/UPGRADE_NOTES_V4.md
+    title: V4 Upgrade Notes
+    doc_type: upgrade-note
+    domain: release
+    version: v4
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/releases/RELEASE_NOTES_V3.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/releases/UPGRADE_NOTES_V5.md
+    title: V5 Upgrade Notes
+    doc_type: upgrade-note
+    domain: release
+    version: v5
+    status: historical
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/releases/RELEASE_NOTES_V5.md
+    last_updated: 2026-04-02
+    supersedes: []
+    superseded_by: []

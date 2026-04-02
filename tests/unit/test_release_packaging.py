@@ -24,9 +24,9 @@ def test_build_release_package_writes_manifest_and_archive(tmp_path) -> None:
         "Dockerfile",
         "pyproject.toml",
         ".env.example",
-        "STATUS.md",
-        "IMPLEMENTATION_TASKS_V5.md",
-        "IMPLEMENTATION_ORDER_V5.md",
+        "docs/planning/STATUS.md",
+        "docs/planning/archive/IMPLEMENTATION_TASKS_V5.md",
+        "docs/planning/archive/IMPLEMENTATION_ORDER_V5.md",
         "AGENTS.md",
     )
 
@@ -37,9 +37,9 @@ def test_build_release_package_writes_manifest_and_archive(tmp_path) -> None:
     _write(source_root / "Dockerfile")
     _write(source_root / "pyproject.toml")
     _write(source_root / ".env.example")
-    _write(source_root / "STATUS.md")
-    _write(source_root / "IMPLEMENTATION_TASKS_V5.md")
-    _write(source_root / "IMPLEMENTATION_ORDER_V5.md")
+    _write(source_root / "docs/planning/STATUS.md")
+    _write(source_root / "docs/planning/archive/IMPLEMENTATION_TASKS_V5.md")
+    _write(source_root / "docs/planning/archive/IMPLEMENTATION_ORDER_V5.md")
     _write(source_root / "AGENTS.md")
 
     result = build_release_package(

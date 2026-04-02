@@ -9,5 +9,6 @@ Local helper scripts:
 - `a2a_quickstart.ps1` run a guided public A2A demo that creates a task, replays events, and prints discovery metadata
 - `package_release.ps1` build the curated versioned small-team release bundle and manifest
 - `release.ps1` run the release checklist, migration verification, seed reset verification, smoke gate, and release packaging for the `small-team` baseline; it starts a temporary app process for the smoke step when needed
+- `docs_check.ps1` validate that every tracked Markdown file is covered by `docs/_meta/documents.yaml` and that metadata references do not drift to missing paths
 - `test.ps1` run the test suite
 - `lint.ps1` run Ruff checks

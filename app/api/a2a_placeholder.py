@@ -111,7 +111,8 @@ def _agent_card(*, base_url: str) -> A2AAgentCardResponse:
             "Supported public v1 surface: task create/list/get, replay, "
             "subscriptions, and SSE streams.",
             "Legacy adapter bridge routes remain available for compatibility only.",
-            "See docs/A2A_COMPATIBILITY_MATRIX.md for supported versus experimental claims.",
+            "See docs/integrations/a2a/A2A_COMPATIBILITY_MATRIX.md "
+            "for supported versus experimental claims.",
             "Replay cursors are inclusive by request and exclusive in storage.",
         ],
     )
