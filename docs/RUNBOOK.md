@@ -20,7 +20,7 @@ pip install -e .[dev]
 .\scripts\smoke.ps1
 ```
 
-4. Open `http://127.0.0.1:8000/operator` to inspect the thin operator shell.
+4. Open `http://127.0.0.1:8000/operator` to inspect the thin operator shell and action panel.
 
 ## Prod-like startup
 
@@ -37,6 +37,8 @@ pip install -e .[dev]
 8. Confirm `GET /api/v1/system/status` reports the expected aggregates and bridge state.
 9. Confirm `GET /operator` renders the operator shell and `GET /api/v1/operator/shell`
    returns the bootstrap payload for a selected session.
+10. Confirm the operator action routes work for retry, resume, cancel, approve, reject,
+    and phase activation, and that the session event log records the matching audit trail.
 
 ## Release candidate
 
@@ -52,15 +54,26 @@ The release gate performs:
 2. Ruff checks
 3. migration checksum/idempotency verification
 4. demo seed reset verification
-5. smoke validation against the running app
+5. smoke validation against the running app using the `small-team` deployment profile
 6. release packaging into `dist/release`
+
+Before considering the baseline closed, confirm:
+
+1. The release package name includes the version and profile, for example
+   `codex-collaboration-coordinator-0.2.0-small-team`.
+2. `release-manifest.json` exists and records `app_version`, `release.tag`,
+   `release.candidate`, and `deployment_profile=small-team`.
+3. `profiles/small-team.env` exists in the bundle and matches the canonical small-team
+   defaults.
+4. The smoke path covers health, readiness, operator shell bootstrap, operator actions,
+   live activity, and the public A2A flow.
 
 ## Incident triage
 
 1. Check `GET /api/v1/system/status` first.
 2. Check `GET /api/v1/system/debug` for queued jobs, blocked jobs, and runtime state.
 3. Check `GET /api/v1/operator/dashboard` for higher-level operator diagnostics.
-4. Check `GET /operator` if you want the read-only shell view instead of raw JSON.
+4. Check `GET /operator` if you want the shell view instead of raw JSON.
 5. If operator/public routes return `401`, verify `ACCESS_TOKEN` and the request header name.
 6. If operator/public routes return `403`, verify the token value being sent.
 7. Correlate logs by `request_id` from the request headers or the request log.

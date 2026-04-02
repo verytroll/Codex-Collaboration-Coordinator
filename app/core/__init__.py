@@ -13,12 +13,17 @@ from app.core.logging import (
     set_request_id,
 )
 from app.core.middleware import RequestIdMiddleware
+from app.core.version import APP_VERSION, RELEASE_BASELINE_NAME, RELEASE_CANDIDATE, RELEASE_TAG
 
 __all__ = [
+    "APP_VERSION",
     "ApiError",
     "AppConfig",
     "ErrorResponse",
     "REQUEST_ID_CONTEXT",
+    "RELEASE_BASELINE_NAME",
+    "RELEASE_CANDIDATE",
+    "RELEASE_TAG",
     "RequestIdFilter",
     "RequestIdMiddleware",
     "configure_logging",

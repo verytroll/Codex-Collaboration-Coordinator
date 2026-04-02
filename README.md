@@ -33,7 +33,9 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - [A2A mapping note](docs/A2A_MAPPING.md)
 - [MVP release notes](docs/RELEASE_NOTES_MVP.md)
 - [V3 release notes](docs/RELEASE_NOTES_V3.md)
+- [V5 release notes](docs/RELEASE_NOTES_V5.md)
 - [V4 upgrade notes](docs/UPGRADE_NOTES_V4.md)
+- [V5 upgrade notes](docs/UPGRADE_NOTES_V5.md)
 - [Runbook](docs/RUNBOOK.md)
 - [Deployment](docs/DEPLOYMENT.md)
 - [Operator UI shell](docs/OPERATOR_UI.md)
@@ -46,11 +48,13 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - [Post-MVP implementation backlog (F17-F24)](IMPLEMENTATION_TASKS_V2.md)
 - [V3 implementation backlog (F25-F31)](IMPLEMENTATION_TASKS_V3.md)
 - [V4 implementation backlog (F32-F35)](IMPLEMENTATION_TASKS_V4.md)
+- [V6 implementation backlog (F41-F46)](IMPLEMENTATION_TASKS_V6.md)
 - [MVP implementation order](IMPLEMENTATION_ORDER.md)
 - [Post-MVP implementation order (PR19-PR26)](IMPLEMENTATION_ORDER_V2.md)
 - [V3 implementation order (PR27-PR33)](IMPLEMENTATION_ORDER_V3.md)
 - [V4 implementation order (PR34-PR37)](IMPLEMENTATION_ORDER_V4.md)
 - [V5 implementation order (PR38-PR42)](IMPLEMENTATION_ORDER_V5.md)
+- [V6 implementation order (PR43-PR48)](IMPLEMENTATION_ORDER_V6.md)
 
 ## Current status
 
@@ -65,3 +69,5 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - `GET /api/v1/readinessz` reports deployment readiness for a booted database-backed runtime.
 - V4 foundation is complete through PR37, including hardening, telemetry, release readiness, and deployment readiness.
 - V5 foundation is complete through PR42, including access boundary, operator UI shell, realtime operator surface, A2A interoperability, and small-team deployment packaging.
+- V5 release baseline is closed through PR43 / F41, with versioned release metadata, release notes, and a synchronized verification checklist.
+- V6 operator actions and audit trail are complete through PR44 / F42, with action endpoints, operator UI controls, and audited write paths.

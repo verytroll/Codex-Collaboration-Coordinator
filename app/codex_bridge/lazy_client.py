@@ -10,6 +10,7 @@ from app.codex_bridge.models import JsonRpcResponse
 from app.codex_bridge.process_manager import CodexProcessManager
 from app.core.logging import get_logger
 from app.core.telemetry import get_telemetry_service
+from app.core.version import APP_VERSION
 
 logger = get_logger(__name__)
 
@@ -19,7 +20,7 @@ class LazyCodexBridgeClient:
 
     _default_client_info = {
         "name": "codex-collaboration-coordinator",
-        "version": "0.1.0",
+        "version": APP_VERSION,
     }
 
     def __init__(self, process_manager: CodexProcessManager) -> None:

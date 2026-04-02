@@ -1,12 +1,18 @@
 # Operator UI Shell
 
-The operator UI shell is a thin read-only surface for the coordinator.
+The operator UI shell is a thin operator surface for the coordinator.
 
 ## Routes
 
 - `GET /operator`
 - `GET /api/v1/operator/shell`
 - `GET /api/v1/operator/sessions/{session_id}/activity`
+- `POST /api/v1/operator/jobs/{job_id}/retry`
+- `POST /api/v1/operator/jobs/{job_id}/resume`
+- `POST /api/v1/operator/jobs/{job_id}/cancel`
+- `POST /api/v1/operator/approvals/{approval_id}/approve`
+- `POST /api/v1/operator/approvals/{approval_id}/reject`
+- `POST /api/v1/operator/sessions/{session_id}/phases/{phase_key}/activate`
 
 ## What the shell shows
 
@@ -18,7 +24,7 @@ The operator UI shell is a thin read-only surface for the coordinator.
 - artifacts
 - transcript exports
 - dashboard summaries for bottlenecks, phases, and runtime pools
-- replayable session activity, including messages, jobs, reviews, approvals, and runtime health signals
+- replayable session activity, including messages, jobs, reviews, approvals, runtime health signals, and operator write actions
 
 ## Filters
 
@@ -36,6 +42,14 @@ The page also keeps local presentation filters for:
 - approval state
 
 Those local filters do not change backend orchestration state. They only change what the shell renders.
+
+The shell also includes an operator action panel for:
+
+- phase activation
+- job retry, resume, and cancel
+- approval approve and reject
+
+Each write action asks for a confirmation step and records a session audit event with actor, target, reason, and result.
 
 ## Live activity
 
@@ -69,3 +83,4 @@ The shell uses that contract for its live activity panel and polls it while live
 - the bootstrap endpoint returns a selected session
 - transcript, jobs, approvals, and artifacts are present for the seeded session
 - the realtime activity endpoint returns replayable events and signals for the seeded session
+- the operator action panel is rendered with the expected action anchors

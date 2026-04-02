@@ -4,6 +4,7 @@ import json
 import zipfile
 from pathlib import Path
 
+from app.core.version import APP_VERSION, RELEASE_CANDIDATE, RELEASE_TAG
 from app.services.release_packaging import build_release_package
 
 
@@ -58,10 +59,19 @@ def test_build_release_package_writes_manifest_and_archive(tmp_path) -> None:
     assert profile_env_path.exists()
 
     manifest = json.loads(manifest_path.read_text())
+    assert manifest["app_version"] == APP_VERSION
     assert manifest["deployment_profile"] == "small-team"
+    assert manifest["release"]["track"] == "V5"
+    assert manifest["release"]["version"] == APP_VERSION
+    assert manifest["release"]["tag"] == RELEASE_TAG
+    assert manifest["release"]["candidate"] == RELEASE_CANDIDATE
+    assert manifest["release"]["baseline_name"] == (
+        f"codex-collaboration-coordinator-{APP_VERSION}"
+    )
     assert manifest["profile_defaults"]["database_url"] == "sqlite:///./data/codex_coordinator.db"
     assert "profiles/small-team.env" in manifest["included_paths"]
     assert manifest["startup"]["health_check"] == "/api/v1/healthz"
+    assert "package bundle created" in manifest["verification"]["checklist"]
 
     with zipfile.ZipFile(archive_path) as archive:
         names = set(archive.namelist())

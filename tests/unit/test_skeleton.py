@@ -3,6 +3,8 @@ from __future__ import annotations
 from importlib import import_module
 from pathlib import Path
 
+from app.core.version import APP_VERSION
+
 
 def test_skeleton_directories_exist() -> None:
     root = Path(__file__).resolve().parents[2]
@@ -28,5 +30,5 @@ def test_app_main_is_importable() -> None:
     module = import_module("app.main")
 
     assert module.APP_NAME == "codex-collaboration-coordinator"
-    assert module.APP_VERSION == "0.1.0"
+    assert module.APP_VERSION == APP_VERSION
     assert module.create_app() is not None

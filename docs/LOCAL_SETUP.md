@@ -20,9 +20,11 @@ pip install -e .[dev]
 4. Use `DEPLOYMENT_PROFILE=local-dev` for everyday development, `trusted-demo` for a
    local demo or reverse-proxy test, and `small-team` for a packaged deployment-like
    startup.
-5. If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
+5. The V5 release baseline is versioned as `0.2.0`; the packaged `small-team` bundle uses
+   the name `codex-collaboration-coordinator-0.2.0-small-team`.
+6. If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
    (default: `X-Access-Token`).
-6. Open the operator shell at `http://127.0.0.1:8000/operator` after the app starts.
+7. Open the operator shell at `http://127.0.0.1:8000/operator` after the app starts.
 
 ## Run
 
@@ -53,6 +55,9 @@ the smoke gate, and the release packager. It expects the local app to be reachab
 the smoke step and defaults to the small-team database path.
 If `ACCESS_TOKEN` is set in the environment, the smoke script sends it automatically to
 protected operator/public routes.
+For the V5 baseline, the release package name is
+`codex-collaboration-coordinator-0.2.0-small-team` and the release manifest records the
+release tag and candidate name.
 
 For a deployment-style startup, use `.\scripts\run.ps1`. That script binds to
 `0.0.0.0` by default, selects the `small-team` deployment profile, and keeps reload

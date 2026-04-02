@@ -14,6 +14,7 @@ from app.core.config import AppConfig, get_config
 from app.core.errors import install_error_handlers
 from app.core.logging import configure_logging
 from app.core.middleware import RequestIdMiddleware
+from app.core.version import APP_VERSION
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
 from app.repositories.agents import AgentRuntimeRepository
 from app.repositories.jobs import JobRepository
@@ -24,7 +25,6 @@ from app.services.recovery import RecoveryService
 from app.services.runtime_service import RuntimeService
 
 APP_NAME = "codex-collaboration-coordinator"
-APP_VERSION = "0.1.0"
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())

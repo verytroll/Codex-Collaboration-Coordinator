@@ -18,7 +18,12 @@ from app.core.config import (
     DeploymentProfileDefaults,
     get_deployment_profile_defaults,
 )
-from app.main import APP_VERSION
+from app.core.version import (
+    APP_VERSION,
+    RELEASE_BASELINE_NAME,
+    RELEASE_CANDIDATE,
+    RELEASE_TAG,
+)
 
 RELEASE_PACKAGE_INCLUDE_PATHS = (
     "app",
@@ -105,6 +110,22 @@ def _build_profile_env_lines(
     ]
 
 
+def _build_release_metadata(
+    *,
+    package_name: str,
+    deployment_profile: str,
+) -> dict[str, object]:
+    return {
+        "track": "V5",
+        "version": APP_VERSION,
+        "tag": RELEASE_TAG,
+        "candidate": RELEASE_CANDIDATE,
+        "package_name": package_name,
+        "baseline_name": RELEASE_BASELINE_NAME,
+        "deployment_profile": deployment_profile,
+    }
+
+
 def build_release_package(
     source_root: Path,
     output_dir: Path,
@@ -139,10 +160,22 @@ def build_release_package(
         "app_version": APP_VERSION,
         "deployment_profile": normalized_profile,
         "generated_at": datetime.now(tz=timezone.utc).isoformat(),
+        "release": _build_release_metadata(
+            package_name=package_name,
+            deployment_profile=normalized_profile,
+        ),
         "profile_defaults": asdict(profile_defaults),
         "included_paths": sorted(
             included_paths + [f"profiles/{normalized_profile}.env"]
         ),
+        "verification": {
+            "checklist": [
+                "package bundle created",
+                "manifest and profile env match the small-team baseline",
+                "smoke gate passes against the running release runtime",
+                "health, readiness, operator shell, live activity, and public A2A flow are checked",
+            ]
+        },
         "startup": {
             "script": ".\\scripts\\run.ps1",
             "container": "docker run --rm -p 8000:8000 ...",
@@ -192,7 +225,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_dir=Path(args.output_dir),
         deployment_profile=args.deployment_profile,
     )
-    print(result)
+    print(
+        f"{result.package_name} archive={result.archive_path} "
+        f"manifest={result.manifest_path}"
+    )
     return 0
 
 

@@ -5,6 +5,7 @@ import asyncio
 import app.codex_bridge.lazy_client as lazy_client_module
 from app.codex_bridge import LazyCodexBridgeClient
 from app.codex_bridge.models import JsonRpcResponse
+from app.core.version import APP_VERSION
 
 
 class FakeProcessManager:
@@ -57,7 +58,7 @@ def test_lazy_codex_bridge_client_defers_process_start(monkeypatch) -> None:
                 "transport": "stdio",
                 "clientInfo": {
                     "name": "codex-collaboration-coordinator",
-                    "version": "0.1.0",
+                    "version": APP_VERSION,
                 },
             }
         ]
@@ -70,7 +71,7 @@ def test_lazy_codex_bridge_client_defers_process_start(monkeypatch) -> None:
                 "transport": "stdio",
                 "clientInfo": {
                     "name": "codex-collaboration-coordinator",
-                    "version": "0.1.0",
+                    "version": APP_VERSION,
                 },
             }
         ]

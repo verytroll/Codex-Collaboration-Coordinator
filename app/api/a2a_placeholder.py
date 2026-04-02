@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Request
 
+from app.core.version import APP_VERSION
 from app.models.api.system import (
     A2AAgentCardCapabilities,
     A2AAgentCardEndpointResponse,
@@ -24,7 +25,7 @@ def _agent_card(*, base_url: str) -> A2AAgentCardResponse:
             "Local-first coordinator for multi-agent collaboration backed by CodexBridge and "
             "a public A2A task surface."
         ),
-        version="0.1.0",
+        version=APP_VERSION,
         public_api_base_url=public_api_base_url,
         capabilities=A2AAgentCardCapabilities(
             streaming=True,

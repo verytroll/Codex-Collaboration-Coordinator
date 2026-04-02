@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from uuid import uuid4
 
+from app.core.errors import ConflictError
 from app.repositories.approvals import ApprovalRepository, ApprovalRequestRecord
 from app.repositories.jobs import JobEventRecord, JobEventRepository, JobRecord, JobRepository
 from app.repositories.session_events import SessionEventRepository
@@ -142,7 +143,7 @@ class ApprovalManager:
 
         approval = await self._get_approval(approval_id)
         if approval.status != "pending":
-            raise LookupError(f"Approval request already resolved: {approval_id}")
+            raise ConflictError(f"Approval request already resolved: {approval_id}")
 
         now = _utc_now()
         updated_approval = ApprovalRequestRecord(

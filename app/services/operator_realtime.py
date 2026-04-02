@@ -37,6 +37,8 @@ _WARNING_EVENT_TYPES = {
     "review.decision.recorded",
     "turn.interrupted",
     "command.interrupt",
+    "operator.action.reject",
+    "operator.action.cancel",
 }
 
 _EVENT_TITLES: dict[str, str] = {
@@ -67,6 +69,12 @@ _EVENT_TITLES: dict[str, str] = {
     "loop_guard_triggered": "Loop guard triggered",
     "recovery.thread_rehydrated": "Thread rehydrated",
     "phase.active": "Active phase snapshot",
+    "operator.action.approve": "Operator approved approval",
+    "operator.action.reject": "Operator rejected approval",
+    "operator.action.retry": "Operator retried job",
+    "operator.action.resume": "Operator resumed job",
+    "operator.action.cancel": "Operator canceled job",
+    "operator.action.activate_phase": "Operator activated phase",
 }
 
 _EVENT_CATEGORIES: dict[str, OperatorActivityCategory] = {
@@ -97,6 +105,12 @@ _EVENT_CATEGORIES: dict[str, OperatorActivityCategory] = {
     "loop_guard_triggered": "runtime",
     "recovery.thread_rehydrated": "runtime",
     "phase.active": "phase",
+    "operator.action.approve": "approval",
+    "operator.action.reject": "approval",
+    "operator.action.retry": "job",
+    "operator.action.resume": "job",
+    "operator.action.cancel": "job",
+    "operator.action.activate_phase": "phase",
 }
 
 
@@ -719,6 +733,12 @@ class OperatorRealtimeService:
             return "participant"
         if event_type.startswith("orchestration.") or event_type.startswith("phase."):
             return "phase"
+        if event_type.startswith("operator.action."):
+            if event_type in {"operator.action.approve", "operator.action.reject"}:
+                return "approval"
+            if event_type == "operator.action.activate_phase":
+                return "phase"
+            return "job"
         if event_type.startswith("loop_guard") or event_type.startswith("recovery."):
             return "runtime"
         return "system"
@@ -779,6 +799,24 @@ class OperatorRealtimeService:
             return f"thread_id={payload['thread_id']}"
         if event_type == "phase.active" and isinstance(payload.get("phase_title"), str):
             return str(payload["phase_title"])
+        if event_type.startswith("operator.action."):
+            target_type = payload.get("target_type")
+            target_id = payload.get("target_id")
+            result = payload.get("result")
+            reason = payload.get("reason")
+            note = payload.get("note")
+            parts = []
+            if isinstance(target_type, str):
+                parts.append(target_type)
+            if isinstance(target_id, str):
+                parts.append(target_id)
+            if isinstance(result, str):
+                parts.append(result)
+            if isinstance(reason, str):
+                parts.append(f"reason={reason}")
+            if isinstance(note, str):
+                parts.append(f"note={note}")
+            return " | ".join(parts) or None
         return None
 
     def _entity_type_for_session_event(self, event_type: str) -> str:
@@ -792,6 +830,12 @@ class OperatorRealtimeService:
             return "participant"
         if event_type.startswith("orchestration."):
             return "orchestration"
+        if event_type.startswith("operator.action."):
+            if event_type == "operator.action.activate_phase":
+                return "phase"
+            if event_type in {"operator.action.approve", "operator.action.reject"}:
+                return "approval"
+            return "job"
         if event_type.startswith("recovery.") or event_type.startswith("loop_guard"):
             return "runtime"
         return "session_event"

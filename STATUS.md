@@ -1,14 +1,17 @@
 ﻿# STATUS.md
 
 ### Trạng thái hiện tại
-- Ngày cập nhật: 2026-04-01
-- Pha hiện tại: V5 implementation
-- Đang tập trung vào: next roadmap sau PR42
+- Ngày cập nhật: 2026-04-02
+- Pha hiện tại: V6 implementation
+- Đang tập trung vào: PR45 / F43 - identity và team RBAC cơ bản
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F42 - Operator actions và audit trail - 2026-04-02
+- [x] PR44 - Operator actions và audit trail - 2026-04-02
+- [x] F41 - V5 release closure và baseline discipline - 2026-04-02
 - [x] F40 - Small-team deployment profile và release packaging - 2026-04-01
 - [x] PR42 - Small-team deployment profile và release packaging - 2026-04-01
 - [x] F39 - A2A interoperability và adoption kit - 2026-04-01
@@ -57,20 +60,19 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [x] PR39 / F37: thin operator UI shell - 2026-04-01
-- [x] PR40 / F38: realtime operator surface - 2026-04-01
-- [x] PR41 / F39: A2A interoperability và adoption kit - 2026-04-01
-- [x] PR42 / F40: small-team deployment profile và release packaging - 2026-04-01
+- [ ] PR45 / F43: identity và team RBAC cơ bản
+- [ ] PR46 / F44: durable runtime và persistence boundary
+- [ ] PR47 / F45: realtime streaming transport
 
 ### Blockers / Rủi ro
 - Chưa có blocker hiện tại
-- Rủi ro chính của V5 là mở UI hoặc external surface quá nhanh rồi kéo logic điều phối ra khỏi backend
+- Rủi ro chính là docs, package và status drift khỏi baseline release thật
 - Rủi ro phụ là tăng deployment complexity cho small-team profile trước khi smoke/release path đủ rõ
 
 ### Kiểm chứng gần nhất
-- `python -m pytest tests/integration/test_a2a_interoperability.py tests/integration/test_a2a_surface.py tests/integration/test_a2a_event_stream.py tests/integration/test_a2a_public_api.py tests/integration/test_access_boundary.py` - 7 passed - 2026-04-01
-- `python -m ruff check app tests` - passed - 2026-04-01
-- `python -m compileall app tests` - passed - 2026-04-01
+- `pytest` - 95 passed - 2026-04-02
+- `python -m ruff check app tests` - passed - 2026-04-02
+- `python -m compileall app tests` - passed - 2026-04-02
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`
@@ -88,6 +90,8 @@
 - `IMPLEMENTATION_ORDER_V3.md`
 - `IMPLEMENTATION_ORDER_V4.md`
 - `IMPLEMENTATION_ORDER_V5.md`
+- `IMPLEMENTATION_TASKS_V6.md`
+- `IMPLEMENTATION_ORDER_V6.md`
 - `PRD.md`
 - `ARCHITECTURE.md`
 - `API.md`

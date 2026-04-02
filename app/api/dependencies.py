@@ -46,6 +46,7 @@ from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardService
 from app.services.message_routing import MessageRoutingService
 from app.services.offline_queue import OfflineQueueService
+from app.services.operator_actions import OperatorActionService
 from app.services.operator_dashboard import OperatorDashboardService
 from app.services.operator_realtime import OperatorRealtimeService
 from app.services.operator_shell import OperatorShellService
@@ -260,6 +261,32 @@ def get_operator_dashboard_service(
         a2a_task_repository=a2a_task_repository,
         approval_repository=approval_repository,
         debug_service=debug_service,
+    )
+
+
+def get_operator_action_service(
+    session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    job_repository: Annotated[JobRepository, Depends(get_job_repository)],
+    approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
+    session_event_repository: Annotated[
+        SessionEventRepository,
+        Depends(get_session_event_repository),
+    ],
+    approval_manager: Annotated[ApprovalManager, Depends(get_approval_manager)],
+    offline_queue_service: Annotated[OfflineQueueService, Depends(get_offline_queue_service)],
+    phase_service: Annotated[PhaseService, Depends(get_phase_service)],
+    relay_engine: Annotated[RelayEngine, Depends(get_relay_engine)],
+) -> OperatorActionService:
+    """Provide the operator action service."""
+    return OperatorActionService(
+        session_repository=session_repository,
+        job_repository=job_repository,
+        approval_repository=approval_repository,
+        session_event_repository=session_event_repository,
+        approval_manager=approval_manager,
+        offline_queue_service=offline_queue_service,
+        phase_service=phase_service,
+        relay_engine=relay_engine,
     )
 
 

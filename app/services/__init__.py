@@ -16,6 +16,11 @@ from app.services.message_routing import (
     MessageRoutingService,
 )
 from app.services.offline_queue import OfflineQueueDispatchResult, OfflineQueueService
+from app.services.operator_actions import (
+    OperatorActionAuditRecord,
+    OperatorActionResult,
+    OperatorActionService,
+)
 from app.services.operator_dashboard import (
     OperatorDashboardFilters,
     OperatorDashboardService,
@@ -96,6 +101,9 @@ __all__ = [
     "OperatorDashboardFilters",
     "OperatorDashboardService",
     "OperatorDashboardSnapshot",
+    "OperatorActionAuditRecord",
+    "OperatorActionResult",
+    "OperatorActionService",
     "OperatorRealtimeService",
     "GateRequestResult",
     "GateResolutionResult",

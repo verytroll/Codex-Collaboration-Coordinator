@@ -68,6 +68,15 @@ from app.models.api.messages import (
     MessageResponse,
     MessageRoutingResponse,
 )
+from app.models.api.operator_actions import (
+    OperatorActionAuditResponse,
+    OperatorActionEnvelope,
+    OperatorActionKind,
+    OperatorActionOutcome,
+    OperatorActionRequest,
+    OperatorActionResponse,
+    OperatorActionTargetType,
+)
 from app.models.api.operator_dashboard import (
     OperatorBottleneckResponse,
     OperatorDashboardFiltersResponse,
@@ -250,6 +259,13 @@ __all__ = [
     "OperatorDashboardFiltersResponse",
     "OperatorDashboardResponse",
     "OperatorDebugResponse",
+    "OperatorActionAuditResponse",
+    "OperatorActionEnvelope",
+    "OperatorActionKind",
+    "OperatorActionOutcome",
+    "OperatorActionRequest",
+    "OperatorActionResponse",
+    "OperatorActionTargetType",
     "OperatorPhaseDistributionResponse",
     "OperatorPublicTaskThroughputResponse",
     "OperatorQueueHeatResponse",
