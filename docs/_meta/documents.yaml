@@ -850,6 +850,22 @@ documents:
     supersedes: []
     superseded_by: []
 
+  - path: docs/releases/RELEASE_NOTES_V7.md
+    title: V7 Release Notes
+    doc_type: release-note
+    domain: release
+    version: v7
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/PLAN_V7.md
+      - docs/planning/STATUS.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/releases/RELEASE_NOTES_V6.md
+    superseded_by: []
+
   - path: docs/releases/UPGRADE_NOTES_V4.md
     title: V4 Upgrade Notes
     doc_type: upgrade-note
@@ -890,4 +906,20 @@ documents:
       - docs/releases/RELEASE_NOTES_V6.md
     last_updated: 2026-04-02
     supersedes: []
+    superseded_by: []
+
+  - path: docs/releases/UPGRADE_NOTES_V7.md
+    title: V7 Upgrade Notes
+    doc_type: upgrade-note
+    domain: release
+    version: v7
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/releases/RELEASE_NOTES_V7.md
+      - docs/operations/DEPLOYMENT.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/releases/UPGRADE_NOTES_V6.md
     superseded_by: []

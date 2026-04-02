@@ -2,13 +2,15 @@
 
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-02
-- Pha hiện tại: V7 planning
-- Đã hoàn tất: F52 / PR54 contract governance và early-adopter conformance, sau F51 / PR53 outbound integration automation và bộ tài liệu V7 (`docs/planning/PLAN_V7.md`, `docs/planning/IMPLEMENTATION_TASKS_V7.md`, `docs/planning/IMPLEMENTATION_ORDER_V7.md`)
+- Pha hiện tại: V7 release closure complete
+- Đã hoàn tất: F53 / PR55 V7 release closure và early-adopter handoff, sau F52 / PR54 contract governance và early-adopter conformance
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F53 - V7 release closure và early-adopter handoff - 2026-04-02
+- [x] PR55 - V7 release closure và early-adopter handoff - 2026-04-02
 - [x] F52 - Contract governance và early-adopter conformance - 2026-04-02
 - [x] PR54 - Contract governance và early-adopter conformance - 2026-04-02
 - [x] F51 - Outbound integration automation - 2026-04-02
@@ -83,7 +85,7 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] Chốt bước release/handoff tiếp theo sau V7 nếu cần
+- [ ] Lập kế hoạch V8 sau khi baseline V7 đã được bàn giao
 
 ### Blockers / Rủi ro
 - Chưa có blocker hiện tại
@@ -93,6 +95,8 @@
 ### Kiểm chứng gần nhất
 - `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1` - 120 passed - 2026-04-02
 - `powershell -ExecutionPolicy Bypass -File .\scripts\lint.ps1` - passed - 2026-04-02
+- `powershell -ExecutionPolicy Bypass -File .\scripts\docs_check.ps1` - passed - 2026-04-02
+- `powershell -ExecutionPolicy Bypass -File .\scripts\release.ps1` - passed - 2026-04-02
 
 
 ### Liên kết tài liệu liên quan

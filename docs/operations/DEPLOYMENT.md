@@ -148,12 +148,12 @@ Run the release packager to build a curated bundle for the `small-team` profile:
 The bundle is written to `dist/release/` and includes a profile-specific env file plus
 `release-manifest.json` with the canonical deployment defaults.
 
-The current V6 release baseline uses:
+The current V7 release baseline uses:
 
-- package version `0.3.0`
-- release tag `v0.3.0`
-- release candidate naming `v0.3.0-rc.1`
-- bundle name `codex-collaboration-coordinator-0.3.0-small-team`
+- package version `0.4.0`
+- release tag `v0.4.0`
+- release candidate naming `v0.4.0-rc.1`
+- bundle name `codex-collaboration-coordinator-0.4.0-small-team`
 - durable runtime recovery enabled through the packaged `small-team` profile defaults
 
 The manifest records the release metadata, baseline package name, profile defaults, and

@@ -20,8 +20,8 @@ pip install -e .[dev]
 4. Use `DEPLOYMENT_PROFILE=local-dev` for everyday development, `trusted-demo` for a
    local demo or reverse-proxy test, and `small-team` for a packaged deployment-like
    startup.
-5. The V6 release baseline is versioned as `0.3.0`; the packaged `small-team` bundle uses
-   the name `codex-collaboration-coordinator-0.3.0-small-team` and enables durable runtime
+5. The V7 release baseline is versioned as `0.4.0`; the packaged `small-team` bundle uses
+   the name `codex-collaboration-coordinator-0.4.0-small-team` and enables durable runtime
    recovery through the `small-team` profile defaults.
 6. Those runtime recovery settings are inherited from the profile, so you usually do not
    need to set the `RUNTIME_*` env vars manually unless you are overriding the packaged
@@ -63,8 +63,8 @@ the smoke step and defaults to the small-team database path.
 If `ACCESS_TOKEN` is set in the environment, the smoke script sends it automatically to
 protected operator/public routes. Managed integration credentials are still issued and
 rotated through the operator API, not through the smoke script.
-For the V6 baseline, the release package name is
-`codex-collaboration-coordinator-0.3.0-small-team` and the release manifest records the
+For the V7 baseline, the release package name is
+`codex-collaboration-coordinator-0.4.0-small-team` and the release manifest records the
 release tag and candidate name.
 
 For a deployment-style startup, use `.\scripts\run.ps1`. That script binds to
