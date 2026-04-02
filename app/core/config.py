@@ -30,6 +30,9 @@ DEFAULT_ACTOR_LABEL = "Local operator"
 DEFAULT_RUNTIME_RECOVERY_ENABLED = False
 DEFAULT_RUNTIME_RECOVERY_INTERVAL_SECONDS = 15.0
 DEFAULT_RUNTIME_STALE_AFTER_MINUTES = 10
+DEFAULT_OUTBOUND_WEBHOOK_REQUEST_TIMEOUT_SECONDS = 5.0
+DEFAULT_OUTBOUND_WEBHOOK_MAX_ATTEMPTS = 3
+DEFAULT_OUTBOUND_WEBHOOK_RETRY_BACKOFF_SECONDS = 5.0
 DEFAULT_DEPLOYMENT_PROFILE_LOCAL_DEV = "local-dev"
 DEFAULT_DEPLOYMENT_PROFILE_TRUSTED_DEMO = "trusted-demo"
 DEFAULT_DEPLOYMENT_PROFILE_SMALL_TEAM = "small-team"
@@ -88,6 +91,9 @@ class DeploymentProfileDefaults:
     runtime_recovery_enabled: bool
     runtime_recovery_interval_seconds: float
     runtime_stale_after_minutes: int
+    outbound_webhook_request_timeout_seconds: float
+    outbound_webhook_max_attempts: int
+    outbound_webhook_retry_backoff_seconds: float
 
 
 _DEPLOYMENT_PROFILE_DEFAULTS: dict[str, DeploymentProfileDefaults] = {
@@ -100,6 +106,9 @@ _DEPLOYMENT_PROFILE_DEFAULTS: dict[str, DeploymentProfileDefaults] = {
         runtime_recovery_enabled=False,
         runtime_recovery_interval_seconds=DEFAULT_RUNTIME_RECOVERY_INTERVAL_SECONDS,
         runtime_stale_after_minutes=DEFAULT_RUNTIME_STALE_AFTER_MINUTES,
+        outbound_webhook_request_timeout_seconds=DEFAULT_OUTBOUND_WEBHOOK_REQUEST_TIMEOUT_SECONDS,
+        outbound_webhook_max_attempts=DEFAULT_OUTBOUND_WEBHOOK_MAX_ATTEMPTS,
+        outbound_webhook_retry_backoff_seconds=DEFAULT_OUTBOUND_WEBHOOK_RETRY_BACKOFF_SECONDS,
     ),
     DEFAULT_DEPLOYMENT_PROFILE_TRUSTED_DEMO: DeploymentProfileDefaults(
         app_env="production",
@@ -110,6 +119,9 @@ _DEPLOYMENT_PROFILE_DEFAULTS: dict[str, DeploymentProfileDefaults] = {
         runtime_recovery_enabled=False,
         runtime_recovery_interval_seconds=DEFAULT_RUNTIME_RECOVERY_INTERVAL_SECONDS,
         runtime_stale_after_minutes=DEFAULT_RUNTIME_STALE_AFTER_MINUTES,
+        outbound_webhook_request_timeout_seconds=DEFAULT_OUTBOUND_WEBHOOK_REQUEST_TIMEOUT_SECONDS,
+        outbound_webhook_max_attempts=DEFAULT_OUTBOUND_WEBHOOK_MAX_ATTEMPTS,
+        outbound_webhook_retry_backoff_seconds=DEFAULT_OUTBOUND_WEBHOOK_RETRY_BACKOFF_SECONDS,
     ),
     DEFAULT_DEPLOYMENT_PROFILE_SMALL_TEAM: DeploymentProfileDefaults(
         app_env="production",
@@ -120,6 +132,9 @@ _DEPLOYMENT_PROFILE_DEFAULTS: dict[str, DeploymentProfileDefaults] = {
         runtime_recovery_enabled=True,
         runtime_recovery_interval_seconds=DEFAULT_RUNTIME_RECOVERY_INTERVAL_SECONDS,
         runtime_stale_after_minutes=DEFAULT_RUNTIME_STALE_AFTER_MINUTES,
+        outbound_webhook_request_timeout_seconds=DEFAULT_OUTBOUND_WEBHOOK_REQUEST_TIMEOUT_SECONDS,
+        outbound_webhook_max_attempts=DEFAULT_OUTBOUND_WEBHOOK_MAX_ATTEMPTS,
+        outbound_webhook_retry_backoff_seconds=DEFAULT_OUTBOUND_WEBHOOK_RETRY_BACKOFF_SECONDS,
     ),
 }
 
@@ -160,6 +175,11 @@ class AppConfig:
     runtime_recovery_enabled: bool = DEFAULT_RUNTIME_RECOVERY_ENABLED
     runtime_recovery_interval_seconds: float = DEFAULT_RUNTIME_RECOVERY_INTERVAL_SECONDS
     runtime_stale_after_minutes: int = DEFAULT_RUNTIME_STALE_AFTER_MINUTES
+    outbound_webhook_request_timeout_seconds: float = (
+        DEFAULT_OUTBOUND_WEBHOOK_REQUEST_TIMEOUT_SECONDS
+    )
+    outbound_webhook_max_attempts: int = DEFAULT_OUTBOUND_WEBHOOK_MAX_ATTEMPTS
+    outbound_webhook_retry_backoff_seconds: float = DEFAULT_OUTBOUND_WEBHOOK_RETRY_BACKOFF_SECONDS
 
 
 def load_config() -> AppConfig:
@@ -183,6 +203,13 @@ def load_config() -> AppConfig:
     runtime_recovery_enabled_value = os.getenv("RUNTIME_RECOVERY_ENABLED")
     runtime_recovery_interval_seconds_value = os.getenv("RUNTIME_RECOVERY_INTERVAL_SECONDS")
     runtime_stale_after_minutes_value = os.getenv("RUNTIME_STALE_AFTER_MINUTES")
+    outbound_webhook_request_timeout_seconds_value = os.getenv(
+        "OUTBOUND_WEBHOOK_REQUEST_TIMEOUT_SECONDS"
+    )
+    outbound_webhook_max_attempts_value = os.getenv("OUTBOUND_WEBHOOK_MAX_ATTEMPTS")
+    outbound_webhook_retry_backoff_seconds_value = os.getenv(
+        "OUTBOUND_WEBHOOK_RETRY_BACKOFF_SECONDS"
+    )
     if access_boundary_mode_value is None or not access_boundary_mode_value.strip():
         access_boundary_mode = profile_defaults.access_boundary_mode
     else:
@@ -225,6 +252,33 @@ def load_config() -> AppConfig:
         runtime_stale_after_minutes = profile_defaults.runtime_stale_after_minutes
     else:
         runtime_stale_after_minutes = int(runtime_stale_after_minutes_value)
+    if (
+        outbound_webhook_request_timeout_seconds_value is None
+        or not outbound_webhook_request_timeout_seconds_value.strip()
+    ):
+        outbound_webhook_request_timeout_seconds = (
+            profile_defaults.outbound_webhook_request_timeout_seconds
+        )
+    else:
+        outbound_webhook_request_timeout_seconds = float(
+            outbound_webhook_request_timeout_seconds_value
+        )
+    if (
+        outbound_webhook_max_attempts_value is None
+        or not outbound_webhook_max_attempts_value.strip()
+    ):
+        outbound_webhook_max_attempts = profile_defaults.outbound_webhook_max_attempts
+    else:
+        outbound_webhook_max_attempts = int(outbound_webhook_max_attempts_value)
+    if (
+        outbound_webhook_retry_backoff_seconds_value is None
+        or not outbound_webhook_retry_backoff_seconds_value.strip()
+    ):
+        outbound_webhook_retry_backoff_seconds = (
+            profile_defaults.outbound_webhook_retry_backoff_seconds
+        )
+    else:
+        outbound_webhook_retry_backoff_seconds = float(outbound_webhook_retry_backoff_seconds_value)
     return AppConfig(
         app_name=os.getenv("APP_NAME", DEFAULT_APP_NAME),
         app_env=app_env_value or profile_defaults.app_env,
@@ -250,6 +304,9 @@ def load_config() -> AppConfig:
         runtime_recovery_enabled=runtime_recovery_enabled,
         runtime_recovery_interval_seconds=runtime_recovery_interval_seconds,
         runtime_stale_after_minutes=runtime_stale_after_minutes,
+        outbound_webhook_request_timeout_seconds=outbound_webhook_request_timeout_seconds,
+        outbound_webhook_max_attempts=outbound_webhook_max_attempts,
+        outbound_webhook_retry_backoff_seconds=outbound_webhook_retry_backoff_seconds,
     )
 
 

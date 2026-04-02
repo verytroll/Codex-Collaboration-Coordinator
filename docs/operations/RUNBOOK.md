@@ -97,6 +97,22 @@ Before considering the baseline closed, confirm:
 7. If you set `expires_at`, include a timezone offset such as `Z`; explicit `scopes: []`
    is allowed and means the credential has no permissions.
 
+## Outbound webhooks
+
+1. Project or refresh a public task through `POST /api/v1/a2a/tasks`.
+2. Register a managed webhook through `POST /api/v1/operator/a2a/tasks/{task_id}/webhooks`.
+3. Persist the returned signing secret on the receiver side and verify `X-CCC-Signature`
+   with `HMAC-SHA256` over the raw request body.
+4. Inspect `GET /api/v1/operator/a2a/tasks/{task_id}/webhook-deliveries` when a receiver
+   returns non-`2xx` or when you need to confirm retry state.
+5. Disable a registration through
+   `POST /api/v1/operator/a2a/tasks/webhooks/{registration_id}/disable` before receiver
+   maintenance or endpoint retirement.
+6. Treat delivery as `at-least-once`; receiver handlers must be idempotent on event id or
+   event sequence.
+7. If deliveries stall after restart, confirm the durable runtime supervisor is active and
+   then re-check the operator dashboard/debug outbound summary.
+
 ## Incident triage
 
 1. Check `GET /api/v1/system/status` first.
@@ -115,6 +131,9 @@ Before considering the baseline closed, confirm:
 10. If the bridge is degraded, check the latest `bridge` samples in telemetry and restart the app after confirming the Codex binary is available.
 11. Use the incident summary card in the operator shell to see the current severity, latest actor, and the recommended recovery path before drilling into the activity feed.
 12. The live activity feed groups events by category, so you can move from recent errors to approvals and runtime pressure without reading raw log output first.
+13. If outbound delivery is failing, compare the receiver's returned status with
+    `GET /api/v1/operator/a2a/tasks/{task_id}/webhook-deliveries` and verify the webhook
+    signature secret matches what the receiver expects.
 
 ## SQLite backup and restore
 

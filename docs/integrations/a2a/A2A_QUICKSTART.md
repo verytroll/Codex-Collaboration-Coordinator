@@ -78,11 +78,34 @@ The subscription response gives you a durable cursor for replay and SSE streamin
 The script seeds demo data, creates a demo job, projects it into the public A2A surface,
 and prints the task id, subscription id, and event count.
 
+## 7. Register a managed outbound webhook
+
+Use an operator token or `operator_write` credential to register a webhook for a projected
+task:
+
+```powershell
+curl.exe -X POST http://127.0.0.1:8000/api/v1/operator/a2a/tasks/task_123/webhooks `
+  -H "Content-Type: application/json" `
+  -H "X-Access-Token: <service-token>" `
+  -d "{\"target_url\":\"http://127.0.0.1:9001/hook\",\"signing_secret\":\"replace-me\"}"
+```
+
+The response includes:
+
+- `webhook.id`
+- `webhook.status`
+- `webhook.signing_secret_prefix`
+- one-time `signing_secret` when you provide or generate the shared secret
+
+Receivers should verify `X-CCC-Signature`, return `2xx` on success, and treat
+`X-CCC-Event-Id` or `X-CCC-Event-Sequence` as idempotency keys.
+
 ## Compatibility notes
 
 - Use `POST /api/v1/a2a/tasks` for refresh/project semantics.
 - Use `GET /api/v1/a2a/tasks/{task_id}/events` for JSON replay.
 - Use `GET /api/v1/a2a/subscriptions/{subscription_id}/events` for SSE consumption.
+- Use the operator webhook routes only when you need push delivery; polling and SSE remain supported.
 - The public task contract is `a2a.public.task.v1`.
 - The event contract is `a2a.public.task.event.v1`.
 - Managed integration credentials are the supported external auth path; the shared

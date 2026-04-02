@@ -128,6 +128,9 @@ class CoordinatorTelemetryService:
             "public_task_throughput": _coerce_mapping(public_metrics.get("public_task_throughput"))
             if isinstance(public_metrics, dict)
             else {},
+            "outbound_webhooks": _coerce_mapping(public_metrics.get("outbound_webhooks"))
+            if isinstance(public_metrics, dict)
+            else {},
             "bridge": {
                 "total_samples": bridge_total,
                 "error_samples": bridge_error_count,

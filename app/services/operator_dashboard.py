@@ -14,6 +14,10 @@ from app.repositories.a2a_tasks import A2ATaskRepository
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.jobs import JobRepository
 from app.repositories.orchestration_runs import OrchestrationRunRepository
+from app.repositories.outbound_webhooks import (
+    OutboundWebhookDeliveryRepository,
+    OutboundWebhookRegistrationRepository,
+)
 from app.repositories.phases import PhaseRepository
 from app.repositories.reviews import ReviewRepository
 from app.repositories.runtime_pools import WorkContextRepository
@@ -56,6 +60,8 @@ class OperatorDashboardSnapshot:
     contexts: list[Any]
     tasks: list[Any]
     approvals: list[Any]
+    outbound_registrations: list[Any]
+    outbound_deliveries: list[Any]
     pool_diagnostics: dict[str, Any]
     session_by_id: dict[str, Any]
     phase_key_by_session_id: dict[str, str | None]
@@ -82,6 +88,8 @@ class OperatorDashboardService:
         work_context_repository: WorkContextRepository,
         a2a_task_repository: A2ATaskRepository,
         approval_repository: ApprovalRepository,
+        outbound_webhook_registration_repository: OutboundWebhookRegistrationRepository,
+        outbound_webhook_delivery_repository: OutboundWebhookDeliveryRepository,
         debug_service: DebugService,
     ) -> None:
         self.session_repository = session_repository
@@ -93,6 +101,8 @@ class OperatorDashboardService:
         self.work_context_repository = work_context_repository
         self.a2a_task_repository = a2a_task_repository
         self.approval_repository = approval_repository
+        self.outbound_webhook_registration_repository = outbound_webhook_registration_repository
+        self.outbound_webhook_delivery_repository = outbound_webhook_delivery_repository
         self.debug_service = debug_service
 
     async def get_dashboard(
@@ -136,6 +146,8 @@ class OperatorDashboardService:
             contexts,
             tasks,
             approvals,
+            outbound_registrations,
+            outbound_deliveries,
             pool_diagnostics,
         ) = await asyncio.gather(
             self.session_repository.list(),
@@ -146,6 +158,8 @@ class OperatorDashboardService:
             self.work_context_repository.list(),
             self.a2a_task_repository.list(),
             self.approval_repository.list(),
+            self.outbound_webhook_registration_repository.list(),
+            self.outbound_webhook_delivery_repository.list(),
             self.runtime_pool_service.get_pool_diagnostics(),
         )
         session_by_id = {session.id: session for session in sessions}
@@ -178,6 +192,8 @@ class OperatorDashboardService:
             contexts=contexts,
             tasks=tasks,
             approvals=approvals,
+            outbound_registrations=outbound_registrations,
+            outbound_deliveries=outbound_deliveries,
             pool_diagnostics=pool_diagnostics,
             session_by_id=session_by_id,
             phase_key_by_session_id=phase_key_by_session_id,
@@ -199,6 +215,7 @@ class OperatorDashboardService:
         review_bottlenecks = self._build_review_bottlenecks(snapshot, filters)
         runtime_pools = self._build_runtime_pool_health(snapshot, filters)
         public_task_throughput = self._build_public_task_throughput(snapshot, filters)
+        outbound_webhooks = self._build_outbound_webhook_summary(snapshot, filters)
         bottlenecks = self._build_bottlenecks(
             phase_distribution=phase_distribution,
             review_bottlenecks=review_bottlenecks,
@@ -208,6 +225,7 @@ class OperatorDashboardService:
             bottlenecks=bottlenecks,
             runtime_pools=runtime_pools,
             public_task_throughput=public_task_throughput,
+            outbound_webhooks=outbound_webhooks,
         )
         return {
             "generated_at": _utc_now(),
@@ -223,6 +241,7 @@ class OperatorDashboardService:
             "review_bottlenecks": review_bottlenecks,
             "runtime_pools": runtime_pools,
             "public_task_throughput": public_task_throughput,
+            "outbound_webhooks": outbound_webhooks,
             "diagnostics": diagnostics,
         }
 
@@ -479,6 +498,33 @@ class OperatorDashboardService:
             "canceled": counts.get("canceled", 0),
         }
 
+    def _build_outbound_webhook_summary(
+        self,
+        snapshot: OperatorDashboardSnapshot,
+        filters: OperatorDashboardFilters,
+    ) -> dict[str, Any]:
+        registrations = [
+            item
+            for item in snapshot.outbound_registrations
+            if self._outbound_registration_matches(item, snapshot, filters)
+        ]
+        registration_ids = {item.id for item in registrations}
+        deliveries = [
+            item
+            for item in snapshot.outbound_deliveries
+            if item.registration_id in registration_ids
+            and self._outbound_delivery_matches(item, snapshot, filters)
+        ]
+        return {
+            "registrations": len(registrations),
+            "active_registrations": sum(1 for item in registrations if item.status == "active"),
+            "disabled_registrations": sum(1 for item in registrations if item.status != "active"),
+            "pending_deliveries": sum(1 for item in deliveries if item.status == "pending"),
+            "retrying_deliveries": sum(1 for item in deliveries if item.status == "retrying"),
+            "failed_deliveries": sum(1 for item in deliveries if item.status == "failed"),
+            "delivered_deliveries": sum(1 for item in deliveries if item.status == "delivered"),
+        }
+
     def _build_bottlenecks(
         self,
         *,
@@ -544,6 +590,7 @@ class OperatorDashboardService:
         bottlenecks: list[dict[str, Any]],
         runtime_pools: list[dict[str, Any]],
         public_task_throughput: dict[str, Any],
+        outbound_webhooks: dict[str, Any],
     ) -> list[str]:
         diagnostics: list[str] = []
         if bottlenecks:
@@ -568,6 +615,11 @@ class OperatorDashboardService:
         )
         if active_tasks > 0:
             diagnostics.append(f"{active_tasks} public task(s) are still in flight.")
+        if (
+            outbound_webhooks["failed_deliveries"] > 0
+            or outbound_webhooks["retrying_deliveries"] > 0
+        ):
+            diagnostics.append("Outbound webhooks have pending retries or failures.")
         return diagnostics
 
     def _filter_snapshot(
@@ -616,6 +668,18 @@ class OperatorDashboardService:
             for approval in snapshot.approvals
             if self._approval_matches(approval, snapshot, filters)
         ]
+        outbound_registrations = [
+            item
+            for item in snapshot.outbound_registrations
+            if self._outbound_registration_matches(item, snapshot, filters)
+        ]
+        registration_ids = {item.id for item in outbound_registrations}
+        outbound_deliveries = [
+            item
+            for item in snapshot.outbound_deliveries
+            if item.registration_id in registration_ids
+            and self._outbound_delivery_matches(item, snapshot, filters)
+        ]
         return OperatorDashboardSnapshot(
             sessions=sessions,
             phases=snapshot.phases,
@@ -625,6 +689,8 @@ class OperatorDashboardService:
             contexts=contexts,
             tasks=tasks,
             approvals=approvals,
+            outbound_registrations=outbound_registrations,
+            outbound_deliveries=outbound_deliveries,
             pool_diagnostics=self._filter_pool_diagnostics(snapshot.pool_diagnostics, filters),
             session_by_id=snapshot.session_by_id,
             phase_key_by_session_id=snapshot.phase_key_by_session_id,
@@ -793,6 +859,32 @@ class OperatorDashboardService:
             return False
         return True
 
+    def _outbound_registration_matches(
+        self,
+        registration: Any,
+        snapshot: OperatorDashboardSnapshot,
+        filters: OperatorDashboardFilters,
+    ) -> bool:
+        if filters.session_id is not None and registration.session_id != filters.session_id:
+            return False
+        task = self._task_by_public_task_id(snapshot, registration.task_id)
+        if task is None:
+            return filters.session_id is None
+        return self._task_matches(task, snapshot, filters)
+
+    def _outbound_delivery_matches(
+        self,
+        delivery: Any,
+        snapshot: OperatorDashboardSnapshot,
+        filters: OperatorDashboardFilters,
+    ) -> bool:
+        if filters.session_id is not None and delivery.session_id != filters.session_id:
+            return False
+        task = self._task_by_public_task_id(snapshot, delivery.task_id)
+        if task is None:
+            return filters.session_id is None
+        return self._task_matches(task, snapshot, filters)
+
     def _job_pool_key_for_job_id(
         self,
         snapshot: OperatorDashboardSnapshot,
@@ -801,6 +893,16 @@ class OperatorDashboardService:
         if job_id is None:
             return None
         return snapshot.job_pool_key_by_id.get(job_id)
+
+    def _task_by_public_task_id(
+        self,
+        snapshot: OperatorDashboardSnapshot,
+        task_id: str,
+    ) -> Any | None:
+        for task in snapshot.tasks:
+            if task.task_id == task_id:
+                return task
+        return None
 
     def _filter_pool_diagnostics(
         self,
@@ -901,6 +1003,7 @@ class OperatorDashboardService:
                 for pool in dashboard["runtime_pools"]
             },
             "public_task_throughput": dashboard["public_task_throughput"],
+            "outbound_webhooks": dashboard["outbound_webhooks"],
         }
 
     def _average_job_latency_seconds(self, jobs: list[Any]) -> float | None:

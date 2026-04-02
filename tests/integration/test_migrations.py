@@ -124,6 +124,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "017_runtime_pools.sql",
         "018_policy_conditions.sql",
         "019_integration_credentials.sql",
+        "020_outbound_webhooks.sql",
     ]
     assert second_run == []
 
@@ -165,6 +166,8 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "policy_decisions",
         "integration_principals",
         "integration_credentials",
+        "outbound_webhook_registrations",
+        "outbound_webhook_deliveries",
     }.issubset(tables)
     assert {
         "idx_messages_session_id_created_at",
@@ -231,8 +234,13 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "idx_integration_credentials_principal_id",
         "idx_integration_credentials_status",
         "idx_integration_credentials_secret_prefix",
+        "idx_outbound_webhook_registrations_task_id",
+        "idx_outbound_webhook_registrations_status",
+        "idx_outbound_webhook_deliveries_registration_id",
+        "idx_outbound_webhook_deliveries_status_next_attempt",
+        "idx_outbound_webhook_deliveries_task_id",
     }.issubset(indexes)
-    assert version_count == 19
+    assert version_count == 20
 
 
 def test_migrate_sqlite_rejects_checksum_drift(tmp_path) -> None:

@@ -22,6 +22,10 @@ The subscription payload carries its own marker:
 - `GET /api/v1/a2a/tasks/{task_id}/events`
 - `GET /api/v1/a2a/tasks/{task_id}/stream`
 - `GET /api/v1/a2a/subscriptions/{subscription_id}/events`
+- `POST /api/v1/operator/a2a/tasks/{task_id}/webhooks`
+- `GET /api/v1/operator/a2a/tasks/{task_id}/webhooks`
+- `GET /api/v1/operator/a2a/tasks/{task_id}/webhook-deliveries`
+- `POST /api/v1/operator/a2a/tasks/webhooks/{registration_id}/disable`
 
 ## Subscription model
 
@@ -84,9 +88,29 @@ Each event includes:
 
 The event payload excludes coordinator-internal state such as raw Codex bridge details.
 
+## Managed outbound webhooks
+
+Webhook delivery reuses the same public event payload contract instead of defining a second
+event model.
+
+- Registrations are operator-managed and scoped to a single public `task_id`.
+- Delivery is `at-least-once`; receivers must treat `event_id` or `sequence` as idempotency keys.
+- Ordering is preserved per registration by `event_sequence`.
+- The coordinator signs the raw JSON body with `HMAC-SHA256` and sends:
+  - `X-CCC-Event-Id`
+  - `X-CCC-Event-Sequence`
+  - `X-CCC-Task-Id`
+  - `X-CCC-Delivery-Attempt`
+  - `X-CCC-Signature`
+- `2xx` responses mark a delivery successful.
+- Non-`2xx` responses and transport errors are retried through the durable outbound delivery log.
+- Disabled registrations stop enqueuing new deliveries; existing rows remain visible through
+  the operator delivery listing.
+
 ## Notes
 
 - The event log is persisted in SQLite.
+- Managed outbound webhook registrations and deliveries are also persisted in SQLite.
 - The public task projection remains the source of truth.
 - Event replay is intentionally minimal but supported for client polling and SSE consumption.
 - The direct stream route is useful when a client already has a replay cursor and wants to stay on SSE instead of polling.

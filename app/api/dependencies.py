@@ -23,6 +23,10 @@ from app.repositories.job_inputs import JobInputRepository
 from app.repositories.jobs import JobEventRepository, JobRepository
 from app.repositories.messages import MessageMentionRepository, MessageRepository
 from app.repositories.orchestration_runs import OrchestrationRunRepository
+from app.repositories.outbound_webhooks import (
+    OutboundWebhookDeliveryRepository,
+    OutboundWebhookRegistrationRepository,
+)
 from app.repositories.participants import ParticipantRepository
 from app.repositories.phases import PhaseRepository
 from app.repositories.policies import PolicyRepository
@@ -57,6 +61,7 @@ from app.services.operator_dashboard import OperatorDashboardService
 from app.services.operator_realtime import OperatorRealtimeService
 from app.services.operator_shell import OperatorShellService
 from app.services.orchestration_engine import OrchestrationEngineService
+from app.services.outbound_webhooks import OutboundWebhookService
 from app.services.participant_policy import ParticipantPolicyService
 from app.services.permissions import CommandPermissions
 from app.services.phase_gate_service import PhaseGateService
@@ -168,6 +173,20 @@ def get_session_repository(
 ) -> SessionRepository:
     """Provide a session repository bound to the configured database."""
     return SessionRepository(database_url)
+
+
+def get_outbound_webhook_registration_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> OutboundWebhookRegistrationRepository:
+    """Provide an outbound webhook registration repository."""
+    return OutboundWebhookRegistrationRepository(database_url)
+
+
+def get_outbound_webhook_delivery_repository(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> OutboundWebhookDeliveryRepository:
+    """Provide an outbound webhook delivery repository."""
+    return OutboundWebhookDeliveryRepository(database_url)
 
 
 def get_session_template_repository(
@@ -298,6 +317,14 @@ def get_operator_dashboard_service(
     ],
     a2a_task_repository: Annotated[A2ATaskRepository, Depends(get_a2a_task_repository)],
     approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
+    outbound_webhook_registration_repository: Annotated[
+        OutboundWebhookRegistrationRepository,
+        Depends(get_outbound_webhook_registration_repository),
+    ],
+    outbound_webhook_delivery_repository: Annotated[
+        OutboundWebhookDeliveryRepository,
+        Depends(get_outbound_webhook_delivery_repository),
+    ],
     debug_service: Annotated[DebugService, Depends(get_debug_service)],
 ) -> OperatorDashboardService:
     """Provide the operator dashboard service."""
@@ -311,6 +338,8 @@ def get_operator_dashboard_service(
         work_context_repository=work_context_repository,
         a2a_task_repository=a2a_task_repository,
         approval_repository=approval_repository,
+        outbound_webhook_registration_repository=outbound_webhook_registration_repository,
+        outbound_webhook_delivery_repository=outbound_webhook_delivery_repository,
         debug_service=debug_service,
     )
 
@@ -899,6 +928,10 @@ def get_a2a_public_service(
         PublicEventStreamService,
         Depends(get_a2a_public_event_stream_service),
     ],
+    outbound_webhook_service: Annotated[
+        OutboundWebhookService,
+        Depends(get_outbound_webhook_service),
+    ],
 ) -> A2APublicService:
     """Provide the public A2A task surface service."""
     return A2APublicService(
@@ -913,6 +946,7 @@ def get_a2a_public_service(
         session_repository=session_repository,
         session_event_repository=session_event_repository,
         event_stream_service=event_stream_service,
+        outbound_webhook_service=outbound_webhook_service,
     )
 
 
@@ -934,6 +968,34 @@ def get_a2a_public_event_stream_service(
         event_repository=event_repository,
         subscription_repository=subscription_repository,
         review_repository=review_repository,
+    )
+
+
+def get_outbound_webhook_service(
+    task_repository: Annotated[A2ATaskRepository, Depends(get_a2a_task_repository)],
+    registration_repository: Annotated[
+        OutboundWebhookRegistrationRepository,
+        Depends(get_outbound_webhook_registration_repository),
+    ],
+    delivery_repository: Annotated[
+        OutboundWebhookDeliveryRepository,
+        Depends(get_outbound_webhook_delivery_repository),
+    ],
+    session_event_repository: Annotated[
+        SessionEventRepository,
+        Depends(get_session_event_repository),
+    ],
+) -> OutboundWebhookService:
+    """Provide the outbound webhook registration and delivery service."""
+    config = get_config()
+    return OutboundWebhookService(
+        task_repository=task_repository,
+        registration_repository=registration_repository,
+        delivery_repository=delivery_repository,
+        session_event_repository=session_event_repository,
+        request_timeout_seconds=config.outbound_webhook_request_timeout_seconds,
+        max_attempts=config.outbound_webhook_max_attempts,
+        retry_backoff_seconds=config.outbound_webhook_retry_backoff_seconds,
     )
 
 

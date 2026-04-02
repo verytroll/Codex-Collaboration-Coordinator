@@ -21,6 +21,7 @@ from app.api.operator_realtime import router as operator_realtime_router
 from app.api.operator_ui import shell_router as operator_shell_router
 from app.api.operator_ui import ui_router as operator_ui_router
 from app.api.orchestration import router as orchestration_router
+from app.api.outbound_webhooks import router as outbound_webhooks_router
 from app.api.participants import router as participants_router
 from app.api.phases import router as phases_router
 from app.api.policies import router as policies_router
@@ -64,6 +65,7 @@ router.include_router(operator_actions_router, dependencies=[Depends(require_ope
 router.include_router(
     integration_credentials_router, dependencies=[Depends(require_operator_access)]
 )
+router.include_router(outbound_webhooks_router, dependencies=[Depends(require_operator_access)])
 router.include_router(operator_ui_router, dependencies=[Depends(require_operator_access)])
 router.include_router(operator_shell_router, dependencies=[Depends(require_operator_access)])
 router.include_router(operator_realtime_router, dependencies=[Depends(require_operator_access)])

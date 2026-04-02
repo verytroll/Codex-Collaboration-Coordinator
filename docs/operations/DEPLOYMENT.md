@@ -28,6 +28,9 @@ The packaged `small-team` profile also supplies the durable runtime recovery def
 - `RUNTIME_RECOVERY_ENABLED=true`
 - `RUNTIME_RECOVERY_INTERVAL_SECONDS=15`
 - `RUNTIME_STALE_AFTER_MINUTES=10`
+- `OUTBOUND_WEBHOOK_REQUEST_TIMEOUT_SECONDS=5`
+- `OUTBOUND_WEBHOOK_MAX_ATTEMPTS=3`
+- `OUTBOUND_WEBHOOK_RETRY_BACKOFF_SECONDS=5`
 
 Keep those variables only when you want to override the packaged profile.
 
@@ -46,6 +49,9 @@ Recommended deployment defaults:
 - `RUNTIME_RECOVERY_ENABLED=true`
 - `RUNTIME_RECOVERY_INTERVAL_SECONDS=15`
 - `RUNTIME_STALE_AFTER_MINUTES=10`
+- `OUTBOUND_WEBHOOK_REQUEST_TIMEOUT_SECONDS=5`
+- `OUTBOUND_WEBHOOK_MAX_ATTEMPTS=3`
+- `OUTBOUND_WEBHOOK_RETRY_BACKOFF_SECONDS=5`
 - `LOG_LEVEL=INFO`
 
 Development defaults keep `APP_HOST=127.0.0.1` and `APP_RELOAD=true`.
@@ -71,6 +77,14 @@ The secret is shown once at issue/rotate time and should be rotated or revoked i
 being reused indefinitely.
 Credential requests accept an explicit empty `scopes: []` when you want no permissions,
 and any `expires_at` value must include a timezone offset such as `Z`.
+
+Managed outbound webhooks are configured through operator routes and use the durable runtime
+loop for retry/recovery. Tune only these env vars when you need a different delivery
+profile:
+
+- `OUTBOUND_WEBHOOK_REQUEST_TIMEOUT_SECONDS`
+- `OUTBOUND_WEBHOOK_MAX_ATTEMPTS`
+- `OUTBOUND_WEBHOOK_RETRY_BACKOFF_SECONDS`
 
 Protected write paths also expect actor identity headers:
 
@@ -155,7 +169,7 @@ seed reset behavior, smoke coverage, and then builds the release bundle.
 
 - The local SQLite file must persist between restarts if you want the state to survive.
 - The durable runtime loop is enabled in the packaged `small-team` profile and
-  replays queued jobs on startup and on a fixed cadence.
+  replays queued jobs and outbound webhook deliveries on startup and on a fixed cadence.
 - `readinessz` does not replace `system/status`; use both for basic external readiness and
   operator diagnostics.
 - Protected operator/public routes return `401` when the token is missing and `403` when
@@ -167,5 +181,7 @@ seed reset behavior, smoke coverage, and then builds the release bundle.
 - External integrators should use the public v1 A2A task and event routes only; the
   legacy adapter bridge remains available for compatibility, not as the supported
   adoption baseline.
+- Outbound webhooks reuse the same public task event payload contract; receivers must be
+  prepared for `at-least-once` delivery and verify the request signature.
 - If you need a new migration, add a new `.sql` file instead of editing an existing one in place.
 

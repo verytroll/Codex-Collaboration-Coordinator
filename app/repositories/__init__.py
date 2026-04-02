@@ -28,6 +28,12 @@ from app.repositories.orchestration_runs import (
     OrchestrationRunRecord,
     OrchestrationRunRepository,
 )
+from app.repositories.outbound_webhooks import (
+    OutboundWebhookDeliveryRecord,
+    OutboundWebhookDeliveryRepository,
+    OutboundWebhookRegistrationRecord,
+    OutboundWebhookRegistrationRepository,
+)
 from app.repositories.participants import ParticipantRepository, SessionParticipantRecord
 from app.repositories.phases import PhaseRecord, PhaseRepository
 from app.repositories.policies import (
@@ -85,6 +91,10 @@ __all__ = [
     "MessageMentionRepository",
     "MessageRecord",
     "MessageRepository",
+    "OutboundWebhookDeliveryRecord",
+    "OutboundWebhookDeliveryRepository",
+    "OutboundWebhookRegistrationRecord",
+    "OutboundWebhookRegistrationRepository",
     "OrchestrationRunRecord",
     "OrchestrationRunRepository",
     "ParticipantRepository",

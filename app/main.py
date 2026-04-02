@@ -17,11 +17,16 @@ from app.core.logging import configure_logging
 from app.core.middleware import RequestIdMiddleware
 from app.core.version import APP_VERSION
 from app.db.migrations import DEFAULT_MIGRATIONS_DIR, migrate_sqlite
+from app.repositories.a2a_tasks import A2ATaskRepository
 from app.repositories.agents import AgentRepository, AgentRuntimeRepository
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.artifacts import ArtifactRepository
 from app.repositories.jobs import JobEventRepository, JobRepository
 from app.repositories.messages import MessageRepository
+from app.repositories.outbound_webhooks import (
+    OutboundWebhookDeliveryRepository,
+    OutboundWebhookRegistrationRepository,
+)
 from app.repositories.presence import PresenceRepository
 from app.repositories.relay_edges import RelayEdgeRepository
 from app.repositories.session_events import SessionEventRepository
@@ -30,6 +35,7 @@ from app.services.approval_manager import ApprovalManager
 from app.services.artifact_manager import ArtifactManager
 from app.services.durable_runtime import DurableRuntimeSupervisor
 from app.services.loop_guard import LoopGuardService
+from app.services.outbound_webhooks import OutboundWebhookService
 from app.services.recovery import RecoveryService
 from app.services.relay_engine import CodexRelayBridge, RelayEngine
 from app.services.runtime_service import RuntimeService
@@ -59,6 +65,9 @@ async def _build_durable_runtime_supervisor(
     agent_repository = AgentRepository(database_url)
     artifact_repository = ArtifactRepository(database_url)
     approval_repository = ApprovalRepository(database_url)
+    task_repository = A2ATaskRepository(database_url)
+    outbound_webhook_registration_repository = OutboundWebhookRegistrationRepository(database_url)
+    outbound_webhook_delivery_repository = OutboundWebhookDeliveryRepository(database_url)
     runtime_service = RuntimeService(runtime_repository)
     thread_mapping_service = ThreadMappingService(
         runtime_service,
@@ -108,13 +117,23 @@ async def _build_durable_runtime_supervisor(
         relay_engine=relay_engine if settings.runtime_recovery_enabled else None,
         stale_after_minutes=settings.runtime_stale_after_minutes,
     )
+    outbound_webhook_service = OutboundWebhookService(
+        task_repository=task_repository,
+        registration_repository=outbound_webhook_registration_repository,
+        delivery_repository=outbound_webhook_delivery_repository,
+        session_event_repository=session_event_repository,
+        request_timeout_seconds=settings.outbound_webhook_request_timeout_seconds,
+        max_attempts=settings.outbound_webhook_max_attempts,
+        retry_backoff_seconds=settings.outbound_webhook_retry_backoff_seconds,
+    )
     supervisor = DurableRuntimeSupervisor(
         recovery_service=recovery_service,
-        enabled=settings.runtime_recovery_enabled,
+        outbound_webhook_service=outbound_webhook_service,
+        recovery_enabled=settings.runtime_recovery_enabled,
         poll_interval_seconds=settings.runtime_recovery_interval_seconds,
     )
     try:
-        await supervisor.run_once()
+        await supervisor.run_once(include_recovery=True)
     except Exception:
         await bridge.aclose()
         raise

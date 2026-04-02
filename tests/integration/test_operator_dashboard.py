@@ -20,6 +20,12 @@ from app.repositories.orchestration_runs import (
     OrchestrationRunRecord,
     OrchestrationRunRepository,
 )
+from app.repositories.outbound_webhooks import (
+    OutboundWebhookDeliveryRecord,
+    OutboundWebhookDeliveryRepository,
+    OutboundWebhookRegistrationRecord,
+    OutboundWebhookRegistrationRepository,
+)
 from app.repositories.phases import PhaseRecord, PhaseRepository
 from app.repositories.reviews import ReviewRecord, ReviewRepository
 from app.repositories.runtime_pools import WorkContextRecord, WorkContextRepository
@@ -337,6 +343,77 @@ def _seed_approval(database_url: str, *, approval_id: str, job_id: str, agent_id
     )
 
 
+def _seed_outbound_webhook(
+    database_url: str,
+    *,
+    registration_id: str,
+    task_id: str,
+    session_id: str,
+    status: str,
+    last_delivered_sequence: int,
+) -> None:
+    created_at = "2026-04-01T00:00:00Z"
+    asyncio.run(
+        OutboundWebhookRegistrationRepository(database_url).create(
+            OutboundWebhookRegistrationRecord(
+                id=registration_id,
+                task_id=task_id,
+                session_id=session_id,
+                target_url="http://127.0.0.1:8999/hook",
+                signing_secret="secret-value",
+                signing_secret_prefix="secret-v",
+                status=status,
+                description="Dashboard webhook",
+                last_attempt_at=created_at,
+                last_success_at=created_at if status == "active" else None,
+                last_failure_at=None,
+                last_error_message=None,
+                failure_count=0,
+                last_delivered_sequence=last_delivered_sequence,
+                created_at=created_at,
+                updated_at=created_at,
+            )
+        )
+    )
+
+
+def _seed_outbound_delivery(
+    database_url: str,
+    *,
+    delivery_id: str,
+    registration_id: str,
+    task_id: str,
+    session_id: str,
+    sequence: int,
+    status: str,
+) -> None:
+    created_at = "2026-04-01T00:00:00Z"
+    asyncio.run(
+        OutboundWebhookDeliveryRepository(database_url).create(
+            OutboundWebhookDeliveryRecord(
+                id=delivery_id,
+                registration_id=registration_id,
+                task_id=task_id,
+                session_id=session_id,
+                event_id=f"pev_{sequence}",
+                event_sequence=sequence,
+                event_type="status_changed",
+                payload_json='{"event":"status_changed"}',
+                status=status,
+                attempt_count=1,
+                next_attempt_at=created_at,
+                last_attempt_at=created_at,
+                last_success_at=created_at if status == "delivered" else None,
+                last_failure_at=created_at if status in {"retrying", "failed"} else None,
+                last_response_status=200 if status == "delivered" else 500,
+                last_error_message=None if status == "delivered" else "http_500",
+                created_at=created_at,
+                updated_at=created_at,
+            )
+        )
+    )
+
+
 def test_operator_dashboard_and_debug_surface(tmp_path, monkeypatch) -> None:
     database_url = _database_url(tmp_path)
     monkeypatch.setenv("DATABASE_URL", database_url)
@@ -482,6 +559,32 @@ def test_operator_dashboard_and_debug_surface(tmp_path, monkeypatch) -> None:
     )
 
     _seed_approval(database_url, approval_id="apr_1", job_id="job_review", agent_id="agt_reviewer")
+    _seed_outbound_webhook(
+        database_url,
+        registration_id="owr_review",
+        task_id="task_review",
+        session_id="ses_review",
+        status="active",
+        last_delivered_sequence=2,
+    )
+    _seed_outbound_delivery(
+        database_url,
+        delivery_id="owd_review_retry",
+        registration_id="owr_review",
+        task_id="task_review",
+        session_id="ses_review",
+        sequence=3,
+        status="retrying",
+    )
+    _seed_outbound_delivery(
+        database_url,
+        delivery_id="owd_review_ok",
+        registration_id="owr_review",
+        task_id="task_review",
+        session_id="ses_review",
+        sequence=2,
+        status="delivered",
+    )
 
     try:
         with TestClient(app) as client:
@@ -497,6 +600,9 @@ def test_operator_dashboard_and_debug_surface(tmp_path, monkeypatch) -> None:
             assert dashboard_payload["public_task_throughput"]["total_tasks"] == 2
             assert dashboard_payload["public_task_throughput"]["queued"] == 1
             assert dashboard_payload["public_task_throughput"]["completed"] == 1
+            assert dashboard_payload["outbound_webhooks"]["registrations"] == 1
+            assert dashboard_payload["outbound_webhooks"]["retrying_deliveries"] == 1
+            assert dashboard_payload["outbound_webhooks"]["delivered_deliveries"] == 1
             assert any(
                 item["phase_key"] == "review" for item in dashboard_payload["phase_distribution"]
             )
@@ -524,6 +630,7 @@ def test_operator_dashboard_and_debug_surface(tmp_path, monkeypatch) -> None:
             assert len(filtered_payload["queue_heat"]) == 1
             assert filtered_payload["queue_heat"][0]["session_id"] == "ses_review"
             assert filtered_payload["queue_heat"][0]["runtime_pool_key"] == "isolated_work"
+            assert filtered_payload["outbound_webhooks"]["registrations"] == 1
             assert len(filtered_payload["phase_distribution"]) == 1
             assert filtered_payload["phase_distribution"][0]["phase_key"] == "review"
 
@@ -545,6 +652,7 @@ def test_operator_dashboard_and_debug_surface(tmp_path, monkeypatch) -> None:
             assert "dashboard" in debug_payload
             assert "debug" in debug_payload
             assert debug_payload["dashboard"]["public_task_throughput"]["total_tasks"] == 2
+            assert debug_payload["dashboard"]["outbound_webhooks"]["retrying_deliveries"] == 1
             assert debug_payload["debug"]["runtime_statuses"] == {"busy": 1, "online": 2}
             assert [item["id"] for item in debug_payload["debug"]["pending_approvals"]] == ["apr_1"]
     finally:

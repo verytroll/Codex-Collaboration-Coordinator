@@ -117,6 +117,20 @@ class OperatorPublicTaskThroughputResponse(BaseModel):
     canceled: int
 
 
+class OperatorOutboundWebhookSummaryResponse(BaseModel):
+    """Outbound webhook delivery summary."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    registrations: int
+    active_registrations: int
+    disabled_registrations: int
+    pending_deliveries: int
+    retrying_deliveries: int
+    failed_deliveries: int
+    delivered_deliveries: int
+
+
 class OperatorDashboardResponse(BaseModel):
     """Operator-facing dashboard aggregates."""
 
@@ -130,6 +144,7 @@ class OperatorDashboardResponse(BaseModel):
     review_bottlenecks: list[OperatorReviewBottleneckResponse] = Field(default_factory=list)
     runtime_pools: list[OperatorRuntimePoolHealthResponse] = Field(default_factory=list)
     public_task_throughput: OperatorPublicTaskThroughputResponse
+    outbound_webhooks: OperatorOutboundWebhookSummaryResponse
     diagnostics: list[str] = Field(default_factory=list)
     telemetry: TelemetrySurfaceResponse
 

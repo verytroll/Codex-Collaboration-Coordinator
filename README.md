@@ -63,6 +63,7 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - Session channels, participant roles/policies, rules, review flows, and structured permissions are in place.
 - Messages, jobs, artifacts, approvals, session events, and public A2A task/event surfaces are persisted and exposed through API routes.
 - Advanced job lifecycle support includes create, retry, resume, offline queueing, templates, orchestration gates, runtime pools, and streaming.
+- Managed outbound webhook delivery is available for public A2A task events, with retry, recovery, and operator visibility.
 - Operator dashboard/debug surfaces and advanced policy automation are implemented.
 - Thin operator UI shell is available at `/operator` and bootstraps from `/api/v1/operator/shell`.
 - CodexBridge subprocess manager and JSON-RPC client are in place.

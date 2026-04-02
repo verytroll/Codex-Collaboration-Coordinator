@@ -16,6 +16,7 @@ from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRepository
 from app.services.a2a_adapter import A2AAdapterService, A2ATaskProjection
 from app.services.authz_service import ActorIdentity
+from app.services.outbound_webhooks import OutboundWebhookService
 from app.services.public_event_stream import PublicEventStreamService
 from app.services.session_events import record_session_event
 
@@ -157,12 +158,14 @@ class A2APublicService:
         session_repository: SessionRepository,
         session_event_repository: SessionEventRepository | None = None,
         event_stream_service: PublicEventStreamService | None = None,
+        outbound_webhook_service: OutboundWebhookService | None = None,
     ) -> None:
         self.adapter_service = adapter_service
         self.task_repository = task_repository
         self.session_repository = session_repository
         self.session_event_repository = session_event_repository
         self.event_stream_service = event_stream_service
+        self.outbound_webhook_service = outbound_webhook_service
 
     async def create_task(
         self,
@@ -197,10 +200,17 @@ class A2APublicService:
                 if previous_projection is not None
                 else None
             )
-            await self.event_stream_service.record_task_projection(
+            saved_events = await self.event_stream_service.record_task_projection(
                 task,
                 previous_task=previous_task,
             )
+            if self.outbound_webhook_service is not None and saved_events:
+                await self.outbound_webhook_service.enqueue_events(
+                    task_id=task.task_id,
+                    session_id=task.session_id,
+                    events=saved_events,
+                )
+                await self.outbound_webhook_service.dispatch_task_deliveries(task.task_id)
         return task
 
     async def get_task(self, task_id: str) -> A2APublicTaskResponse | None:

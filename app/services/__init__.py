@@ -35,6 +35,7 @@ from app.services.operator_dashboard import (
 )
 from app.services.operator_realtime import OperatorRealtimeService
 from app.services.orchestration_engine import OrchestrationEngineService, OrchestrationRunResult
+from app.services.outbound_webhooks import OutboundDeliverySweepResult, OutboundWebhookService
 from app.services.participant_policy import ParticipantPolicy, ParticipantPolicyService
 from app.services.permissions import (
     CommandPermissionCheck,
@@ -110,6 +111,8 @@ __all__ = [
     "MessageRoutingService",
     "OfflineQueueDispatchResult",
     "OfflineQueueService",
+    "OutboundDeliverySweepResult",
+    "OutboundWebhookService",
     "OrchestrationRunResult",
     "OrchestrationEngineService",
     "OperatorDashboardFilters",
