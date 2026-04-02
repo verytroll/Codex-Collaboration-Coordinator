@@ -54,10 +54,23 @@ Access boundary profiles:
 
 - `local` keeps operator/public routes open for local development and tests.
 - `trusted` allows local clients without a token and requires a token for non-local access.
-- `protected` requires `ACCESS_TOKEN` on operator/public routes.
+- `protected` requires `ACCESS_TOKEN` on operator/public routes for bootstrap and legacy clients, and also accepts managed integration credentials issued by the operator API.
 
 If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
-(`X-Access-Token` by default).
+(`X-Access-Token` by default). That shared token remains the bootstrap path for the
+operator shell and smoke scripts.
+
+Managed integration credentials are opaque bearer secrets issued through:
+
+- `POST /api/v1/operator/integration-principals`
+- `POST /api/v1/operator/integration-principals/{principal_id}/credentials`
+
+Use `public_read` for read/replay access, `public_write` for public task creation, and
+`operator_write` for operator automation. `operator_write` includes the public scopes.
+The secret is shown once at issue/rotate time and should be rotated or revoked instead of
+being reused indefinitely.
+Credential requests accept an explicit empty `scopes: []` when you want no permissions,
+and any `expires_at` value must include a timezone offset such as `Z`.
 
 Protected write paths also expect actor identity headers:
 
@@ -147,6 +160,8 @@ seed reset behavior, smoke coverage, and then builds the release bundle.
   operator diagnostics.
 - Protected operator/public routes return `401` when the token is missing and `403` when
   the token is wrong.
+- Managed integration credentials are the preferred path for external clients; the
+  shared `ACCESS_TOKEN` remains a bootstrap and legacy fallback.
 - Protected write routes return `401` when actor identity headers are missing and `403`
   when the role is not allowed for the requested action.
 - External integrators should use the public v1 A2A task and event routes only; the

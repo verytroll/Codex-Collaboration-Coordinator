@@ -8,6 +8,11 @@ from app.services.authz_service import ActorIdentity, AuthzService
 from app.services.channel_service import DEFAULT_CHANNELS, ChannelService
 from app.services.command_handler import CommandExecutionResult, CommandHandler
 from app.services.durable_runtime import DurableRuntimeSupervisor, DurableRuntimeSweepResult
+from app.services.integration_credentials import (
+    CredentialAuthMatch,
+    CredentialIssueResult,
+    IntegrationCredentialService,
+)
 from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardDecision, LoopGuardService
 from app.services.mention_router import MentionRouter, ResolvedMention
@@ -91,6 +96,9 @@ __all__ = [
     "A2APublicService",
     "ActorIdentity",
     "AuthzService",
+    "CredentialAuthMatch",
+    "CredentialIssueResult",
+    "IntegrationCredentialService",
     "PublicEventStreamService",
     "JobService",
     "LoopGuardDecision",

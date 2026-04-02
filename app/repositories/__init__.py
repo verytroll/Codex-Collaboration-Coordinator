@@ -10,6 +10,12 @@ from app.repositories.agents import (
 from app.repositories.approvals import ApprovalRepository, ApprovalRequestRecord
 from app.repositories.artifacts import ArtifactRecord, ArtifactRepository
 from app.repositories.channels import SessionChannelRecord, SessionChannelRepository
+from app.repositories.integration_credentials import (
+    IntegrationCredentialRecord,
+    IntegrationCredentialRepository,
+    IntegrationPrincipalRecord,
+    IntegrationPrincipalRepository,
+)
 from app.repositories.job_inputs import JobInputRecord, JobInputRepository
 from app.repositories.jobs import JobEventRecord, JobEventRepository, JobRecord, JobRepository
 from app.repositories.messages import (
@@ -59,6 +65,10 @@ __all__ = [
     "A2ATaskRepository",
     "ArtifactRecord",
     "ArtifactRepository",
+    "IntegrationPrincipalRecord",
+    "IntegrationPrincipalRepository",
+    "IntegrationCredentialRecord",
+    "IntegrationCredentialRepository",
     "SessionChannelRecord",
     "SessionChannelRepository",
     "AgentRecord",

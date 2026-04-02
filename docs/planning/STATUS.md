@@ -9,6 +9,8 @@
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F50 - Integration credentials và access lifecycle - 2026-04-02
+- [x] PR52 - Integration credentials và access lifecycle - 2026-04-02
 - [x] F49 - Operator console polish và incident workflow - 2026-04-02
 - [x] PR51 - Operator console polish và incident workflow - 2026-04-02
 - [x] F47 - V6 release closure và support baseline - 2026-04-02
@@ -77,7 +79,7 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] F50 - Integration credentials và access lifecycle
+- [ ] F51 - Outbound integration automation
 
 ### Blockers / Rủi ro
 - Chưa có blocker hiện tại
@@ -85,7 +87,7 @@
 - Rủi ro phụ là tăng deployment complexity cho small-team profile trước khi smoke/release path đủ rõ
 
 ### Kiểm chứng gần nhất
-- `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1` - 107 passed - 2026-04-02
+- `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1` - 112 passed - 2026-04-02
 - `powershell -ExecutionPolicy Bypass -File .\scripts\lint.ps1` - passed - 2026-04-02
 - `powershell -ExecutionPolicy Bypass -File .\scripts\docs_check.ps1` - passed - 2026-04-02
 - `powershell -ExecutionPolicy Bypass -File .\scripts\release.ps1` - passed - 2026-04-02

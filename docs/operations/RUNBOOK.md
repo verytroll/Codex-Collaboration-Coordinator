@@ -21,9 +21,10 @@ pip install -e .[dev]
 ```
 
 4. Open `http://127.0.0.1:8000/operator` to inspect the thin operator shell and action panel.
-5. If you are calling write routes directly in `protected` mode, include the actor
-   identity headers (`X-Actor-Id`, `X-Actor-Role`, optionally `X-Actor-Type` and
-   `X-Actor-Label`) along with the access token.
+5. If you are calling write routes directly in `protected` mode, either include the
+   actor identity headers (`X-Actor-Id`, `X-Actor-Role`, optionally `X-Actor-Type` and
+   `X-Actor-Label`) with the shared access token, or use a managed integration
+   credential as `Authorization: Bearer <secret>`.
 
 ## Prod-like startup
 
@@ -82,14 +83,30 @@ Before considering the baseline closed, confirm:
 4. The smoke path covers health, readiness, operator shell bootstrap, operator actions,
    live activity, and the public A2A flow.
 
+## Integration credentials
+
+1. Create an integration principal through `POST /api/v1/operator/integration-principals`.
+2. Issue a credential through `/credentials`; the secret is shown once.
+3. Send the secret as `Authorization: Bearer <secret>` or the configured access-token
+   header when you call public or operator routes.
+4. Use `public_read` for replay/list endpoints, `public_write` for public task creation,
+   and `operator_write` for operator automation.
+5. Rotate or revoke credentials instead of reusing the same secret indefinitely.
+6. Check `GET /api/v1/operator/integration-principals/{principal_id}/credentials` if you
+   need to confirm status, rotation history, or expiry state.
+7. If you set `expires_at`, include a timezone offset such as `Z`; explicit `scopes: []`
+   is allowed and means the credential has no permissions.
+
 ## Incident triage
 
 1. Check `GET /api/v1/system/status` first.
 2. Check `GET /api/v1/system/debug` for queued jobs, blocked jobs, and runtime state.
 3. Check `GET /api/v1/operator/dashboard` for higher-level operator diagnostics.
 4. Check `GET /operator` if you want the shell view instead of raw JSON.
-5. If operator/public routes return `401`, verify `ACCESS_TOKEN` and the request header name.
-6. If operator/public routes return `403`, verify the token value being sent.
+5. If operator/public routes return `401`, verify the shared `ACCESS_TOKEN`, the request
+   header name, or the managed credential secret being sent.
+6. If operator/public routes return `403`, verify the token value or the managed
+   credential scope/role being sent.
 7. If a protected write route returns `401` with a valid token, check the actor identity
    headers first.
 8. If a protected write route returns `403`, verify the actor role is allowed for the

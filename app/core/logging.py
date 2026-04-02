@@ -80,6 +80,14 @@ ACCESS_REASON_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
     "access_reason",
     default=LOG_CONTEXT_DEFAULT,
 )
+PRINCIPAL_ID_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "principal_id",
+    default=LOG_CONTEXT_DEFAULT,
+)
+CREDENTIAL_ID_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "credential_id",
+    default=LOG_CONTEXT_DEFAULT,
+)
 CLIENT_HOST_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar(
     "client_host",
     default=LOG_CONTEXT_DEFAULT,
@@ -122,6 +130,8 @@ def get_log_context() -> dict[str, str]:
         "access_surface": ACCESS_SURFACE_CONTEXT.get(),
         "access_result": ACCESS_RESULT_CONTEXT.get(),
         "access_reason": ACCESS_REASON_CONTEXT.get(),
+        "principal_id": PRINCIPAL_ID_CONTEXT.get(),
+        "credential_id": CREDENTIAL_ID_CONTEXT.get(),
         "client_host": CLIENT_HOST_CONTEXT.get(),
     }
 
@@ -145,6 +155,8 @@ def bind_log_context(
     access_surface: str | None = None,
     access_result: str | None = None,
     access_reason: str | None = None,
+    principal_id: str | None = None,
+    credential_id: str | None = None,
     client_host: str | None = None,
 ) -> dict[str, contextvars.Token[str]]:
     """Bind operator-relevant logging fields into the current context."""
@@ -183,6 +195,10 @@ def bind_log_context(
         tokens["access_result"] = ACCESS_RESULT_CONTEXT.set(access_result)
     if access_reason is not None:
         tokens["access_reason"] = ACCESS_REASON_CONTEXT.set(access_reason)
+    if principal_id is not None:
+        tokens["principal_id"] = PRINCIPAL_ID_CONTEXT.set(principal_id)
+    if credential_id is not None:
+        tokens["credential_id"] = CREDENTIAL_ID_CONTEXT.set(credential_id)
     if client_host is not None:
         tokens["client_host"] = CLIENT_HOST_CONTEXT.set(client_host)
     return tokens
@@ -221,6 +237,10 @@ def reset_log_context(tokens: dict[str, contextvars.Token[str]]) -> None:
             ACCESS_RESULT_CONTEXT.reset(token)
         elif key == "access_reason":
             ACCESS_REASON_CONTEXT.reset(token)
+        elif key == "principal_id":
+            PRINCIPAL_ID_CONTEXT.reset(token)
+        elif key == "credential_id":
+            CREDENTIAL_ID_CONTEXT.reset(token)
         elif key == "client_host":
             CLIENT_HOST_CONTEXT.reset(token)
         elif key == "request_method":
@@ -235,6 +255,8 @@ def clear_access_context() -> None:
     ACCESS_SURFACE_CONTEXT.set(LOG_CONTEXT_DEFAULT)
     ACCESS_RESULT_CONTEXT.set(LOG_CONTEXT_DEFAULT)
     ACCESS_REASON_CONTEXT.set(LOG_CONTEXT_DEFAULT)
+    PRINCIPAL_ID_CONTEXT.set(LOG_CONTEXT_DEFAULT)
+    CREDENTIAL_ID_CONTEXT.set(LOG_CONTEXT_DEFAULT)
     CLIENT_HOST_CONTEXT.set(LOG_CONTEXT_DEFAULT)
 
 
@@ -261,6 +283,8 @@ class RequestIdFilter(logging.Filter):
         record.access_surface = context["access_surface"]
         record.access_result = context["access_result"]
         record.access_reason = context["access_reason"]
+        record.principal_id = context["principal_id"]
+        record.credential_id = context["credential_id"]
         record.client_host = context["client_host"]
         return True
 
@@ -295,6 +319,8 @@ def configure_logging(level: str) -> None:
                 "access_surface=%(access_surface)s "
                 "access_result=%(access_result)s "
                 "access_reason=%(access_reason)s "
+                "principal_id=%(principal_id)s "
+                "credential_id=%(credential_id)s "
                 "client_host=%(client_host)s "
                 "%(message)s"
             )

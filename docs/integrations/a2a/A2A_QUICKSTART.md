@@ -9,7 +9,9 @@ For the supported-versus-experimental claim boundary, see `docs/integrations/a2a
 .\scripts\dev.ps1
 ```
 
-If you are using protected mode, set `ACCESS_TOKEN` before calling any operator or A2A route.
+If you are using protected mode, set `ACCESS_TOKEN` before calling any operator or A2A
+route. For external clients, prefer a managed integration credential issued through the
+operator API and send it as `Authorization: Bearer <secret>`.
 
 ## 2. Inspect discovery metadata
 
@@ -26,7 +28,9 @@ The agent card advertises:
 
 ## 3. Create or refresh a public task
 
-The public task API projects an existing internal job into the external A2A shape.
+The public task API projects an existing internal job into the external A2A shape. When
+you use a managed credential, add `-H "Authorization: Bearer <secret>"` to the requests
+below. Use `public_read` for replay/list access and `public_write` for task creation.
 
 ```powershell
 curl.exe -X POST http://127.0.0.1:8000/api/v1/a2a/tasks `
@@ -81,5 +85,7 @@ and prints the task id, subscription id, and event count.
 - Use `GET /api/v1/a2a/subscriptions/{subscription_id}/events` for SSE consumption.
 - The public task contract is `a2a.public.task.v1`.
 - The event contract is `a2a.public.task.event.v1`.
+- Managed integration credentials are the supported external auth path; the shared
+  `ACCESS_TOKEN` remains a bootstrap and compatibility fallback.
 - The quickstart only uses supported public v1 endpoints, not the legacy experimental bridge routes.
 

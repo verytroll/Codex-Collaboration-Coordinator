@@ -17,6 +17,18 @@ The coordinator internal model remains the source of truth. The public API only 
 - `phase`
 - `artifact`
 
+## Authentication
+
+The public surface accepts managed integration credentials for external clients. The
+legacy `ACCESS_TOKEN` path remains available for bootstrap and compatibility.
+
+- Send the secret as `Authorization: Bearer <secret>` or the configured access-token
+  header.
+- `public_read` covers list, read, and replay endpoints.
+- `public_write` is required for `POST /api/v1/a2a/tasks`.
+- `operator_write` includes the public scopes, but operator routes are documented
+  separately.
+
 ## Endpoints
 
 - `POST /api/v1/a2a/tasks`
@@ -80,6 +92,7 @@ Key mappings:
 - This API is the supported external v1 contract for public adoption.
 - The adapter bridge remains the implementation layer underneath.
 - Legacy experimental routes still exist for compatibility, but they are not part of the supported external contract.
+- Managed integration credentials are the preferred auth path for external clients.
 - For the full compatibility matrix, see `docs/integrations/a2a/A2A_COMPATIBILITY_MATRIX.md`.
 - For task lifecycle push/replay details, see `docs/integrations/a2a/A2A_PUBLIC_EVENTS.md`.
 - For a copy-paste setup flow and demo script, see `docs/integrations/a2a/A2A_QUICKSTART.md`.

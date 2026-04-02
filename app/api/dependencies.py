@@ -15,6 +15,10 @@ from app.repositories.agents import AgentRepository, AgentRuntimeRepository
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.artifacts import ArtifactRepository
 from app.repositories.channels import SessionChannelRepository
+from app.repositories.integration_credentials import (
+    IntegrationCredentialRepository,
+    IntegrationPrincipalRepository,
+)
 from app.repositories.job_inputs import JobInputRepository
 from app.repositories.jobs import JobEventRepository, JobRepository
 from app.repositories.messages import MessageMentionRepository, MessageRepository
@@ -43,6 +47,7 @@ from app.services.channel_service import ChannelService
 from app.services.command_handler import CommandHandler
 from app.services.debug_service import DebugService
 from app.services.deployment_readiness import DeploymentReadinessService
+from app.services.integration_credentials import IntegrationCredentialService
 from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardService
 from app.services.message_routing import MessageRoutingService
@@ -81,13 +86,29 @@ def get_database_url() -> str:
     return get_config().database_url
 
 
-def get_access_boundary_service() -> AccessBoundaryService:
+def get_integration_credential_service(
+    database_url: Annotated[str, Depends(get_database_url)],
+) -> IntegrationCredentialService:
+    """Provide the integration credential lifecycle service."""
+    return IntegrationCredentialService(
+        principal_repository=IntegrationPrincipalRepository(database_url),
+        credential_repository=IntegrationCredentialRepository(database_url),
+    )
+
+
+def get_access_boundary_service(
+    integration_credential_service: Annotated[
+        IntegrationCredentialService,
+        Depends(get_integration_credential_service),
+    ],
+) -> AccessBoundaryService:
     """Provide the configured access boundary service."""
     config = get_config()
     return AccessBoundaryService(
         access_boundary_mode=config.access_boundary_mode,
         access_token=config.access_token,
         access_token_header=config.access_token_header,
+        integration_credential_service=integration_credential_service,
     )
 
 

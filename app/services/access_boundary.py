@@ -8,6 +8,7 @@ from fastapi import Request
 
 from app.core.errors import ForbiddenAccessError, UnauthorizedAccessError
 from app.core.logging import bind_log_context, get_logger
+from app.services.integration_credentials import CredentialAuthMatch, IntegrationCredentialService
 
 logger = get_logger(__name__)
 
@@ -29,6 +30,8 @@ class AccessDecision:
     result: str
     reason: str
     client_host: str
+    principal_id: str | None = None
+    credential_id: str | None = None
 
 
 class AccessBoundaryService:
@@ -40,11 +43,13 @@ class AccessBoundaryService:
         access_boundary_mode: str,
         access_token: str,
         access_token_header: str,
+        integration_credential_service: IntegrationCredentialService | None = None,
         trusted_client_hosts: set[str] | None = None,
     ) -> None:
         self.access_boundary_mode = self._normalize_mode(access_boundary_mode)
         self.access_token = access_token.strip()
         self.access_token_header = access_token_header.strip() or "X-Access-Token"
+        self.integration_credential_service = integration_credential_service
         self.trusted_client_hosts = trusted_client_hosts or DEFAULT_TRUSTED_CLIENT_HOSTS
 
     async def require_operator_access(self, request: Request) -> None:
@@ -103,6 +108,8 @@ class AccessBoundaryService:
             access_result=decision.result,
             access_reason=decision.reason,
             client_host=decision.client_host,
+            principal_id=decision.principal_id,
+            credential_id=decision.credential_id,
         )
 
     def _log_allowed(self, *, surface: str, decision: AccessDecision) -> None:
@@ -184,6 +191,159 @@ class AccessBoundaryService:
             )
             return
 
+        credential_match = await self._authenticate_credential(
+            token,
+            surface=surface,
+            client_host=client_host,
+        )
+        if credential_match is not None:
+            if credential_match.status == "active" and credential_match.actor_identity is not None:
+                identity = credential_match.actor_identity
+                if surface == "operator":
+                    if identity.actor_role not in {"operator", "admin"}:
+                        decision = AccessDecision(
+                            allowed=False,
+                            result="forbidden",
+                            reason="invalid_role",
+                            client_host=client_host,
+                            principal_id=identity.principal_id,
+                            credential_id=identity.credential_id,
+                        )
+                        self._log_denied(surface=surface, decision=decision)
+                        raise ForbiddenAccessError(
+                            f"{surface.capitalize()} access token is not valid for this role",
+                            details={
+                                "surface": surface,
+                                "mode": self.access_boundary_mode,
+                                "client_host": client_host,
+                                "reason": "invalid_role",
+                                "principal_id": identity.principal_id,
+                                "credential_id": identity.credential_id,
+                            },
+                        )
+                    if "operator_write" not in identity.credential_scopes:
+                        decision = AccessDecision(
+                            allowed=False,
+                            result="forbidden",
+                            reason="insufficient_scope",
+                            client_host=client_host,
+                            principal_id=identity.principal_id,
+                            credential_id=identity.credential_id,
+                        )
+                        self._log_denied(surface=surface, decision=decision)
+                        message = (
+                            f"{surface.capitalize()} access token does not include "
+                            "the required scope"
+                        )
+                        raise ForbiddenAccessError(
+                            message,
+                            details={
+                                "surface": surface,
+                                "mode": self.access_boundary_mode,
+                                "client_host": client_host,
+                                "reason": "insufficient_scope",
+                                "required_scope": "operator_write",
+                                "principal_id": identity.principal_id,
+                                "credential_id": identity.credential_id,
+                            },
+                        )
+                else:
+                    if "public_read" not in identity.credential_scopes:
+                        decision = AccessDecision(
+                            allowed=False,
+                            result="forbidden",
+                            reason="insufficient_scope",
+                            client_host=client_host,
+                            principal_id=identity.principal_id,
+                            credential_id=identity.credential_id,
+                        )
+                        self._log_denied(surface=surface, decision=decision)
+                        message = (
+                            f"{surface.capitalize()} access token does not include "
+                            "the required scope"
+                        )
+                        raise ForbiddenAccessError(
+                            message,
+                            details={
+                                "surface": surface,
+                                "mode": self.access_boundary_mode,
+                                "client_host": client_host,
+                                "reason": "insufficient_scope",
+                                "required_scope": "public_read",
+                                "principal_id": identity.principal_id,
+                                "credential_id": identity.credential_id,
+                            },
+                        )
+                request.state.actor_identity = identity
+                request.state.actor_role = identity.actor_role
+                request.state.actor_id = identity.actor_id
+                request.state.actor_type = identity.actor_type
+                request.state.actor_source = identity.source
+                request.state.principal_id = identity.principal_id
+                request.state.credential_id = identity.credential_id
+                self._log_allowed(
+                    surface=surface,
+                    decision=AccessDecision(
+                        allowed=True,
+                        result="allowed",
+                        reason="credential",
+                        client_host=client_host,
+                        principal_id=identity.principal_id,
+                        credential_id=identity.credential_id,
+                    ),
+                )
+                return
+            if credential_match.status == "principal_missing":
+                decision = AccessDecision(
+                    allowed=False,
+                    result="forbidden",
+                    reason="principal_missing",
+                    client_host=client_host,
+                    principal_id=None,
+                    credential_id=credential_match.credential.id
+                    if credential_match.credential
+                    else None,
+                )
+                self._log_denied(surface=surface, decision=decision)
+                raise ForbiddenAccessError(
+                    f"{surface.capitalize()} credential principal is missing",
+                    details={
+                        "surface": surface,
+                        "mode": self.access_boundary_mode,
+                        "client_host": client_host,
+                        "reason": "principal_missing",
+                        "credential_id": credential_match.credential.id
+                        if credential_match.credential
+                        else None,
+                    },
+                )
+            decision = AccessDecision(
+                allowed=False,
+                result="forbidden",
+                reason=credential_match.status,
+                client_host=client_host,
+                principal_id=credential_match.principal.id if credential_match.principal else None,
+                credential_id=credential_match.credential.id
+                if credential_match.credential
+                else None,
+            )
+            self._log_denied(surface=surface, decision=decision)
+            raise ForbiddenAccessError(
+                f"{surface.capitalize()} credential is not active",
+                details={
+                    "surface": surface,
+                    "mode": self.access_boundary_mode,
+                    "client_host": client_host,
+                    "reason": credential_match.status,
+                    "principal_id": credential_match.principal.id
+                    if credential_match.principal
+                    else None,
+                    "credential_id": credential_match.credential.id
+                    if credential_match.credential
+                    else None,
+                },
+            )
+
         decision = AccessDecision(
             allowed=False,
             result="forbidden",
@@ -199,4 +359,20 @@ class AccessBoundaryService:
                 "client_host": client_host,
                 "reason": "invalid_token",
             },
+        )
+
+    async def _authenticate_credential(
+        self,
+        token: str | None,
+        *,
+        surface: str,
+        client_host: str,
+    ) -> CredentialAuthMatch | None:
+        if token is None or self.integration_credential_service is None:
+            return None
+        return await self.integration_credential_service.authenticate_secret(
+            token,
+            surface=surface,
+            auth_mode=self.access_boundary_mode,
+            client_host=client_host,
         )

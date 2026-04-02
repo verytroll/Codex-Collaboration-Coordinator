@@ -12,6 +12,7 @@ from app.api.artifacts import router as artifacts_router
 from app.api.channels import router as channels_router
 from app.api.dependencies import require_operator_access, require_public_access
 from app.api.health import router as health_router
+from app.api.integration_credentials import router as integration_credentials_router
 from app.api.jobs import router as jobs_router
 from app.api.messages import router as messages_router
 from app.api.operator_actions import router as operator_actions_router
@@ -60,6 +61,9 @@ router.include_router(orchestration_router, dependencies=[Depends(require_operat
 router.include_router(policies_router, dependencies=[Depends(require_operator_access)])
 router.include_router(operator_dashboard_router, dependencies=[Depends(require_operator_access)])
 router.include_router(operator_actions_router, dependencies=[Depends(require_operator_access)])
+router.include_router(
+    integration_credentials_router, dependencies=[Depends(require_operator_access)]
+)
 router.include_router(operator_ui_router, dependencies=[Depends(require_operator_access)])
 router.include_router(operator_shell_router, dependencies=[Depends(require_operator_access)])
 router.include_router(operator_realtime_router, dependencies=[Depends(require_operator_access)])

@@ -27,7 +27,10 @@ pip install -e .[dev]
    need to set the `RUNTIME_*` env vars manually unless you are overriding the packaged
    path.
 7. If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
-   (default: `X-Access-Token`).
+   (default: `X-Access-Token`) for bootstrap and legacy access. For external
+   integrations, issue a managed credential through
+   `/api/v1/operator/integration-principals` and send it as
+   `Authorization: Bearer <secret>`.
 8. Open the operator shell at `http://127.0.0.1:8000/operator` after the app starts.
 
 ## Run
@@ -58,7 +61,8 @@ To run the full release-readiness checklist locally:
 the smoke gate, and the release packager. It expects the local app to be reachable for
 the smoke step and defaults to the small-team database path.
 If `ACCESS_TOKEN` is set in the environment, the smoke script sends it automatically to
-protected operator/public routes.
+protected operator/public routes. Managed integration credentials are still issued and
+rotated through the operator API, not through the smoke script.
 For the V6 baseline, the release package name is
 `codex-collaboration-coordinator-0.3.0-small-team` and the release manifest records the
 release tag and candidate name.

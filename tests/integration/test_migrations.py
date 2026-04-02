@@ -123,6 +123,7 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "016_orchestration_runs.sql",
         "017_runtime_pools.sql",
         "018_policy_conditions.sql",
+        "019_integration_credentials.sql",
     ]
     assert second_run == []
 
@@ -162,6 +163,8 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "work_contexts",
         "policies",
         "policy_decisions",
+        "integration_principals",
+        "integration_credentials",
     }.issubset(tables)
     assert {
         "idx_messages_session_id_created_at",
@@ -223,8 +226,13 @@ def test_migrate_sqlite_applies_full_schema(tmp_path) -> None:
         "idx_policies_policy_type",
         "idx_policy_decisions_policy_id_created_at",
         "idx_policy_decisions_session_id_created_at",
+        "idx_integration_principals_principal_type",
+        "idx_integration_principals_actor_role",
+        "idx_integration_credentials_principal_id",
+        "idx_integration_credentials_status",
+        "idx_integration_credentials_secret_prefix",
     }.issubset(indexes)
-    assert version_count == 18
+    assert version_count == 19
 
 
 def test_migrate_sqlite_rejects_checksum_drift(tmp_path) -> None:

@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import logging
 
-from app.core.logging import RequestIdFilter, bind_log_context, reset_log_context
+from app.core.logging import (
+    RequestIdFilter,
+    bind_log_context,
+    clear_access_context,
+    reset_log_context,
+)
 
 
 def test_request_id_filter_injects_default_operator_fields() -> None:
@@ -35,6 +40,8 @@ def test_request_id_filter_injects_default_operator_fields() -> None:
     assert record.access_surface == "-"
     assert record.access_result == "-"
     assert record.access_reason == "-"
+    assert record.principal_id == "-"
+    assert record.credential_id == "-"
     assert record.client_host == "-"
 
 
@@ -57,6 +64,8 @@ def test_request_id_filter_uses_bound_operator_fields() -> None:
         access_surface="operator",
         access_result="allowed",
         access_reason="service_token",
+        principal_id="ipr_1",
+        credential_id="icr_1",
         client_host="127.0.0.1",
     )
     try:
@@ -87,6 +96,41 @@ def test_request_id_filter_uses_bound_operator_fields() -> None:
         assert record.access_surface == "operator"
         assert record.access_result == "allowed"
         assert record.access_reason == "service_token"
+        assert record.principal_id == "ipr_1"
+        assert record.credential_id == "icr_1"
         assert record.client_host == "127.0.0.1"
+    finally:
+        reset_log_context(tokens)
+
+
+def test_clear_access_context_resets_access_identity_fields() -> None:
+    tokens = bind_log_context(
+        access_mode="protected",
+        access_surface="public",
+        access_result="allowed",
+        access_reason="credential",
+        principal_id="ipr_1",
+        credential_id="icr_1",
+        client_host="127.0.0.1",
+    )
+    try:
+        clear_access_context()
+        record = logging.LogRecord(
+            name="test",
+            level=logging.INFO,
+            pathname=__file__,
+            lineno=1,
+            msg="hello",
+            args=(),
+            exc_info=None,
+        )
+        RequestIdFilter().filter(record)
+        assert record.access_mode == "-"
+        assert record.access_surface == "-"
+        assert record.access_result == "-"
+        assert record.access_reason == "-"
+        assert record.principal_id == "-"
+        assert record.credential_id == "-"
+        assert record.client_host == "-"
     finally:
         reset_log_context(tokens)

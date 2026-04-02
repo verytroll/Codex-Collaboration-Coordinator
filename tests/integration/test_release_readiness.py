@@ -65,6 +65,7 @@ def test_release_readiness_checks_migrations_and_seed_reset(tmp_path) -> None:
         "016_orchestration_runs.sql",
         "017_runtime_pools.sql",
         "018_policy_conditions.sql",
+        "019_integration_credentials.sql",
     )
 
     snapshot = result["seed_snapshot"]
