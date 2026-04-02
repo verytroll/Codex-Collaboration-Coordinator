@@ -107,6 +107,9 @@ def _build_profile_env_lines(
         "CODEX_BRIDGE_MODE=local",
         f"ACCESS_BOUNDARY_MODE={profile_defaults.access_boundary_mode}",
         f"DEPLOYMENT_PROFILE={deployment_profile}",
+        "RUNTIME_RECOVERY_ENABLED=true",
+        "RUNTIME_RECOVERY_INTERVAL_SECONDS=15",
+        "RUNTIME_STALE_AFTER_MINUTES=10",
     ]
 
 
@@ -179,6 +182,11 @@ def build_release_package(
             "container": "docker run --rm -p 8000:8000 ...",
             "health_check": "/api/v1/healthz",
             "readiness_check": "/api/v1/readinessz",
+            "durable_runtime": {
+                "enabled": True,
+                "recovery_interval_seconds": 15,
+                "stale_after_minutes": 10,
+            },
         },
     }
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")

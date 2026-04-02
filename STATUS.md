@@ -3,12 +3,14 @@
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-02
 - Pha hiện tại: V6 implementation
-- Đang tập trung vào: PR46 / F44 - durable runtime và persistence boundary
+- Đang tập trung vào: PR47 / F45 - realtime streaming transport
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F44 - Durable runtime và persistence boundary - 2026-04-02
+- [x] PR46 - Durable runtime và persistence boundary - 2026-04-02
 - [x] F43 - Identity và team RBAC cơ bản - 2026-04-02
 - [x] PR45 - Identity và team RBAC cơ bản - 2026-04-02
 - [x] F42 - Operator actions và audit trail - 2026-04-02
@@ -62,8 +64,8 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] PR46 / F44: durable runtime và persistence boundary
 - [ ] PR47 / F45: realtime streaming transport
+- [ ] PR48 / F46: interop certification và external adoption baseline
 
 ### Blockers / Rủi ro
 - Chưa có blocker hiện tại

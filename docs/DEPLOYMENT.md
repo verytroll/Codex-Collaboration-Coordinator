@@ -35,6 +35,9 @@ Recommended deployment defaults:
 - `DATABASE_URL=sqlite:///./data/codex_coordinator.db`
 - `CODEX_BRIDGE_MODE=local`
 - `ACCESS_BOUNDARY_MODE=trusted`
+- `RUNTIME_RECOVERY_ENABLED=true`
+- `RUNTIME_RECOVERY_INTERVAL_SECONDS=15`
+- `RUNTIME_STALE_AFTER_MINUTES=10`
 - `LOG_LEVEL=INFO`
 
 Development defaults keep `APP_HOST=127.0.0.1` and `APP_RELOAD=true`.
@@ -58,6 +61,10 @@ Protected write paths also expect actor identity headers:
 The operator shell injects these headers from the rendered config defaults so the
 protected UI flow stays usable without manual header setup. Direct API clients should
 send the same headers explicitly.
+
+For durable deployments, the coordinator can also run a background recovery loop that
+replays queued jobs after restart. The packaged `small-team` release enables this loop
+with `RUNTIME_RECOVERY_ENABLED=true`.
 
 The operator shell lives at `GET /operator` and bootstraps from
 `GET /api/v1/operator/shell`. Both routes follow the same access boundary rules as the
@@ -111,6 +118,7 @@ The current V5 release baseline uses:
 - release tag `v0.2.0`
 - release candidate naming `v0.2.0-rc.1`
 - bundle name `codex-collaboration-coordinator-0.2.0-small-team`
+- durable runtime recovery enabled through the packaged env file
 
 The manifest records the release metadata, baseline package name, and verification
 checklist so docs, scripts, and status stay aligned.
@@ -121,6 +129,8 @@ seed reset behavior, smoke coverage, and then builds the release bundle.
 ## Operational assumptions
 
 - The local SQLite file must persist between restarts if you want the state to survive.
+- The durable runtime loop is enabled in the packaged `small-team` profile and
+  replays queued jobs on startup and on a fixed cadence.
 - `readinessz` does not replace `system/status`; use both for basic external readiness and
   operator diagnostics.
 - Protected operator/public routes return `401` when the token is missing and `403` when

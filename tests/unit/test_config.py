@@ -27,6 +27,9 @@ def test_load_config_uses_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("ACTOR_ROLE", raising=False)
     monkeypatch.delenv("ACTOR_TYPE", raising=False)
     monkeypatch.delenv("ACTOR_LABEL", raising=False)
+    monkeypatch.delenv("RUNTIME_RECOVERY_ENABLED", raising=False)
+    monkeypatch.delenv("RUNTIME_RECOVERY_INTERVAL_SECONDS", raising=False)
+    monkeypatch.delenv("RUNTIME_STALE_AFTER_MINUTES", raising=False)
 
     config = load_config()
 
@@ -51,6 +54,9 @@ def test_load_config_uses_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     assert config.actor_role == "operator"
     assert config.actor_type == "human"
     assert config.actor_label == "Local operator"
+    assert config.runtime_recovery_enabled is False
+    assert config.runtime_recovery_interval_seconds == 15.0
+    assert config.runtime_stale_after_minutes == 10
 
 
 def test_load_config_reads_environment(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -67,6 +73,9 @@ def test_load_config_reads_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ACCESS_BOUNDARY_MODE", "protected")
     monkeypatch.setenv("ACCESS_TOKEN", "secret-token")
     monkeypatch.setenv("ACCESS_TOKEN_HEADER", "X-Service-Token")
+    monkeypatch.setenv("RUNTIME_RECOVERY_ENABLED", "true")
+    monkeypatch.setenv("RUNTIME_RECOVERY_INTERVAL_SECONDS", "30")
+    monkeypatch.setenv("RUNTIME_STALE_AFTER_MINUTES", "20")
 
     config = load_config()
 
@@ -83,6 +92,9 @@ def test_load_config_reads_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     assert config.access_boundary_mode == "protected"
     assert config.access_token == "secret-token"
     assert config.access_token_header == "X-Service-Token"
+    assert config.runtime_recovery_enabled is True
+    assert config.runtime_recovery_interval_seconds == 30.0
+    assert config.runtime_stale_after_minutes == 20
 
 
 def test_load_config_applies_small_team_profile_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -107,6 +119,9 @@ def test_load_config_applies_small_team_profile_defaults(monkeypatch: pytest.Mon
     monkeypatch.delenv("ACTOR_ROLE", raising=False)
     monkeypatch.delenv("ACTOR_TYPE", raising=False)
     monkeypatch.delenv("ACTOR_LABEL", raising=False)
+    monkeypatch.delenv("RUNTIME_RECOVERY_ENABLED", raising=False)
+    monkeypatch.delenv("RUNTIME_RECOVERY_INTERVAL_SECONDS", raising=False)
+    monkeypatch.delenv("RUNTIME_STALE_AFTER_MINUTES", raising=False)
 
     config = load_config()
 
@@ -117,3 +132,4 @@ def test_load_config_applies_small_team_profile_defaults(monkeypatch: pytest.Mon
     assert config.database_url == "sqlite:///./data/codex_coordinator.db"
     assert config.access_boundary_mode == "trusted"
     assert config.actor_role == "operator"
+    assert config.runtime_recovery_enabled is False

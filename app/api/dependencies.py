@@ -8,7 +8,7 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 
-from app.codex_bridge import CodexProcessManager, LazyCodexBridgeClient
+from app.codex_bridge import create_codex_bridge_client
 from app.core.config import get_config
 from app.repositories.a2a_tasks import A2ATaskRepository
 from app.repositories.agents import AgentRepository, AgentRuntimeRepository
@@ -633,9 +633,8 @@ def get_thread_mapping_service(
 
 
 async def get_codex_bridge_client() -> AsyncIterator[CodexRelayBridge]:
-    """Provide a lazily started Codex JSON-RPC client for the current request."""
-    manager = CodexProcessManager()
-    client = LazyCodexBridgeClient(manager)
+    """Provide the configured Codex bridge client for the current request."""
+    client = create_codex_bridge_client(get_config().codex_bridge_mode)
     try:
         yield client
     finally:

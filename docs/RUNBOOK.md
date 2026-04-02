@@ -44,6 +44,8 @@ pip install -e .[dev]
     and phase activation, and that the session event log records the matching audit trail.
 11. Confirm protected direct clients send actor identity headers, or rely on the shell's
     rendered defaults when using the operator UI page.
+12. In the packaged `small-team` path, confirm `RUNTIME_RECOVERY_ENABLED=true` so queued
+    jobs can be replayed after restart.
 
 ## Release candidate
 
@@ -69,7 +71,7 @@ Before considering the baseline closed, confirm:
 2. `release-manifest.json` exists and records `app_version`, `release.tag`,
    `release.candidate`, and `deployment_profile=small-team`.
 3. `profiles/small-team.env` exists in the bundle and matches the canonical small-team
-   defaults.
+   defaults, including durable runtime recovery settings.
 4. The smoke path covers health, readiness, operator shell bootstrap, operator actions,
    live activity, and the public A2A flow.
 

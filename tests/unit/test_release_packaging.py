@@ -71,7 +71,14 @@ def test_build_release_package_writes_manifest_and_archive(tmp_path) -> None:
     assert manifest["profile_defaults"]["database_url"] == "sqlite:///./data/codex_coordinator.db"
     assert "profiles/small-team.env" in manifest["included_paths"]
     assert manifest["startup"]["health_check"] == "/api/v1/healthz"
+    assert manifest["startup"]["durable_runtime"]["enabled"] is True
+    assert manifest["startup"]["durable_runtime"]["recovery_interval_seconds"] == 15
+    assert manifest["startup"]["durable_runtime"]["stale_after_minutes"] == 10
     assert "package bundle created" in manifest["verification"]["checklist"]
+    profile_env_text = profile_env_path.read_text()
+    assert "RUNTIME_RECOVERY_ENABLED=true" in profile_env_text
+    assert "RUNTIME_RECOVERY_INTERVAL_SECONDS=15" in profile_env_text
+    assert "RUNTIME_STALE_AFTER_MINUTES=10" in profile_env_text
 
     with zipfile.ZipFile(archive_path) as archive:
         names = set(archive.namelist())

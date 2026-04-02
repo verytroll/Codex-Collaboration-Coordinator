@@ -21,7 +21,8 @@ pip install -e .[dev]
    local demo or reverse-proxy test, and `small-team` for a packaged deployment-like
    startup.
 5. The V5 release baseline is versioned as `0.2.0`; the packaged `small-team` bundle uses
-   the name `codex-collaboration-coordinator-0.2.0-small-team`.
+   the name `codex-collaboration-coordinator-0.2.0-small-team` and enables durable runtime
+   recovery in its profile env file.
 6. If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
    (default: `X-Access-Token`).
 7. Open the operator shell at `http://127.0.0.1:8000/operator` after the app starts.
@@ -61,7 +62,8 @@ release tag and candidate name.
 
 For a deployment-style startup, use `.\scripts\run.ps1`. That script binds to
 `0.0.0.0` by default, selects the `small-team` deployment profile, and keeps reload
-disabled unless you override `APP_RELOAD=true`.
+disabled unless you override `APP_RELOAD=true`. It also enables the durable runtime
+recovery loop by default for restart replay.
 
 ## Seed demo data
 

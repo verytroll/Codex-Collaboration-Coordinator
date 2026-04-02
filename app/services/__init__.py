@@ -7,6 +7,7 @@ from app.services.artifact_manager import ArtifactBundle, ArtifactManager
 from app.services.authz_service import ActorIdentity, AuthzService
 from app.services.channel_service import DEFAULT_CHANNELS, ChannelService
 from app.services.command_handler import CommandExecutionResult, CommandHandler
+from app.services.durable_runtime import DurableRuntimeSupervisor, DurableRuntimeSweepResult
 from app.services.job_service import JobService
 from app.services.loop_guard import LoopGuardDecision, LoopGuardService
 from app.services.mention_router import MentionRouter, ResolvedMention
@@ -77,6 +78,8 @@ __all__ = [
     "ApprovalManager",
     "CommandExecutionResult",
     "CommandHandler",
+    "DurableRuntimeSupervisor",
+    "DurableRuntimeSweepResult",
     "ChannelService",
     "CommandPermissionCheck",
     "CommandPermissionError",

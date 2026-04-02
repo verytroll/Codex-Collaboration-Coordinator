@@ -27,6 +27,9 @@ DEFAULT_ACTOR_ID = "local-operator"
 DEFAULT_ACTOR_ROLE = "operator"
 DEFAULT_ACTOR_TYPE = "human"
 DEFAULT_ACTOR_LABEL = "Local operator"
+DEFAULT_RUNTIME_RECOVERY_ENABLED = False
+DEFAULT_RUNTIME_RECOVERY_INTERVAL_SECONDS = 15.0
+DEFAULT_RUNTIME_STALE_AFTER_MINUTES = 10
 DEFAULT_DEPLOYMENT_PROFILE_LOCAL_DEV = "local-dev"
 DEFAULT_DEPLOYMENT_PROFILE_TRUSTED_DEMO = "trusted-demo"
 DEFAULT_DEPLOYMENT_PROFILE_SMALL_TEAM = "small-team"
@@ -142,6 +145,9 @@ class AppConfig:
     actor_role: str = DEFAULT_ACTOR_ROLE
     actor_type: str = DEFAULT_ACTOR_TYPE
     actor_label: str = DEFAULT_ACTOR_LABEL
+    runtime_recovery_enabled: bool = DEFAULT_RUNTIME_RECOVERY_ENABLED
+    runtime_recovery_interval_seconds: float = DEFAULT_RUNTIME_RECOVERY_INTERVAL_SECONDS
+    runtime_stale_after_minutes: int = DEFAULT_RUNTIME_STALE_AFTER_MINUTES
 
 
 def load_config() -> AppConfig:
@@ -162,6 +168,9 @@ def load_config() -> AppConfig:
     actor_role_header_value = os.getenv("ACTOR_ROLE_HEADER")
     actor_type_header_value = os.getenv("ACTOR_TYPE_HEADER")
     actor_label_header_value = os.getenv("ACTOR_LABEL_HEADER")
+    runtime_recovery_enabled_value = os.getenv("RUNTIME_RECOVERY_ENABLED")
+    runtime_recovery_interval_seconds_value = os.getenv("RUNTIME_RECOVERY_INTERVAL_SECONDS")
+    runtime_stale_after_minutes_value = os.getenv("RUNTIME_STALE_AFTER_MINUTES")
     if access_boundary_mode_value is None or not access_boundary_mode_value.strip():
         access_boundary_mode = profile_defaults.access_boundary_mode
     else:
@@ -186,6 +195,24 @@ def load_config() -> AppConfig:
         actor_label_header = DEFAULT_ACTOR_LABEL_HEADER
     else:
         actor_label_header = actor_label_header_value.strip()
+    if runtime_recovery_enabled_value is None or not runtime_recovery_enabled_value.strip():
+        runtime_recovery_enabled = DEFAULT_RUNTIME_RECOVERY_ENABLED
+    else:
+        runtime_recovery_enabled = _parse_bool(
+            runtime_recovery_enabled_value,
+            DEFAULT_RUNTIME_RECOVERY_ENABLED,
+        )
+    if (
+        runtime_recovery_interval_seconds_value is None
+        or not runtime_recovery_interval_seconds_value.strip()
+    ):
+        runtime_recovery_interval_seconds = DEFAULT_RUNTIME_RECOVERY_INTERVAL_SECONDS
+    else:
+        runtime_recovery_interval_seconds = float(runtime_recovery_interval_seconds_value)
+    if runtime_stale_after_minutes_value is None or not runtime_stale_after_minutes_value.strip():
+        runtime_stale_after_minutes = DEFAULT_RUNTIME_STALE_AFTER_MINUTES
+    else:
+        runtime_stale_after_minutes = int(runtime_stale_after_minutes_value)
     return AppConfig(
         app_name=os.getenv("APP_NAME", DEFAULT_APP_NAME),
         app_env=app_env_value or profile_defaults.app_env,
@@ -208,6 +235,9 @@ def load_config() -> AppConfig:
         actor_role=os.getenv("ACTOR_ROLE", DEFAULT_ACTOR_ROLE).strip() or DEFAULT_ACTOR_ROLE,
         actor_type=os.getenv("ACTOR_TYPE", DEFAULT_ACTOR_TYPE).strip() or DEFAULT_ACTOR_TYPE,
         actor_label=os.getenv("ACTOR_LABEL", DEFAULT_ACTOR_LABEL).strip() or DEFAULT_ACTOR_LABEL,
+        runtime_recovery_enabled=runtime_recovery_enabled,
+        runtime_recovery_interval_seconds=runtime_recovery_interval_seconds,
+        runtime_stale_after_minutes=runtime_stale_after_minutes,
     )
 
 

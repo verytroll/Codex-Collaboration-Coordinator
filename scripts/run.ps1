@@ -20,6 +20,15 @@ if ([string]::IsNullOrWhiteSpace($env:APP_PORT)) {
 if ([string]::IsNullOrWhiteSpace($env:APP_RELOAD)) {
     $env:APP_RELOAD = "false"
 }
+if ([string]::IsNullOrWhiteSpace($env:RUNTIME_RECOVERY_ENABLED)) {
+    $env:RUNTIME_RECOVERY_ENABLED = "true"
+}
+if ([string]::IsNullOrWhiteSpace($env:RUNTIME_RECOVERY_INTERVAL_SECONDS)) {
+    $env:RUNTIME_RECOVERY_INTERVAL_SECONDS = "15"
+}
+if ([string]::IsNullOrWhiteSpace($env:RUNTIME_STALE_AFTER_MINUTES)) {
+    $env:RUNTIME_STALE_AFTER_MINUTES = "10"
+}
 
 if ($env:APP_RELOAD.ToLowerInvariant() -eq "true") {
     python -m uvicorn app.main:app --reload --host $env:APP_HOST --port $env:APP_PORT
