@@ -1,6 +1,6 @@
 # Planning Archive
 
-This directory contains historical planning documents from MVP through V6.
+This directory contains historical planning documents from MVP through V7.
 
 ## Progression
 
@@ -10,6 +10,7 @@ This directory contains historical planning documents from MVP through V6.
 - V4: [PLAN_V4.md](PLAN_V4.md), [IMPLEMENTATION_TASKS_V4.md](IMPLEMENTATION_TASKS_V4.md), [IMPLEMENTATION_ORDER_V4.md](IMPLEMENTATION_ORDER_V4.md)
 - V5: [PLAN_V5.md](PLAN_V5.md), [IMPLEMENTATION_TASKS_V5.md](IMPLEMENTATION_TASKS_V5.md), [IMPLEMENTATION_ORDER_V5.md](IMPLEMENTATION_ORDER_V5.md)
 - V6: [PLAN_V6.md](PLAN_V6.md), [IMPLEMENTATION_TASKS_V6.md](IMPLEMENTATION_TASKS_V6.md), [IMPLEMENTATION_ORDER_V6.md](IMPLEMENTATION_ORDER_V6.md)
+- V7: [PLAN_V7.md](PLAN_V7.md), [IMPLEMENTATION_TASKS_V7.md](IMPLEMENTATION_TASKS_V7.md), [IMPLEMENTATION_ORDER_V7.md](IMPLEMENTATION_ORDER_V7.md)
 
 ## When To Use The Archive
 

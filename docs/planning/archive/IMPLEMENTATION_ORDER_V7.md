@@ -2,11 +2,11 @@
 
 ## 1. Mục tiêu của tài liệu
 
-Tài liệu này chuyển `docs/planning/PLAN_V7.md` thành **thứ tự triển khai thực chiến theo PR nhỏ** cho V7.
+Tài liệu này chuyển `docs/planning/archive/PLAN_V7.md` thành **thứ tự triển khai thực chiến theo PR nhỏ** cho V7.
 
 Khác với `docs/planning/archive/IMPLEMENTATION_ORDER_V6.md`:
 - `docs/planning/archive/IMPLEMENTATION_ORDER_V6.md` chốt **PR43-PR48** cho release closure, operator actions, team RBAC, durable runtime, realtime streaming và interop certification
-- `docs/planning/IMPLEMENTATION_ORDER_V7.md` chốt **PR49-PR54** cho V6 release/support baseline, deployment ergonomics, operator console polish, integration credentials, outbound automation và contract governance
+- `docs/planning/archive/IMPLEMENTATION_ORDER_V7.md` chốt **PR49-PR54** cho V6 release/support baseline, deployment ergonomics, operator console polish, integration credentials, outbound automation và contract governance
 
 Mục tiêu của tài liệu:
 - cho biết sau V6 thì PR nào nên làm trước
@@ -289,6 +289,6 @@ Nếu bạn làm theo sprint:
 - có thể gộp **PR52 + PR53** thành một sprint tập trung external integration path
 - nhưng vẫn giữ commit và review theo từng PR nhỏ
 
-Nếu bạn dùng cùng `docs/planning/PLAN_V7.md`:
-- `docs/planning/PLAN_V7.md` trả lời câu hỏi: **phase V7 nhằm giải quyết vấn đề gì**
-- `docs/planning/IMPLEMENTATION_ORDER_V7.md` trả lời câu hỏi: **nên merge theo thứ tự nào**
+Nếu bạn dùng cùng `docs/planning/archive/PLAN_V7.md`:
+- `docs/planning/archive/PLAN_V7.md` trả lời câu hỏi: **phase V7 nhằm giải quyết vấn đề gì**
+- `docs/planning/archive/IMPLEMENTATION_ORDER_V7.md` trả lời câu hỏi: **nên merge theo thứ tự nào**

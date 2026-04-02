@@ -7,7 +7,7 @@ Tài liệu này chốt hướng phát triển sau khi V6 implementation đã ho
 Khác với `docs/planning/archive/PLAN_V6.md`:
 
 * `docs/planning/archive/PLAN_V6.md` tập trung đưa hệ thống từ mức “small-team usable” sang mức “team operations / production control plane” với action surface, RBAC cơ bản, durable runtime, streaming và interop certification
-* `docs/planning/PLAN_V7.md` tập trung đưa hệ thống từ mức “control plane dùng được và đã kiểm chứng” sang mức “early-adopter product” với release/support baseline rõ hơn, đường cài đặt/nâng cấp gọn hơn, operator workflow thực dụng hơn và contract external được quản trị rõ hơn
+* `docs/planning/archive/PLAN_V7.md` tập trung đưa hệ thống từ mức “control plane dùng được và đã kiểm chứng” sang mức “early-adopter product” với release/support baseline rõ hơn, đường cài đặt/nâng cấp gọn hơn, operator workflow thực dụng hơn và contract external được quản trị rõ hơn
 
 Tài liệu này kế thừa và nên đọc cùng:
 
@@ -344,7 +344,7 @@ Nếu bạn làm theo sprint:
 
 Nếu bạn dùng cùng các tài liệu triển khai tiếp theo:
 
-* `docs/planning/PLAN_V7.md` trả lời câu hỏi: phase V7 nhằm giải quyết vấn đề gì
-* `docs/planning/IMPLEMENTATION_ORDER_V7.md` nên trả lời câu hỏi: nên merge các PR theo thứ tự nào
-* `docs/planning/IMPLEMENTATION_TASKS_V7.md` nên trả lời câu hỏi: cần làm cụ thể những gì để hoàn tất từng giai đoạn của V7
+* `docs/planning/archive/PLAN_V7.md` trả lời câu hỏi: phase V7 nhằm giải quyết vấn đề gì
+* `docs/planning/archive/IMPLEMENTATION_ORDER_V7.md` nên trả lời câu hỏi: nên merge các PR theo thứ tự nào
+* `docs/planning/archive/IMPLEMENTATION_TASKS_V7.md` nên trả lời câu hỏi: cần làm cụ thể những gì để hoàn tất từng giai đoạn của V7
 

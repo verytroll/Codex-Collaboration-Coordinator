@@ -16,7 +16,7 @@ For most coding tasks:
 4. the active phase docs named there
 5. `docs/reference/INDEX.md` only if product, contract, schema, or architecture context is needed
 
-Only open `docs/planning/archive/` when the task explicitly depends on historical progression from MVP through V6.
+Only open `docs/planning/archive/` when the task explicitly depends on historical progression from MVP through V7.
 
 ## Tree
 
@@ -27,10 +27,32 @@ docs/
 |-- planning/
 |   |-- INDEX.md
 |   |-- STATUS.md
-|   |-- PLAN_V7.md
-|   |-- IMPLEMENTATION_TASKS_V7.md
-|   |-- IMPLEMENTATION_ORDER_V7.md
+|   |-- PLAN_V8.md
+|   |-- IMPLEMENTATION_TASKS_V8.md
+|   |-- IMPLEMENTATION_ORDER_V8.md
 |   `-- archive/
+|       |-- INDEX.md
+|       |-- PLAN.md
+|       |-- PLAN_V2.md
+|       |-- PLAN_V3.md
+|       |-- PLAN_V4.md
+|       |-- PLAN_V5.md
+|       |-- PLAN_V6.md
+|       |-- PLAN_V7.md
+|       |-- IMPLEMENTATION_TASKS.md
+|       |-- IMPLEMENTATION_TASKS_V2.md
+|       |-- IMPLEMENTATION_TASKS_V3.md
+|       |-- IMPLEMENTATION_TASKS_V4.md
+|       |-- IMPLEMENTATION_TASKS_V5.md
+|       |-- IMPLEMENTATION_TASKS_V6.md
+|       |-- IMPLEMENTATION_TASKS_V7.md
+|       |-- IMPLEMENTATION_ORDER.md
+|       |-- IMPLEMENTATION_ORDER_V2.md
+|       |-- IMPLEMENTATION_ORDER_V3.md
+|       |-- IMPLEMENTATION_ORDER_V4.md
+|       |-- IMPLEMENTATION_ORDER_V5.md
+|       |-- IMPLEMENTATION_ORDER_V6.md
+|       `-- IMPLEMENTATION_ORDER_V7.md
 |-- reference/
 |   |-- INDEX.md
 |   |-- PRD.md
@@ -48,7 +70,7 @@ docs/
 ## Domains
 
 - `docs/planning/`: active project status and the active implementation phase
-- `docs/planning/archive/`: historical plans, backlogs, and implementation orders
+- `docs/planning/archive/`: historical plans, backlogs, and implementation orders through V7
 - `docs/reference/`: PRD, architecture, API, schema, and strategy references
 - `docs/operations/`: deployment, local setup, observability, runbook, troubleshooting
 - `docs/operator/`: operator-facing UI and dashboard notes

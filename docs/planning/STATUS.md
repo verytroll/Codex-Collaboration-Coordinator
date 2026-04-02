@@ -2,13 +2,16 @@
 
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-02
-- Pha hiện tại: V7 release closure complete
-- Đã hoàn tất: F53 / PR55 V7 release closure và early-adopter handoff, sau F52 / PR54 contract governance và early-adopter conformance
+- Pha hiện tại: V8 planning
+- Đã hoàn tất: Chốt thứ tự triển khai V8 (`docs/planning/IMPLEMENTATION_ORDER_V8.md`), sau khi chuẩn bị backlog V8 (`docs/planning/IMPLEMENTATION_TASKS_V8.md`)
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] Chốt thứ tự triển khai V8 (`docs/planning/IMPLEMENTATION_ORDER_V8.md`) - 2026-04-02
+- [x] Chuẩn bị backlog V8 (`docs/planning/IMPLEMENTATION_TASKS_V8.md`) - 2026-04-02
+- [x] Chốt kế hoạch V8 (`docs/planning/PLAN_V8.md`) - 2026-04-02
 - [x] F53 - V7 release closure và early-adopter handoff - 2026-04-02
 - [x] PR55 - V7 release closure và early-adopter handoff - 2026-04-02
 - [x] F52 - Contract governance và early-adopter conformance - 2026-04-02
@@ -23,9 +26,9 @@
 - [x] PR49 - V6 release closure và support baseline - 2026-04-02
 - [x] F48 - Team deployment ergonomics và upgrade path - 2026-04-02
 - [x] PR50 - Team deployment ergonomics và upgrade path - 2026-04-02
-- [x] Chuẩn bị backlog V7 (`docs/planning/IMPLEMENTATION_TASKS_V7.md`) - 2026-04-02
-- [x] Chốt thứ tự triển khai V7 (`docs/planning/IMPLEMENTATION_ORDER_V7.md`) - 2026-04-02
-- [x] Chốt kế hoạch V7 (`docs/planning/PLAN_V7.md`) - 2026-04-02
+- [x] Chuẩn bị backlog V7 (`docs/planning/archive/IMPLEMENTATION_TASKS_V7.md`) - 2026-04-02
+- [x] Chốt thứ tự triển khai V7 (`docs/planning/archive/IMPLEMENTATION_ORDER_V7.md`) - 2026-04-02
+- [x] Chốt kế hoạch V7 (`docs/planning/archive/PLAN_V7.md`) - 2026-04-02
 - [x] F46 - Interop certification và external adoption baseline - 2026-04-02
 - [x] PR48 - Interop certification và external adoption baseline - 2026-04-02
 - [x] F45 - Realtime streaming transport - 2026-04-02
@@ -85,7 +88,7 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] Lập kế hoạch V8 sau khi baseline V7 đã được bàn giao
+- [ ] Bắt đầu F54 - Data lifecycle và retention discipline
 
 ### Blockers / Rủi ro
 - Chưa có blocker hiện tại
@@ -102,9 +105,12 @@
 ### Liên kết tài liệu liên quan
 - `docs/planning/INDEX.md`
 - `docs/planning/archive/INDEX.md`
-- `docs/planning/PLAN_V7.md`
-- `docs/planning/IMPLEMENTATION_TASKS_V7.md`
-- `docs/planning/IMPLEMENTATION_ORDER_V7.md`
+- `docs/planning/PLAN_V8.md`
+- `docs/planning/IMPLEMENTATION_TASKS_V8.md`
+- `docs/planning/IMPLEMENTATION_ORDER_V8.md`
+- `docs/planning/archive/PLAN_V7.md`
+- `docs/planning/archive/IMPLEMENTATION_TASKS_V7.md`
+- `docs/planning/archive/IMPLEMENTATION_ORDER_V7.md`
 - `docs/reference/INDEX.md`
 - `docs/reference/PRD.md`
 - `docs/reference/ARCHITECTURE.md`

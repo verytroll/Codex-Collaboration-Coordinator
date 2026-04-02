@@ -18,9 +18,9 @@ documents:
     source_of_truth: self
     depends_on:
       - docs/planning/STATUS.md
-      - docs/planning/PLAN_V7.md
-      - docs/planning/IMPLEMENTATION_TASKS_V7.md
-      - docs/planning/IMPLEMENTATION_ORDER_V7.md
+      - docs/planning/PLAN_V8.md
+      - docs/planning/IMPLEMENTATION_TASKS_V8.md
+      - docs/planning/IMPLEMENTATION_ORDER_V8.md
     last_updated: 2026-04-02
     supersedes: []
     superseded_by: []
@@ -63,9 +63,12 @@ documents:
     owner: project-maintainers
     source_of_truth: self
     depends_on:
-      - docs/planning/PLAN_V7.md
-      - docs/planning/IMPLEMENTATION_TASKS_V7.md
-      - docs/planning/IMPLEMENTATION_ORDER_V7.md
+      - docs/planning/PLAN_V8.md
+      - docs/planning/IMPLEMENTATION_TASKS_V8.md
+      - docs/planning/IMPLEMENTATION_ORDER_V8.md
+      - docs/planning/archive/PLAN_V7.md
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V7.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V7.md
     last_updated: 2026-04-02
     supersedes: []
     superseded_by: []
@@ -80,9 +83,12 @@ documents:
     source_of_truth: self
     depends_on:
       - docs/planning/STATUS.md
-      - docs/planning/PLAN_V7.md
-      - docs/planning/IMPLEMENTATION_TASKS_V7.md
-      - docs/planning/IMPLEMENTATION_ORDER_V7.md
+      - docs/planning/PLAN_V8.md
+      - docs/planning/IMPLEMENTATION_TASKS_V8.md
+      - docs/planning/IMPLEMENTATION_ORDER_V8.md
+      - docs/planning/archive/PLAN_V7.md
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V7.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V7.md
       - docs/planning/archive/INDEX.md
     last_updated: 2026-04-02
     supersedes: []
@@ -277,14 +283,14 @@ documents:
     supersedes:
       - docs/planning/archive/PLAN_V5.md
     superseded_by:
-      - docs/planning/PLAN_V7.md
+      - docs/planning/archive/PLAN_V7.md
 
-  - path: docs/planning/PLAN_V7.md
+  - path: docs/planning/archive/PLAN_V7.md
     title: V7 Plan
     doc_type: plan
     domain: planning
     version: v7
-    status: active
+    status: historical
     owner: project-maintainers
     source_of_truth: self
     depends_on:
@@ -293,7 +299,8 @@ documents:
     last_updated: 2026-04-02
     supersedes:
       - docs/planning/archive/PLAN_V6.md
-    superseded_by: []
+    superseded_by:
+      - docs/planning/PLAN_V8.md
 
   - path: docs/planning/archive/IMPLEMENTATION_TASKS.md
     title: MVP Implementation Backlog
@@ -393,23 +400,24 @@ documents:
     supersedes:
       - docs/planning/archive/IMPLEMENTATION_TASKS_V5.md
     superseded_by:
-      - docs/planning/IMPLEMENTATION_TASKS_V7.md
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V7.md
 
-  - path: docs/planning/IMPLEMENTATION_TASKS_V7.md
+  - path: docs/planning/archive/IMPLEMENTATION_TASKS_V7.md
     title: V7 Implementation Backlog
     doc_type: backlog
     domain: implementation
     version: v7
-    status: active
+    status: historical
     owner: project-maintainers
-    source_of_truth: docs/planning/PLAN_V7.md
+    source_of_truth: docs/planning/archive/PLAN_V7.md
     depends_on:
-      - docs/planning/PLAN_V7.md
-      - docs/planning/IMPLEMENTATION_ORDER_V7.md
+      - docs/planning/archive/PLAN_V7.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V7.md
     last_updated: 2026-04-02
     supersedes:
       - docs/planning/archive/IMPLEMENTATION_TASKS_V6.md
-    superseded_by: []
+    superseded_by:
+      - docs/planning/IMPLEMENTATION_TASKS_V8.md
 
   - path: docs/planning/archive/IMPLEMENTATION_ORDER.md
     title: MVP Implementation Order
@@ -504,7 +512,7 @@ documents:
     supersedes:
       - docs/planning/archive/IMPLEMENTATION_ORDER_V5.md
     superseded_by:
-      - docs/planning/IMPLEMENTATION_ORDER_V7.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V7.md
 
   - path: docs/planning/archive/INDEX.md
     title: Planning Archive Index
@@ -527,30 +535,33 @@ documents:
       - docs/planning/archive/IMPLEMENTATION_TASKS_V4.md
       - docs/planning/archive/IMPLEMENTATION_TASKS_V5.md
       - docs/planning/archive/IMPLEMENTATION_TASKS_V6.md
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V7.md
       - docs/planning/archive/IMPLEMENTATION_ORDER.md
       - docs/planning/archive/IMPLEMENTATION_ORDER_V2.md
       - docs/planning/archive/IMPLEMENTATION_ORDER_V3.md
       - docs/planning/archive/IMPLEMENTATION_ORDER_V4.md
       - docs/planning/archive/IMPLEMENTATION_ORDER_V5.md
       - docs/planning/archive/IMPLEMENTATION_ORDER_V6.md
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V7.md
     last_updated: 2026-04-02
     supersedes: []
     superseded_by: []
 
-  - path: docs/planning/IMPLEMENTATION_ORDER_V7.md
+  - path: docs/planning/archive/IMPLEMENTATION_ORDER_V7.md
     title: V7 Implementation Order
     doc_type: implementation-order
     domain: implementation
     version: v7
-    status: active
+    status: historical
     owner: project-maintainers
-    source_of_truth: docs/planning/PLAN_V7.md
+    source_of_truth: docs/planning/archive/PLAN_V7.md
     depends_on:
-      - docs/planning/PLAN_V7.md
+      - docs/planning/archive/PLAN_V7.md
     last_updated: 2026-04-02
     supersedes:
       - docs/planning/archive/IMPLEMENTATION_ORDER_V6.md
-    superseded_by: []
+    superseded_by:
+      - docs/planning/IMPLEMENTATION_ORDER_V8.md
 
   - path: docs/README.md
     title: Documentation Index
@@ -859,7 +870,7 @@ documents:
     owner: project-maintainers
     source_of_truth: self
     depends_on:
-      - docs/planning/PLAN_V7.md
+      - docs/planning/archive/PLAN_V7.md
       - docs/planning/STATUS.md
     last_updated: 2026-04-02
     supersedes:
@@ -922,4 +933,56 @@ documents:
     last_updated: 2026-04-02
     supersedes:
       - docs/releases/UPGRADE_NOTES_V6.md
+    superseded_by: []
+  - path: docs/planning/PLAN_V8.md
+    title: V8 Plan
+    doc_type: plan
+    domain: planning
+    version: v8
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - docs/planning/archive/PLAN_V7.md
+      - docs/planning/STATUS.md
+      - docs/reference/PRD.md
+      - docs/reference/ARCHITECTURE.md
+      - docs/reference/API.md
+      - docs/reference/DB_SCHEMA.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/PLAN_V7.md
+    superseded_by: []
+
+  - path: docs/planning/IMPLEMENTATION_TASKS_V8.md
+    title: V8 Implementation Tasks
+    doc_type: backlog
+    domain: planning
+    version: v8
+    status: active
+    owner: project-maintainers
+    source_of_truth: docs/planning/PLAN_V8.md
+    depends_on:
+      - docs/planning/PLAN_V8.md
+      - docs/planning/STATUS.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_TASKS_V7.md
+    superseded_by: []
+
+  - path: docs/planning/IMPLEMENTATION_ORDER_V8.md
+    title: V8 Implementation Order
+    doc_type: implementation-order
+    domain: planning
+    version: v8
+    status: active
+    owner: project-maintainers
+    source_of_truth: docs/planning/PLAN_V8.md
+    depends_on:
+      - docs/planning/PLAN_V8.md
+      - docs/planning/IMPLEMENTATION_TASKS_V8.md
+      - docs/planning/STATUS.md
+    last_updated: 2026-04-02
+    supersedes:
+      - docs/planning/archive/IMPLEMENTATION_ORDER_V7.md
     superseded_by: []

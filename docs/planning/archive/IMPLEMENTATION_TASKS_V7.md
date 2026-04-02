@@ -2,11 +2,11 @@
 
 ## 1. Mục tiêu của tài liệu
 
-Tài liệu này chuyển `docs/planning/PLAN_V7.md` và `docs/planning/IMPLEMENTATION_ORDER_V7.md` thành backlog thực thi chi tiết cho phase V7.
+Tài liệu này chuyển `docs/planning/archive/PLAN_V7.md` và `docs/planning/archive/IMPLEMENTATION_ORDER_V7.md` thành backlog thực thi chi tiết cho phase V7.
 
 Khác với `docs/planning/archive/IMPLEMENTATION_TASKS_V6.md`:
 - `docs/planning/archive/IMPLEMENTATION_TASKS_V6.md` chốt backlog **F41-F46** cho V5 release closure, operator actions, identity/RBAC cơ bản, durable runtime, realtime streaming và interop certification
-- `docs/planning/IMPLEMENTATION_TASKS_V7.md` chốt backlog **F47-F52** cho V6 release/support baseline, deployment ergonomics, operator console polish, integration credentials, outbound automation và contract governance
+- `docs/planning/archive/IMPLEMENTATION_TASKS_V7.md` chốt backlog **F47-F52** cho V6 release/support baseline, deployment ergonomics, operator console polish, integration credentials, outbound automation và contract governance
 
 Mỗi task trong tài liệu này được thiết kế để:
 - đủ nhỏ để có thể code và review theo một feature slice rõ
@@ -411,7 +411,7 @@ Không nên:
 Nếu bạn làm một mình:
 - đi theo đúng thứ tự F47 → F52
 - cắt task theo từng feature slice nhỏ bên trong mỗi F
-- ưu tiên merge PR nhỏ bám `docs/planning/IMPLEMENTATION_ORDER_V7.md`
+- ưu tiên merge PR nhỏ bám `docs/planning/archive/IMPLEMENTATION_ORDER_V7.md`
 
 Nếu bạn làm theo sprint:
 - có thể gộp F47 + F48 thành sprint chốt baseline release và deploy path
@@ -419,7 +419,7 @@ Nếu bạn làm theo sprint:
 - nhưng vẫn nên giữ review theo feature slices nhỏ, nhất là quanh deploy/auth/outbound/governance
 
 Nếu bạn dùng cùng bộ tài liệu V7:
-- `docs/planning/PLAN_V7.md` trả lời câu hỏi: V7 nhằm giải quyết vấn đề gì
-- `docs/planning/IMPLEMENTATION_ORDER_V7.md` trả lời câu hỏi: nên merge theo thứ tự nào
-- `docs/planning/IMPLEMENTATION_TASKS_V7.md` trả lời câu hỏi: cần làm cụ thể những gì để hoàn tất từng F
+- `docs/planning/archive/PLAN_V7.md` trả lời câu hỏi: V7 nhằm giải quyết vấn đề gì
+- `docs/planning/archive/IMPLEMENTATION_ORDER_V7.md` trả lời câu hỏi: nên merge theo thứ tự nào
+- `docs/planning/archive/IMPLEMENTATION_TASKS_V7.md` trả lời câu hỏi: cần làm cụ thể những gì để hoàn tất từng F
 

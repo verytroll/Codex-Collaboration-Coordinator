@@ -25,9 +25,9 @@ def test_build_release_package_writes_manifest_and_archive(tmp_path) -> None:
         "pyproject.toml",
         ".env.example",
         "docs/planning/STATUS.md",
-        "docs/planning/PLAN_V7.md",
-        "docs/planning/IMPLEMENTATION_TASKS_V7.md",
-        "docs/planning/IMPLEMENTATION_ORDER_V7.md",
+        "docs/planning/archive/PLAN_V7.md",
+        "docs/planning/archive/IMPLEMENTATION_TASKS_V7.md",
+        "docs/planning/archive/IMPLEMENTATION_ORDER_V7.md",
         "docs/releases/RELEASE_NOTES_V7.md",
         "docs/releases/UPGRADE_NOTES_V7.md",
         "AGENTS.md",
@@ -41,9 +41,9 @@ def test_build_release_package_writes_manifest_and_archive(tmp_path) -> None:
     _write(source_root / "pyproject.toml")
     _write(source_root / ".env.example")
     _write(source_root / "docs/planning/STATUS.md")
-    _write(source_root / "docs/planning/PLAN_V7.md")
-    _write(source_root / "docs/planning/IMPLEMENTATION_TASKS_V7.md")
-    _write(source_root / "docs/planning/IMPLEMENTATION_ORDER_V7.md")
+    _write(source_root / "docs/planning/archive/PLAN_V7.md")
+    _write(source_root / "docs/planning/archive/IMPLEMENTATION_TASKS_V7.md")
+    _write(source_root / "docs/planning/archive/IMPLEMENTATION_ORDER_V7.md")
     _write(source_root / "docs/releases/RELEASE_NOTES_V7.md")
     _write(source_root / "docs/releases/UPGRADE_NOTES_V7.md")
     _write(source_root / "AGENTS.md")
@@ -79,9 +79,9 @@ def test_build_release_package_writes_manifest_and_archive(tmp_path) -> None:
     assert manifest["profile_defaults"]["runtime_recovery_enabled"] is True
     assert manifest["profile_defaults"]["runtime_recovery_interval_seconds"] == 15.0
     assert manifest["profile_defaults"]["runtime_stale_after_minutes"] == 10
-    assert "docs/planning/PLAN_V7.md" in manifest["included_paths"]
-    assert "docs/planning/IMPLEMENTATION_TASKS_V7.md" in manifest["included_paths"]
-    assert "docs/planning/IMPLEMENTATION_ORDER_V7.md" in manifest["included_paths"]
+    assert "docs/planning/archive/PLAN_V7.md" in manifest["included_paths"]
+    assert "docs/planning/archive/IMPLEMENTATION_TASKS_V7.md" in manifest["included_paths"]
+    assert "docs/planning/archive/IMPLEMENTATION_ORDER_V7.md" in manifest["included_paths"]
     assert "docs/releases/RELEASE_NOTES_V7.md" in manifest["included_paths"]
     assert "docs/releases/UPGRADE_NOTES_V7.md" in manifest["included_paths"]
     assert "profiles/small-team.env" in manifest["included_paths"]
