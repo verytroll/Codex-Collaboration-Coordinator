@@ -109,8 +109,9 @@ def _agent_card(*, base_url: str) -> A2AAgentCardResponse:
         ],
         compatibility_notes=[
             "Supported public v1 surface: task create/list/get, replay, "
-            "subscriptions, and SSE streams.",
+            "subscriptions, SSE streams, and operator-managed outbound webhooks.",
             "Legacy adapter bridge routes remain available for compatibility only.",
+            "Managed integration credentials are the preferred external auth path.",
             "See docs/integrations/a2a/A2A_COMPATIBILITY_MATRIX.md "
             "for supported versus experimental claims.",
             "Replay cursors are inclusive by request and exclusive in storage.",

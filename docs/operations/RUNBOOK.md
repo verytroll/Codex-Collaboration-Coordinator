@@ -52,8 +52,8 @@ pip install -e .[dev]
     profile defaults so queued jobs can be replayed after restart. Only override the
     `RUNTIME_*` env vars if you are intentionally testing a degraded profile.
 14. For external A2A adoption, treat `docs/integrations/a2a/A2A_COMPATIBILITY_MATRIX.md` as the source of
-    truth and use `scripts/a2a_quickstart.ps1` to exercise only the supported public v1
-    surface.
+    truth, use `scripts/a2a_quickstart.ps1` for a guided demo, and use
+    `scripts/a2a_conformance.ps1` for a repeatable supported-surface verification.
 
 ## Release candidate
 
@@ -70,7 +70,8 @@ The release gate performs:
 3. migration checksum/idempotency verification
 4. demo seed reset verification
 5. smoke validation against the running app using the `small-team` deployment profile
-6. release packaging into `dist/release`
+6. A2A conformance verification
+7. release packaging into `dist/release`
 
 Before considering the baseline closed, confirm:
 
@@ -82,6 +83,9 @@ Before considering the baseline closed, confirm:
    defaults, including durable runtime recovery settings.
 4. The smoke path covers health, readiness, operator shell bootstrap, operator actions,
    live activity, and the public A2A flow.
+5. `scripts/a2a_conformance.ps1` passes against the same release candidate and confirms
+   the supported public A2A surface, managed credential auth, and operator-managed
+   outbound webhook flow.
 
 ## Integration credentials
 

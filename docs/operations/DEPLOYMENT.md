@@ -163,7 +163,7 @@ For external A2A adoption, treat `docs/integrations/a2a/A2A_COMPATIBILITY_MATRIX
 truth for supported versus experimental surface claims.
 
 For a complete release gate, run `.\scripts\release.ps1`. That script verifies migrations,
-seed reset behavior, smoke coverage, and then builds the release bundle.
+seed reset behavior, smoke coverage, A2A conformance coverage, and then builds the release bundle.
 
 ## Operational assumptions
 
@@ -183,5 +183,8 @@ seed reset behavior, smoke coverage, and then builds the release bundle.
   adoption baseline.
 - Outbound webhooks reuse the same public task event payload contract; receivers must be
   prepared for `at-least-once` delivery and verify the request signature.
+- Run `.\scripts\a2a_conformance.ps1` against a release candidate when you need a
+  repeatable early-adopter handoff check for discovery, managed credentials, replay/SSE,
+  and operator-managed outbound webhooks.
 - If you need a new migration, add a new `.sql` file instead of editing an existing one in place.
 

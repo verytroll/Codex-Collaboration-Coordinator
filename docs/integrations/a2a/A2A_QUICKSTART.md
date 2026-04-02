@@ -100,6 +100,22 @@ The response includes:
 Receivers should verify `X-CCC-Signature`, return `2xx` on success, and treat
 `X-CCC-Event-Id` or `X-CCC-Event-Sequence` as idempotency keys.
 
+## 8. Run the conformance verifier
+
+Use the conformance script when you want a repeatable pass/fail check for the supported
+early-adopter baseline instead of a guided demo:
+
+```powershell
+.\scripts\a2a_conformance.ps1
+```
+
+The verifier checks:
+
+- discovery metadata and supported-versus-experimental notes
+- managed integration credential issuance and bearer auth
+- task projection, replay, subscription lookup, and SSE stream markers
+- operator-managed outbound webhook registration and delivery signature semantics
+
 ## Compatibility notes
 
 - Use `POST /api/v1/a2a/tasks` for refresh/project semantics.
@@ -111,4 +127,5 @@ Receivers should verify `X-CCC-Signature`, return `2xx` on success, and treat
 - Managed integration credentials are the supported external auth path; the shared
   `ACCESS_TOKEN` remains a bootstrap and compatibility fallback.
 - The quickstart only uses supported public v1 endpoints, not the legacy experimental bridge routes.
+- Use `scripts/a2a_conformance.ps1` when you need evidence that a deployment still matches the supported matrix.
 

@@ -3,12 +3,14 @@
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-02
 - Pha hiện tại: V7 planning
-- Đã hoàn tất: F51 / PR53 outbound integration automation và bộ tài liệu V7 (`docs/planning/PLAN_V7.md`, `docs/planning/IMPLEMENTATION_TASKS_V7.md`, `docs/planning/IMPLEMENTATION_ORDER_V7.md`)
+- Đã hoàn tất: F52 / PR54 contract governance và early-adopter conformance, sau F51 / PR53 outbound integration automation và bộ tài liệu V7 (`docs/planning/PLAN_V7.md`, `docs/planning/IMPLEMENTATION_TASKS_V7.md`, `docs/planning/IMPLEMENTATION_ORDER_V7.md`)
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F52 - Contract governance và early-adopter conformance - 2026-04-02
+- [x] PR54 - Contract governance và early-adopter conformance - 2026-04-02
 - [x] F51 - Outbound integration automation - 2026-04-02
 - [x] PR53 - Outbound integration automation - 2026-04-02
 - [x] F50 - Integration credentials và access lifecycle - 2026-04-02
@@ -81,7 +83,7 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] F52 - Contract governance và early-adopter conformance
+- [ ] Chốt bước release/handoff tiếp theo sau V7 nếu cần
 
 ### Blockers / Rủi ro
 - Chưa có blocker hiện tại
@@ -89,7 +91,8 @@
 - Rủi ro phụ là tăng deployment complexity cho small-team profile trước khi smoke/release path đủ rõ
 
 ### Kiểm chứng gần nhất
-- `pytest tests/unit/test_config.py tests/integration/test_migrations.py tests/integration/test_operator_dashboard.py tests/integration/test_outbound_webhooks.py tests/integration/test_release_readiness.py -q` - 12 passed - 2026-04-02
+- `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1` - 120 passed - 2026-04-02
+- `powershell -ExecutionPolicy Bypass -File .\scripts\lint.ps1` - passed - 2026-04-02
 
 
 ### Liên kết tài liệu liên quan

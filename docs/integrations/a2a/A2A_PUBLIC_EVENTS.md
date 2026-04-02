@@ -15,6 +15,18 @@ The subscription payload carries its own marker:
 - `api_version: "v1"`
 - `contract_version: "a2a.public.task.subscription.v1"`
 
+The stream envelope carries:
+
+- `api_version: "v1"`
+- `contract_version: "a2a.public.task.event.stream.v1"`
+
+Governance notes:
+
+- Replay ordering, SSE resume semantics, and webhook delivery ordering are part of the supported contract.
+- Managed outbound webhooks reuse `a2a.public.task.event.v1`; they do not define a second event contract.
+- Breaking changes to event shape, cursor semantics, or webhook headers require a new supported contract marker and updated conformance coverage.
+- Compatibility-only legacy bridge flows are outside this supported event contract even if they remain callable.
+
 ## Endpoints
 
 - `POST /api/v1/a2a/tasks/{task_id}/subscriptions`
@@ -106,6 +118,7 @@ event model.
 - Non-`2xx` responses and transport errors are retried through the durable outbound delivery log.
 - Disabled registrations stop enqueuing new deliveries; existing rows remain visible through
   the operator delivery listing.
+- Managed outbound webhooks are part of the supported early-adopter baseline only through the operator-managed route family above and the current public event payload contract.
 
 ## Notes
 

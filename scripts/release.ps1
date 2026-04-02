@@ -123,6 +123,9 @@ try {
         & (Join-Path $PSScriptRoot "smoke.ps1") -BaseUrl $BaseUrl -DatabaseUrl $DatabaseUrl -StartupTimeoutSec $StartupTimeoutSec
     }
 
+    Write-Host "Running A2A conformance checks..."
+    & (Join-Path $PSScriptRoot "a2a_conformance.ps1") -BaseUrl $BaseUrl -DatabaseUrl $DatabaseUrl -StartupTimeoutSec $StartupTimeoutSec
+
     Stop-ReleaseApp -AppProcess $appProcess
 
     Write-Host "Building release package..."

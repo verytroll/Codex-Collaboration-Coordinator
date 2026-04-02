@@ -29,6 +29,12 @@ legacy `ACCESS_TOKEN` path remains available for bootstrap and compatibility.
 - `operator_write` includes the public scopes, but operator routes are documented
   separately.
 
+Governance notes:
+
+- Managed integration credentials are the supported external auth path for the early-adopter baseline.
+- Clients should treat `api_version` and `contract_version` as the compatibility markers, not incidental field order or example formatting.
+- Breaking changes to this surface require a new supported contract marker or route version and matching updates to the compatibility matrix and conformance checks.
+
 ## Endpoints
 
 - `POST /api/v1/a2a/tasks`
@@ -96,4 +102,5 @@ Key mappings:
 - For the full compatibility matrix, see `docs/integrations/a2a/A2A_COMPATIBILITY_MATRIX.md`.
 - For task lifecycle push/replay details, see `docs/integrations/a2a/A2A_PUBLIC_EVENTS.md`.
 - For a copy-paste setup flow and demo script, see `docs/integrations/a2a/A2A_QUICKSTART.md`.
+- For the repeatable verifier used by early adopters and the release gate, see `scripts/a2a_conformance.ps1`.
 
