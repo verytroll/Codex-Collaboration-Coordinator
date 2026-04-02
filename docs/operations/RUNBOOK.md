@@ -47,8 +47,9 @@ pip install -e .[dev]
 12. Confirm the operator live activity panel can reconnect through
     `/api/v1/operator/sessions/{session_id}/activity/stream` when the browser supports
     EventSource, and falls back to polling when it cannot send the configured access token.
-13. In the packaged `small-team` path, confirm `RUNTIME_RECOVERY_ENABLED=true` so queued
-    jobs can be replayed after restart.
+13. In the packaged `small-team` path, confirm durable runtime recovery is enabled by the
+    profile defaults so queued jobs can be replayed after restart. Only override the
+    `RUNTIME_*` env vars if you are intentionally testing a degraded profile.
 14. For external A2A adoption, treat `docs/integrations/a2a/A2A_COMPATIBILITY_MATRIX.md` as the source of
     truth and use `scripts/a2a_quickstart.ps1` to exercise only the supported public v1
     surface.
@@ -102,6 +103,8 @@ Before considering the baseline closed, confirm:
 2. Copy the SQLite file to a safe location.
 3. Restore by replacing the database file with the backup copy.
 4. Run `.\scripts\smoke.ps1` after restore to confirm the schema and seed state still load.
+5. If the deployment uses the packaged `small-team` profile, keep the profile env aligned
+   with the release manifest so the runtime recovery defaults remain intact after restore.
 
 ## Runtime or bridge recovery
 

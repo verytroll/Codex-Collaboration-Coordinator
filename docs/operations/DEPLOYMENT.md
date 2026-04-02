@@ -23,6 +23,14 @@ distributed platform.
 `DEPLOYMENT_PROFILE` selects one of these profiles. Any explicit environment variable
 still wins if you override an individual setting.
 
+The packaged `small-team` profile also supplies the durable runtime recovery defaults:
+
+- `RUNTIME_RECOVERY_ENABLED=true`
+- `RUNTIME_RECOVERY_INTERVAL_SECONDS=15`
+- `RUNTIME_STALE_AFTER_MINUTES=10`
+
+Keep those variables only when you want to override the packaged profile.
+
 ## Environment variables
 
 Recommended deployment defaults:
@@ -64,7 +72,8 @@ send the same headers explicitly.
 
 For durable deployments, the coordinator can also run a background recovery loop that
 replays queued jobs after restart. The packaged `small-team` release enables this loop
-with `RUNTIME_RECOVERY_ENABLED=true`.
+through the profile defaults, so you do not need to set `RUNTIME_RECOVERY_ENABLED=true`
+by hand unless you are overriding the packaged path.
 
 The operator shell lives at `GET /operator` and bootstraps from
 `GET /api/v1/operator/shell`. Both routes follow the same access boundary rules as the
@@ -118,10 +127,10 @@ The current V6 release baseline uses:
 - release tag `v0.3.0`
 - release candidate naming `v0.3.0-rc.1`
 - bundle name `codex-collaboration-coordinator-0.3.0-small-team`
-- durable runtime recovery enabled through the packaged env file
+- durable runtime recovery enabled through the packaged `small-team` profile defaults
 
-The manifest records the release metadata, baseline package name, and verification
-checklist so docs, scripts, and status stay aligned.
+The manifest records the release metadata, baseline package name, profile defaults, and
+verification checklist so docs, scripts, and status stay aligned.
 
 For external A2A adoption, treat `docs/integrations/a2a/A2A_COMPATIBILITY_MATRIX.md` as the source of
 truth for supported versus experimental surface claims.

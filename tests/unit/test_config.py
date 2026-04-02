@@ -132,4 +132,6 @@ def test_load_config_applies_small_team_profile_defaults(monkeypatch: pytest.Mon
     assert config.database_url == "sqlite:///./data/codex_coordinator.db"
     assert config.access_boundary_mode == "trusted"
     assert config.actor_role == "operator"
-    assert config.runtime_recovery_enabled is False
+    assert config.runtime_recovery_enabled is True
+    assert config.runtime_recovery_interval_seconds == 15.0
+    assert config.runtime_stale_after_minutes == 10

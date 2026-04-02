@@ -100,6 +100,7 @@ def _build_profile_env_lines(
     deployment_profile: str,
     profile_defaults: DeploymentProfileDefaults,
 ) -> list[str]:
+    runtime_recovery_enabled = "true" if profile_defaults.runtime_recovery_enabled else "false"
     return [
         f"APP_ENV={profile_defaults.app_env}",
         f"APP_HOST={profile_defaults.app_host}",
@@ -109,9 +110,9 @@ def _build_profile_env_lines(
         "CODEX_BRIDGE_MODE=local",
         f"ACCESS_BOUNDARY_MODE={profile_defaults.access_boundary_mode}",
         f"DEPLOYMENT_PROFILE={deployment_profile}",
-        "RUNTIME_RECOVERY_ENABLED=true",
-        "RUNTIME_RECOVERY_INTERVAL_SECONDS=15",
-        "RUNTIME_STALE_AFTER_MINUTES=10",
+        f"RUNTIME_RECOVERY_ENABLED={runtime_recovery_enabled}",
+        f"RUNTIME_RECOVERY_INTERVAL_SECONDS={profile_defaults.runtime_recovery_interval_seconds:g}",
+        f"RUNTIME_STALE_AFTER_MINUTES={profile_defaults.runtime_stale_after_minutes}",
     ]
 
 
@@ -186,9 +187,9 @@ def build_release_package(
             "health_check": "/api/v1/healthz",
             "readiness_check": "/api/v1/readinessz",
             "durable_runtime": {
-                "enabled": True,
-                "recovery_interval_seconds": 15,
-                "stale_after_minutes": 10,
+                "enabled": profile_defaults.runtime_recovery_enabled,
+                "recovery_interval_seconds": profile_defaults.runtime_recovery_interval_seconds,
+                "stale_after_minutes": profile_defaults.runtime_stale_after_minutes,
             },
         },
     }

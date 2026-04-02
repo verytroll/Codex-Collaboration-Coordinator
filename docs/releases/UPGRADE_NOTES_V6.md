@@ -22,6 +22,9 @@
 4. If you consume packaged releases externally, update references to the new bundle name:
    `codex-collaboration-coordinator-0.3.0-small-team`.
 5. No schema migration is required just to adopt the release baseline updates.
+6. If you previously set `RUNTIME_RECOVERY_ENABLED`, `RUNTIME_RECOVERY_INTERVAL_SECONDS`,
+   or `RUNTIME_STALE_AFTER_MINUTES` manually for the packaged `small-team` path, you can
+   remove those overrides unless you are intentionally testing a degraded profile.
 
 ## Safe defaults
 

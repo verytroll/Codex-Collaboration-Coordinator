@@ -85,6 +85,9 @@ class DeploymentProfileDefaults:
     app_reload: bool
     database_url: str
     access_boundary_mode: str
+    runtime_recovery_enabled: bool
+    runtime_recovery_interval_seconds: float
+    runtime_stale_after_minutes: int
 
 
 _DEPLOYMENT_PROFILE_DEFAULTS: dict[str, DeploymentProfileDefaults] = {
@@ -94,6 +97,9 @@ _DEPLOYMENT_PROFILE_DEFAULTS: dict[str, DeploymentProfileDefaults] = {
         app_reload=True,
         database_url="sqlite:///./codex_coordinator.db",
         access_boundary_mode=DEFAULT_ACCESS_BOUNDARY_MODE_LOCAL,
+        runtime_recovery_enabled=False,
+        runtime_recovery_interval_seconds=DEFAULT_RUNTIME_RECOVERY_INTERVAL_SECONDS,
+        runtime_stale_after_minutes=DEFAULT_RUNTIME_STALE_AFTER_MINUTES,
     ),
     DEFAULT_DEPLOYMENT_PROFILE_TRUSTED_DEMO: DeploymentProfileDefaults(
         app_env="production",
@@ -101,6 +107,9 @@ _DEPLOYMENT_PROFILE_DEFAULTS: dict[str, DeploymentProfileDefaults] = {
         app_reload=False,
         database_url="sqlite:///./codex_coordinator.db",
         access_boundary_mode=DEFAULT_ACCESS_BOUNDARY_MODE_TRUSTED,
+        runtime_recovery_enabled=False,
+        runtime_recovery_interval_seconds=DEFAULT_RUNTIME_RECOVERY_INTERVAL_SECONDS,
+        runtime_stale_after_minutes=DEFAULT_RUNTIME_STALE_AFTER_MINUTES,
     ),
     DEFAULT_DEPLOYMENT_PROFILE_SMALL_TEAM: DeploymentProfileDefaults(
         app_env="production",
@@ -108,6 +117,9 @@ _DEPLOYMENT_PROFILE_DEFAULTS: dict[str, DeploymentProfileDefaults] = {
         app_reload=False,
         database_url="sqlite:///./data/codex_coordinator.db",
         access_boundary_mode=DEFAULT_ACCESS_BOUNDARY_MODE_TRUSTED,
+        runtime_recovery_enabled=True,
+        runtime_recovery_interval_seconds=DEFAULT_RUNTIME_RECOVERY_INTERVAL_SECONDS,
+        runtime_stale_after_minutes=DEFAULT_RUNTIME_STALE_AFTER_MINUTES,
     ),
 }
 
@@ -196,7 +208,7 @@ def load_config() -> AppConfig:
     else:
         actor_label_header = actor_label_header_value.strip()
     if runtime_recovery_enabled_value is None or not runtime_recovery_enabled_value.strip():
-        runtime_recovery_enabled = DEFAULT_RUNTIME_RECOVERY_ENABLED
+        runtime_recovery_enabled = profile_defaults.runtime_recovery_enabled
     else:
         runtime_recovery_enabled = _parse_bool(
             runtime_recovery_enabled_value,
@@ -206,11 +218,11 @@ def load_config() -> AppConfig:
         runtime_recovery_interval_seconds_value is None
         or not runtime_recovery_interval_seconds_value.strip()
     ):
-        runtime_recovery_interval_seconds = DEFAULT_RUNTIME_RECOVERY_INTERVAL_SECONDS
+        runtime_recovery_interval_seconds = profile_defaults.runtime_recovery_interval_seconds
     else:
         runtime_recovery_interval_seconds = float(runtime_recovery_interval_seconds_value)
     if runtime_stale_after_minutes_value is None or not runtime_stale_after_minutes_value.strip():
-        runtime_stale_after_minutes = DEFAULT_RUNTIME_STALE_AFTER_MINUTES
+        runtime_stale_after_minutes = profile_defaults.runtime_stale_after_minutes
     else:
         runtime_stale_after_minutes = int(runtime_stale_after_minutes_value)
     return AppConfig(

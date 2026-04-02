@@ -22,10 +22,13 @@ pip install -e .[dev]
    startup.
 5. The V6 release baseline is versioned as `0.3.0`; the packaged `small-team` bundle uses
    the name `codex-collaboration-coordinator-0.3.0-small-team` and enables durable runtime
-   recovery in its profile env file.
-6. If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
+   recovery through the `small-team` profile defaults.
+6. Those runtime recovery settings are inherited from the profile, so you usually do not
+   need to set the `RUNTIME_*` env vars manually unless you are overriding the packaged
+   path.
+7. If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
    (default: `X-Access-Token`).
-7. Open the operator shell at `http://127.0.0.1:8000/operator` after the app starts.
+8. Open the operator shell at `http://127.0.0.1:8000/operator` after the app starts.
 
 ## Run
 

@@ -11,6 +11,8 @@
 ### Vừa hoàn thành
 - [x] F47 - V6 release closure và support baseline - 2026-04-02
 - [x] PR49 - V6 release closure và support baseline - 2026-04-02
+- [x] F48 - Team deployment ergonomics và upgrade path - 2026-04-02
+- [x] PR50 - Team deployment ergonomics và upgrade path - 2026-04-02
 - [x] Chuẩn bị backlog V7 (`docs/planning/IMPLEMENTATION_TASKS_V7.md`) - 2026-04-02
 - [x] Chốt thứ tự triển khai V7 (`docs/planning/IMPLEMENTATION_ORDER_V7.md`) - 2026-04-02
 - [x] Chốt kế hoạch V7 (`docs/planning/PLAN_V7.md`) - 2026-04-02
@@ -73,7 +75,7 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] F48 - Team deployment ergonomics và upgrade path
+- [ ] F49 - Operator console polish và incident workflow
 
 ### Blockers / Rủi ro
 - Chưa có blocker hiện tại

@@ -74,6 +74,9 @@ def test_build_release_package_writes_manifest_and_archive(tmp_path) -> None:
         f"codex-collaboration-coordinator-{APP_VERSION}"
     )
     assert manifest["profile_defaults"]["database_url"] == "sqlite:///./data/codex_coordinator.db"
+    assert manifest["profile_defaults"]["runtime_recovery_enabled"] is True
+    assert manifest["profile_defaults"]["runtime_recovery_interval_seconds"] == 15.0
+    assert manifest["profile_defaults"]["runtime_stale_after_minutes"] == 10
     assert "docs/planning/archive/IMPLEMENTATION_TASKS_V6.md" in manifest["included_paths"]
     assert "docs/planning/archive/IMPLEMENTATION_ORDER_V6.md" in manifest["included_paths"]
     assert "docs/releases/RELEASE_NOTES_V6.md" in manifest["included_paths"]

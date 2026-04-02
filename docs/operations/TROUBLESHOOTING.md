@@ -43,8 +43,10 @@
 - Presence is driven by `POST /api/v1/agents/{agent_id}/heartbeat`.
 - Restart recovery rehydrates thread mapping from persisted jobs. If a mapping looks missing, inspect the latest job row and runtime rows.
 - The durable runtime supervisor also replays queued jobs on startup in the packaged
-  `small-team` path. If work stays queued after a restart, confirm the runtime is marked
-  `online` or `busy` and that the bridge is available.
+  `small-team` path. That path enables runtime recovery through the profile defaults.
+  If work stays queued after a restart, confirm the runtime is marked `online` or `busy`,
+  that the bridge is available, and that no override disabled the packaged recovery
+  settings.
 - If a gate request is already pending for a session, repeat the same request rather than creating a new one. A mismatched request now fails with a conflict instead of overwriting the pending run.
 
 ## Reliability checks

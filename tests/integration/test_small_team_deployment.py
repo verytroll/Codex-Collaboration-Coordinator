@@ -52,5 +52,9 @@ def test_small_team_profile_boots_readily_and_exposes_profile(tmp_path, monkeypa
             bootstrap_payload = bootstrap_response.json()
             assert bootstrap_payload["selected_session_id"] == "ses_demo"
             assert bootstrap_payload["selected_session"]["session"]["id"] == "ses_demo"
+
+            supervisor = app.state.durable_runtime_supervisor
+            assert supervisor.enabled is True
+            assert supervisor.is_running() is True
     finally:
         app_main.get_config.cache_clear()

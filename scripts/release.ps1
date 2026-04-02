@@ -116,9 +116,6 @@ try {
     $env:APP_HOST = "127.0.0.1"
     $env:APP_PORT = "8000"
     $env:APP_RELOAD = "false"
-    $env:RUNTIME_RECOVERY_ENABLED = "true"
-    $env:RUNTIME_RECOVERY_INTERVAL_SECONDS = "15"
-    $env:RUNTIME_STALE_AFTER_MINUTES = "10"
     $appProcess = Start-ReleaseApp -AppHost $env:APP_HOST -AppPort $env:APP_PORT
     if ($IncludeRelay) {
         & (Join-Path $PSScriptRoot "smoke.ps1") -BaseUrl $BaseUrl -DatabaseUrl $DatabaseUrl -StartupTimeoutSec $StartupTimeoutSec -IncludeRelay
