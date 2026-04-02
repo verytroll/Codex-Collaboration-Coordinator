@@ -34,8 +34,10 @@ RELEASE_PACKAGE_INCLUDE_PATHS = (
     "pyproject.toml",
     ".env.example",
     "docs/planning/STATUS.md",
-    "docs/planning/archive/IMPLEMENTATION_TASKS_V5.md",
-    "docs/planning/archive/IMPLEMENTATION_ORDER_V5.md",
+    "docs/planning/archive/IMPLEMENTATION_TASKS_V6.md",
+    "docs/planning/archive/IMPLEMENTATION_ORDER_V6.md",
+    "docs/releases/RELEASE_NOTES_V6.md",
+    "docs/releases/UPGRADE_NOTES_V6.md",
     "AGENTS.md",
 )
 RELEASE_PACKAGE_IGNORE_PATTERNS = (
@@ -119,7 +121,7 @@ def _build_release_metadata(
     deployment_profile: str,
 ) -> dict[str, object]:
     return {
-        "track": "V5",
+        "track": "V6",
         "version": APP_VERSION,
         "tag": RELEASE_TAG,
         "candidate": RELEASE_CANDIDATE,
@@ -173,6 +175,7 @@ def build_release_package(
             "checklist": [
                 "package bundle created",
                 "manifest and profile env match the small-team baseline",
+                "release metadata records the V6 baseline version, tag, and candidate",
                 "smoke gate passes against the running release runtime",
                 "health, readiness, operator shell, live activity, and public A2A flow are checked",
             ]

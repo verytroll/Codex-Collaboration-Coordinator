@@ -73,7 +73,7 @@ The release gate performs:
 Before considering the baseline closed, confirm:
 
 1. The release package name includes the version and profile, for example
-   `codex-collaboration-coordinator-0.2.0-small-team`.
+   `codex-collaboration-coordinator-0.3.0-small-team`.
 2. `release-manifest.json` exists and records `app_version`, `release.tag`,
    `release.candidate`, and `deployment_profile=small-team`.
 3. `profiles/small-team.env` exists in the bundle and matches the canonical small-team

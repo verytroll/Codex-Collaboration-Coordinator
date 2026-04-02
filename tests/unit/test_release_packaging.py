@@ -25,8 +25,10 @@ def test_build_release_package_writes_manifest_and_archive(tmp_path) -> None:
         "pyproject.toml",
         ".env.example",
         "docs/planning/STATUS.md",
-        "docs/planning/archive/IMPLEMENTATION_TASKS_V5.md",
-        "docs/planning/archive/IMPLEMENTATION_ORDER_V5.md",
+        "docs/planning/archive/IMPLEMENTATION_TASKS_V6.md",
+        "docs/planning/archive/IMPLEMENTATION_ORDER_V6.md",
+        "docs/releases/RELEASE_NOTES_V6.md",
+        "docs/releases/UPGRADE_NOTES_V6.md",
         "AGENTS.md",
     )
 
@@ -38,8 +40,10 @@ def test_build_release_package_writes_manifest_and_archive(tmp_path) -> None:
     _write(source_root / "pyproject.toml")
     _write(source_root / ".env.example")
     _write(source_root / "docs/planning/STATUS.md")
-    _write(source_root / "docs/planning/archive/IMPLEMENTATION_TASKS_V5.md")
-    _write(source_root / "docs/planning/archive/IMPLEMENTATION_ORDER_V5.md")
+    _write(source_root / "docs/planning/archive/IMPLEMENTATION_TASKS_V6.md")
+    _write(source_root / "docs/planning/archive/IMPLEMENTATION_ORDER_V6.md")
+    _write(source_root / "docs/releases/RELEASE_NOTES_V6.md")
+    _write(source_root / "docs/releases/UPGRADE_NOTES_V6.md")
     _write(source_root / "AGENTS.md")
 
     result = build_release_package(
@@ -61,7 +65,8 @@ def test_build_release_package_writes_manifest_and_archive(tmp_path) -> None:
     manifest = json.loads(manifest_path.read_text())
     assert manifest["app_version"] == APP_VERSION
     assert manifest["deployment_profile"] == "small-team"
-    assert manifest["release"]["track"] == "V5"
+    assert manifest["release"]["package_name"] == result.package_name
+    assert manifest["release"]["track"] == "V6"
     assert manifest["release"]["version"] == APP_VERSION
     assert manifest["release"]["tag"] == RELEASE_TAG
     assert manifest["release"]["candidate"] == RELEASE_CANDIDATE
@@ -69,12 +74,20 @@ def test_build_release_package_writes_manifest_and_archive(tmp_path) -> None:
         f"codex-collaboration-coordinator-{APP_VERSION}"
     )
     assert manifest["profile_defaults"]["database_url"] == "sqlite:///./data/codex_coordinator.db"
+    assert "docs/planning/archive/IMPLEMENTATION_TASKS_V6.md" in manifest["included_paths"]
+    assert "docs/planning/archive/IMPLEMENTATION_ORDER_V6.md" in manifest["included_paths"]
+    assert "docs/releases/RELEASE_NOTES_V6.md" in manifest["included_paths"]
+    assert "docs/releases/UPGRADE_NOTES_V6.md" in manifest["included_paths"]
     assert "profiles/small-team.env" in manifest["included_paths"]
     assert manifest["startup"]["health_check"] == "/api/v1/healthz"
     assert manifest["startup"]["durable_runtime"]["enabled"] is True
     assert manifest["startup"]["durable_runtime"]["recovery_interval_seconds"] == 15
     assert manifest["startup"]["durable_runtime"]["stale_after_minutes"] == 10
     assert "package bundle created" in manifest["verification"]["checklist"]
+    assert (
+        "release metadata records the V6 baseline version, tag, and candidate"
+        in manifest["verification"]["checklist"]
+    )
     profile_env_text = profile_env_path.read_text()
     assert "RUNTIME_RECOVERY_ENABLED=true" in profile_env_text
     assert "RUNTIME_RECOVERY_INTERVAL_SECONDS=15" in profile_env_text

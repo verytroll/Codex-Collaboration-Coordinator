@@ -47,8 +47,10 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - [MVP release notes](docs/releases/RELEASE_NOTES_MVP.md)
 - [V3 release notes](docs/releases/RELEASE_NOTES_V3.md)
 - [V5 release notes](docs/releases/RELEASE_NOTES_V5.md)
+- [V6 release notes](docs/releases/RELEASE_NOTES_V6.md)
 - [V4 upgrade notes](docs/releases/UPGRADE_NOTES_V4.md)
 - [V5 upgrade notes](docs/releases/UPGRADE_NOTES_V5.md)
+- [V6 upgrade notes](docs/releases/UPGRADE_NOTES_V6.md)
 - [PRD](docs/reference/PRD.md)
 - [Architecture](docs/reference/ARCHITECTURE.md)
 - [API reference](docs/reference/API.md)
@@ -74,4 +76,5 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - V6 durable runtime and persistence boundary are complete through PR46 / F44, with startup recovery, replayable queued jobs, and a packaged durable runtime loop.
 - V6 realtime streaming transport is complete through PR47 / F45, with SSE resume support for operator activity and public task events.
 - V6 interop certification and external adoption baseline are complete through PR48 / F46, with contract tests, compatibility claims, and sample client guidance.
+- V6 release baseline is closed through PR49 / F47, with versioned release metadata, release notes, and a synchronized verification checklist.
 
