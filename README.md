@@ -31,6 +31,7 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - [Local setup](docs/LOCAL_SETUP.md)
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [A2A mapping note](docs/A2A_MAPPING.md)
+- [A2A compatibility matrix](docs/A2A_COMPATIBILITY_MATRIX.md)
 - [MVP release notes](docs/RELEASE_NOTES_MVP.md)
 - [V3 release notes](docs/RELEASE_NOTES_V3.md)
 - [V5 release notes](docs/RELEASE_NOTES_V5.md)
@@ -74,3 +75,4 @@ Multi-agent coordination system for session-based collaboration, routing, review
 - V6 identity and team RBAC are complete through PR45 / F43, with actor identity headers, role-gated operator/public writes, and audit enrichment.
 - V6 durable runtime and persistence boundary are complete through PR46 / F44, with startup recovery, replayable queued jobs, and a packaged durable runtime loop.
 - V6 realtime streaming transport is complete through PR47 / F45, with SSE resume support for operator activity and public task events.
+- V6 interop certification and external adoption baseline are complete through PR48 / F46, with contract tests, compatibility claims, and sample client guidance.

@@ -49,6 +49,9 @@ pip install -e .[dev]
     EventSource, and falls back to polling when it cannot send the configured access token.
 13. In the packaged `small-team` path, confirm `RUNTIME_RECOVERY_ENABLED=true` so queued
     jobs can be replayed after restart.
+14. For external A2A adoption, treat `docs/A2A_COMPATIBILITY_MATRIX.md` as the source of
+    truth and use `scripts/a2a_quickstart.ps1` to exercise only the supported public v1
+    surface.
 
 ## Release candidate
 

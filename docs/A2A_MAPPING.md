@@ -3,6 +3,7 @@
 This document describes the experimental A2A adapter bridge used by F24.
 For the public v1 contract, see `docs/A2A_PUBLIC_API.md`.
 For the companion public event surface, see `docs/A2A_PUBLIC_EVENTS.md`.
+For supported-versus-experimental scope, see `docs/A2A_COMPATIBILITY_MATRIX.md`.
 
 ## Internal model
 
@@ -90,8 +91,8 @@ Compatibility notes:
 
 ## Scope
 
-This is intentionally experimental.
+This adapter path is intentionally experimental.
 
 - It keeps the coordinator internal model unchanged.
 - It stores a lightweight mapping table in SQLite.
-- It does not claim production-grade A2A compatibility yet.
+- It does not define the external adoption baseline.

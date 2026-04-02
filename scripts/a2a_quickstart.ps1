@@ -122,6 +122,7 @@ Assert-Condition (-not [string]::IsNullOrWhiteSpace($plannerAgentId)) "Planner d
 Assert-Condition (-not [string]::IsNullOrWhiteSpace($builderAgentId)) "Builder demo agent missing"
 
 Write-Host "Creating a demo job through the session message surface..."
+$jobCountBefore = @((Invoke-ApiGet "/api/v1/jobs?session_id=ses_demo").jobs).Count
 $commandResponse = Invoke-ApiPost "/api/v1/sessions/ses_demo/messages" @{
     sender_type          = "agent"
     sender_id            = $plannerAgentId
@@ -130,8 +131,10 @@ $commandResponse = Invoke-ApiPost "/api/v1/sessions/ses_demo/messages" @{
     channel_key          = "general"
 }
 Assert-Condition ($commandResponse.message.message_type -eq "command") "Quickstart command was not recorded as a command"
-Assert-Condition (@($commandResponse.routing.created_jobs).Count -ge 1) "Quickstart command did not create a job"
-$jobId = @($commandResponse.routing.created_jobs)[0]
+$jobsAfter = @((Invoke-ApiGet "/api/v1/jobs?session_id=ses_demo").jobs)
+Assert-Condition ($jobsAfter.Count -gt $jobCountBefore) "Quickstart command did not create a job"
+$job = $jobsAfter | Sort-Object created_at, id | Select-Object -Last 1
+$jobId = $job.id
 
 Write-Host "Discovering the public A2A surface..."
 $agentCard = Invoke-ApiGet "/.well-known/agent-card.json"

@@ -1,6 +1,7 @@
 # A2A Quickstart
 
-This quickstart shows the public A2A task surface that external clients should use.
+This quickstart shows the supported public A2A task surface that external clients should use.
+For the supported-versus-experimental claim boundary, see `docs/A2A_COMPATIBILITY_MATRIX.md`.
 
 ## 1. Start the app
 
@@ -80,3 +81,4 @@ and prints the task id, subscription id, and event count.
 - Use `GET /api/v1/a2a/subscriptions/{subscription_id}/events` for SSE consumption.
 - The public task contract is `a2a.public.task.v1`.
 - The event contract is `a2a.public.task.event.v1`.
+- The quickstart only uses supported public v1 endpoints, not the legacy experimental bridge routes.

@@ -18,6 +18,7 @@ def test_deployment_readiness_returns_ready_payload(tmp_path, monkeypatch) -> No
     database_url = _database_url(tmp_path)
     monkeypatch.setenv("DATABASE_URL", database_url)
     monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.delenv("DEPLOYMENT_PROFILE", raising=False)
     app_main.get_config.cache_clear()
     asyncio.run(migrate_sqlite(database_url, migrations_dir=DEFAULT_MIGRATIONS_DIR))
     app = app_main.create_app()

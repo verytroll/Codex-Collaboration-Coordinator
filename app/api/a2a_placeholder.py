@@ -108,8 +108,10 @@ def _agent_card(*, base_url: str) -> A2AAgentCardResponse:
             ),
         ],
         compatibility_notes=[
-            "Public task and event contracts are versioned as v1.",
-            "The adapter bridge remains available for legacy compatibility.",
+            "Supported public v1 surface: task create/list/get, replay, "
+            "subscriptions, and SSE streams.",
+            "Legacy adapter bridge routes remain available for compatibility only.",
+            "See docs/A2A_COMPATIBILITY_MATRIX.md for supported versus experimental claims.",
             "Replay cursors are inclusive by request and exclusive in storage.",
         ],
     )

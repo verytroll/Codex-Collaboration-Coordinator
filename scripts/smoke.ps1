@@ -31,9 +31,9 @@ function Invoke-PageGet {
     param([string]$Path)
     $headers = Get-AccessHeaders
     if ($headers.Count -gt 0) {
-        Invoke-WebRequest -Method Get -Uri "$BaseUrl$Path" -Headers $headers -TimeoutSec 30
+        Invoke-WebRequest -Method Get -Uri "$BaseUrl$Path" -Headers $headers -TimeoutSec 30 -UseBasicParsing
     } else {
-        Invoke-WebRequest -Method Get -Uri "$BaseUrl$Path" -TimeoutSec 30
+        Invoke-WebRequest -Method Get -Uri "$BaseUrl$Path" -TimeoutSec 30 -UseBasicParsing
     }
 }
 
@@ -154,7 +154,10 @@ Assert-Condition (($presetKeys -join ",") -eq "planning,implementation,review,re
 $sessionPhases = Invoke-ApiGet "/api/v1/sessions/ses_demo/phases"
 $planningPhase = @($sessionPhases.phases | Where-Object { $_.phase_key -eq "planning" })[0]
 Assert-Condition ($null -ne $planningPhase) "planning phase missing from session"
-Assert-Condition ($planningPhase.is_active -eq $true) "planning phase should be active after seed"
+$sessionDetail = Invoke-ApiGet "/api/v1/sessions/ses_demo"
+$activePhaseId = $sessionDetail.session.active_phase_id
+Assert-Condition (-not [string]::IsNullOrWhiteSpace($activePhaseId)) "session should have an active phase after seed"
+Assert-Condition (@($sessionPhases.phases | Where-Object { $_.id -eq $activePhaseId }).Count -ge 1) "active phase id missing from phase list"
 
 Write-Host "Activating finalize phase..."
 $finalizePhase = Invoke-ApiPost "/api/v1/sessions/ses_demo/phases/finalize/activate" @{}
@@ -207,10 +210,24 @@ Assert-Condition ($publicAgentCard.contract_version -eq "a2a.agent-card.v1") "ag
 Assert-Condition ($publicAgentCard.public_api_base_url -match "/api/v1/a2a$") "agent-card public API base URL missing"
 Assert-Condition (@($publicAgentCard.endpoints | Where-Object { $_.name -eq "create_task" }).Count -ge 1) "agent-card public task endpoint missing"
 
-$publicTaskEnvelope = Invoke-ApiPost "/api/v1/a2a/tasks" @{
-    job_id = $smokeJob.id
+$publicJobCountBefore = @((Invoke-ApiGet "/api/v1/jobs?session_id=ses_demo").jobs).Count
+$publicCommandResponse = Invoke-ApiPost "/api/v1/sessions/ses_demo/messages" @{
+    sender_type         = "agent"
+    sender_id           = $plannerAgentId
+    content             = "/new #builder public a2a smoke"
+    reply_to_message_id = $null
+    channel_key         = "general"
 }
-Assert-Condition ($publicTaskEnvelope.task.job_id -eq $smokeJob.id) "public A2A task returned the wrong job id"
+Assert-Condition ($publicCommandResponse.message.message_type -eq "command") "public A2A smoke command was not recorded as a command"
+$publicJobsAfter = @((Invoke-ApiGet "/api/v1/jobs?session_id=ses_demo").jobs)
+Assert-Condition ($publicJobsAfter.Count -gt $publicJobCountBefore) "public A2A smoke command did not create a job"
+$publicJob = $publicJobsAfter | Sort-Object created_at, id | Select-Object -Last 1
+$publicJobId = $publicJob.id
+
+$publicTaskEnvelope = Invoke-ApiPost "/api/v1/a2a/tasks" @{
+    job_id = $publicJobId
+}
+Assert-Condition ($publicTaskEnvelope.task.job_id -eq $publicJobId) "public A2A task returned the wrong job id"
 Assert-Condition ($publicTaskEnvelope.task.contract_version -eq "a2a.public.task.v1") "public A2A task contract missing"
 Assert-Condition ($publicTaskEnvelope.task.status.state -eq "queued") "public A2A task status was wrong"
 

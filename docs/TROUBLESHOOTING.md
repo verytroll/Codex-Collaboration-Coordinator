@@ -29,11 +29,13 @@
 
 ## A2A problems
 
+- Use `docs/A2A_COMPATIBILITY_MATRIX.md` as the source of truth for supported versus experimental claims.
 - If `/.well-known/agent-card.json` or `/api/v1/a2a/*` returns `401` or `403`, check `ACCESS_BOUNDARY_MODE` and whether `ACCESS_TOKEN` is set correctly.
 - If `POST /api/v1/a2a/tasks` returns a task but the event list is empty, confirm the job was refreshed after the last state change.
 - If `GET /api/v1/a2a/tasks/{task_id}/events?since_sequence=0` returns only `created`, create or update the underlying job or artifact before calling the route again.
 - If the subscription SSE endpoint returns no frames, make sure the subscription cursor points at the same task and that the request is not filtered by a newer `since_sequence`.
 - If `GET /api/v1/a2a/tasks/{task_id}/stream` keeps replaying from the beginning, confirm the client is sending the last seen cursor or `Last-Event-ID`.
+- If a client depends on `/api/v1/a2a/jobs/{job_id}/project` or `/api/v1/a2a/sessions/{session_id}/tasks`, treat that as legacy compatibility, not the supported external contract.
 - If the public A2A surface looks stale, re-run `.\scripts\a2a_quickstart.ps1` or `.\scripts\smoke.ps1` to confirm the public contract still replays correctly.
 
 ## Presence and recovery

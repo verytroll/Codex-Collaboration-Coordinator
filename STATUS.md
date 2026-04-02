@@ -3,12 +3,14 @@
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-02
 - Pha hiện tại: V6 implementation
-- Đang tập trung vào: PR48 / F46 - interop certification và external adoption baseline
+- Đã hoàn tất: PR48 / F46 - interop certification và external adoption baseline
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F46 - Interop certification và external adoption baseline - 2026-04-02
+- [x] PR48 - Interop certification và external adoption baseline - 2026-04-02
 - [x] F45 - Realtime streaming transport - 2026-04-02
 - [x] PR47 - Realtime streaming transport - 2026-04-02
 - [x] F44 - Durable runtime và persistence boundary - 2026-04-02
@@ -66,7 +68,7 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] PR48 / F46: interop certification và external adoption baseline
+- [ ] Roadmap sau V6
 
 ### Blockers / Rủi ro
 - Chưa có blocker hiện tại
@@ -74,9 +76,11 @@
 - Rủi ro phụ là tăng deployment complexity cho small-team profile trước khi smoke/release path đủ rõ
 
 ### Kiểm chứng gần nhất
-- `pytest` - 98 passed - 2026-04-02
+- `pytest` - 104 passed - 2026-04-02
 - `python -m ruff check app tests` - passed - 2026-04-02
 - `python -m compileall app tests` - passed - 2026-04-02
+- `python -m ruff format --check app tests` - passed - 2026-04-02
+- `.\scripts\release.ps1` - passed - 2026-04-02
 
 ### Liên kết tài liệu liên quan
 - `PLAN.md`

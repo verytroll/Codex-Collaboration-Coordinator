@@ -1,6 +1,7 @@
 # A2A Public API v1
 
-This document describes the public A2A task surface built on top of the adapter bridge.
+This document describes the supported public A2A task surface built on top of the adapter bridge.
+For the exact supported-versus-experimental claim boundary, see `docs/A2A_COMPATIBILITY_MATRIX.md`.
 
 ## Contract
 
@@ -76,8 +77,9 @@ Key mappings:
 
 ## Notes
 
-- This API is public and stable for v1.
+- This API is the supported external v1 contract for public adoption.
 - The adapter bridge remains the implementation layer underneath.
-- Legacy experimental routes still exist for compatibility, but the public contract should use the endpoints above.
+- Legacy experimental routes still exist for compatibility, but they are not part of the supported external contract.
+- For the full compatibility matrix, see `docs/A2A_COMPATIBILITY_MATRIX.md`.
 - For task lifecycle push/replay details, see `docs/A2A_PUBLIC_EVENTS.md`.
 - For a copy-paste setup flow and demo script, see `docs/A2A_QUICKSTART.md`.

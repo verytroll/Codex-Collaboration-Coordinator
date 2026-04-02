@@ -23,16 +23,84 @@ function New-ReleaseDatabaseUrl {
     return Join-Path $tempRoot $fileName
 }
 
-Write-Host "Running test suite..."
-& (Join-Path $PSScriptRoot "test.ps1")
+function Reset-TestEnvironment {
+    $names = @(
+        "APP_ENV",
+        "DEPLOYMENT_PROFILE",
+        "APP_HOST",
+        "APP_PORT",
+        "APP_RELOAD",
+        "ACCESS_BOUNDARY_MODE",
+        "CODEX_BRIDGE_MODE",
+        "ACCESS_TOKEN",
+        "ACCESS_TOKEN_HEADER",
+        "ACTOR_ID",
+        "ACTOR_ROLE",
+        "ACTOR_TYPE",
+        "ACTOR_LABEL",
+        "RUNTIME_RECOVERY_ENABLED",
+        "RUNTIME_RECOVERY_INTERVAL_SECONDS",
+        "RUNTIME_STALE_AFTER_MINUTES"
+    )
 
-Write-Host "Running lint checks..."
-& (Join-Path $PSScriptRoot "lint.ps1")
+    foreach ($name in $names) {
+        Remove-Item -Path "Env:$name" -ErrorAction SilentlyContinue
+    }
+}
+
+function Start-ReleaseApp {
+    param(
+        [string]$AppHost,
+        [string]$AppPort
+    )
+
+    $appRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+    $stdoutLog = Join-Path ([System.IO.Path]::GetTempPath()) ("codex-release-app-{0}.stdout.log" -f ([guid]::NewGuid().ToString("N")))
+    $stderrLog = Join-Path ([System.IO.Path]::GetTempPath()) ("codex-release-app-{0}.stderr.log" -f ([guid]::NewGuid().ToString("N")))
+    $process = Start-Process `
+        -FilePath "python" `
+        -ArgumentList @("-m", "uvicorn", "app.main:app", "--host", $AppHost, "--port", $AppPort) `
+        -WorkingDirectory $appRoot `
+        -RedirectStandardOutput $stdoutLog `
+        -RedirectStandardError $stderrLog `
+        -PassThru
+    return [pscustomobject]@{
+        process = $process
+        stdout_log = $stdoutLog
+        stderr_log = $stderrLog
+    }
+}
+
+function Stop-ReleaseApp {
+    param([object]$AppProcess)
+
+    if ($null -eq $AppProcess -or $null -eq $AppProcess.process) {
+        return
+    }
+
+    try {
+        if (-not $AppProcess.process.HasExited) {
+            Stop-Process -Id $AppProcess.process.Id -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 1
+        }
+    } catch {
+        # Ignore shutdown races; the release script is already handling failure paths.
+    }
+}
+
+Reset-TestEnvironment
 
 $migrationDatabase = $null
 $seedDatabase = $null
+$appProcess = $null
 
 try {
+    Write-Host "Running test suite..."
+    & (Join-Path $PSScriptRoot "test.ps1")
+
+    Write-Host "Running lint checks..."
+    & (Join-Path $PSScriptRoot "lint.ps1")
+
     Write-Host "Verifying migration idempotency..."
     $migrationDatabase = New-ReleaseDatabaseUrl -Prefix "codex-release-migrations"
     & python -m app.services.release_readiness --database-url $migrationDatabase --check migrations
@@ -45,15 +113,25 @@ try {
     $env:DATABASE_URL = $DatabaseUrl
     $env:APP_ENV = "production"
     $env:DEPLOYMENT_PROFILE = "small-team"
+    $env:APP_HOST = "127.0.0.1"
+    $env:APP_PORT = "8000"
+    $env:APP_RELOAD = "false"
+    $env:RUNTIME_RECOVERY_ENABLED = "true"
+    $env:RUNTIME_RECOVERY_INTERVAL_SECONDS = "15"
+    $env:RUNTIME_STALE_AFTER_MINUTES = "10"
+    $appProcess = Start-ReleaseApp -AppHost $env:APP_HOST -AppPort $env:APP_PORT
     if ($IncludeRelay) {
         & (Join-Path $PSScriptRoot "smoke.ps1") -BaseUrl $BaseUrl -DatabaseUrl $DatabaseUrl -StartupTimeoutSec $StartupTimeoutSec -IncludeRelay
     } else {
         & (Join-Path $PSScriptRoot "smoke.ps1") -BaseUrl $BaseUrl -DatabaseUrl $DatabaseUrl -StartupTimeoutSec $StartupTimeoutSec
     }
 
+    Stop-ReleaseApp -AppProcess $appProcess
+
     Write-Host "Building release package..."
     & (Join-Path $PSScriptRoot "package_release.ps1") -OutputDir (Join-Path "dist" "release") -DeploymentProfile "small-team"
 } finally {
+    Stop-ReleaseApp -AppProcess $appProcess
     foreach ($path in @($migrationDatabase, $seedDatabase)) {
         if (-not [string]::IsNullOrWhiteSpace($path)) {
             Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue

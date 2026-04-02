@@ -123,6 +123,9 @@ The current V5 release baseline uses:
 The manifest records the release metadata, baseline package name, and verification
 checklist so docs, scripts, and status stay aligned.
 
+For external A2A adoption, treat `docs/A2A_COMPATIBILITY_MATRIX.md` as the source of
+truth for supported versus experimental surface claims.
+
 For a complete release gate, run `.\scripts\release.ps1`. That script verifies migrations,
 seed reset behavior, smoke coverage, and then builds the release bundle.
 
@@ -137,4 +140,7 @@ seed reset behavior, smoke coverage, and then builds the release bundle.
   the token is wrong.
 - Protected write routes return `401` when actor identity headers are missing and `403`
   when the role is not allowed for the requested action.
+- External integrators should use the public v1 A2A task and event routes only; the
+  legacy adapter bridge remains available for compatibility, not as the supported
+  adoption baseline.
 - If you need a new migration, add a new `.sql` file instead of editing an existing one in place.

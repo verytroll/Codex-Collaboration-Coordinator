@@ -15,9 +15,7 @@ class A2APublicTaskEventStreamEnvelope(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     api_version: Literal["v1"] = "v1"
-    contract_version: Literal["a2a.public.task.event.stream.v1"] = (
-        "a2a.public.task.event.stream.v1"
-    )
+    contract_version: Literal["a2a.public.task.event.stream.v1"] = "a2a.public.task.event.stream.v1"
     task_id: str
     since_sequence: int
     next_cursor_sequence: int

@@ -1,6 +1,7 @@
 # A2A Public Events
 
-This document describes the public subscribe/push event surface for A2A tasks.
+This document describes the supported public subscribe/push event surface for A2A tasks.
+For the claim boundary and adoption baseline, see `docs/A2A_COMPATIBILITY_MATRIX.md`.
 
 ## Contract
 
@@ -87,6 +88,6 @@ The event payload excludes coordinator-internal state such as raw Codex bridge d
 
 - The event log is persisted in SQLite.
 - The public task projection remains the source of truth.
-- Event replay is intentionally minimal but stable enough for client polling and SSE consumption.
+- Event replay is intentionally minimal but supported for client polling and SSE consumption.
 - The direct stream route is useful when a client already has a replay cursor and wants to stay on SSE instead of polling.
 - For a public client demo and example cursor flow, see `docs/A2A_QUICKSTART.md`.
