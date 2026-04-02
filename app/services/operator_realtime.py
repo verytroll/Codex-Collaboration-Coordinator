@@ -18,6 +18,7 @@ from app.models.api.operator_realtime import (
     OperatorSessionActivityEventResponse,
     OperatorSessionActivityResponse,
     OperatorSessionActivitySignalsResponse,
+    OperatorSessionIncidentSummaryResponse,
 )
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.jobs import JobEventRecord, JobEventRepository, JobRecord, JobRepository
@@ -262,6 +263,10 @@ class OperatorRealtimeService:
             session_events=session_events,
             session_job_ids=session_job_ids,
         )
+        incident_summary = self._build_incident_summary(
+            drafts=drafts,
+            signals=signals,
+        )
         logger.info(
             "operator session activity generated",
             extra={
@@ -290,6 +295,7 @@ class OperatorRealtimeService:
             total_events=len(drafts),
             generated_at=_utc_now(),
             events=activity_events,
+            incident_summary=incident_summary,
             signals=signals,
         )
 
@@ -627,6 +633,120 @@ class OperatorRealtimeService:
             phase_bottlenecks=self._phase_bottleneck_signals(dashboard),
             runtime_health=self._runtime_health_signals(dashboard),
         )
+
+    def _build_incident_summary(
+        self,
+        *,
+        drafts: list[_ActivityDraft],
+        signals: OperatorSessionActivitySignalsResponse,
+    ) -> OperatorSessionIncidentSummaryResponse:
+        all_signals = self._flatten_signals(signals)
+        latest_draft = drafts[-1] if drafts else None
+        top_signal = self._top_signal(all_signals)
+
+        if top_signal is None:
+            return OperatorSessionIncidentSummaryResponse(
+                state="healthy",
+                severity="info",
+                headline="No active incident",
+                detail=(
+                    "No blocked jobs, recent errors, or approval bottlenecks are currently "
+                    "surfaced for this session."
+                ),
+                recommended_action="Keep live activity open and refresh when new work arrives.",
+                latest_event_type=latest_draft.event_type if latest_draft is not None else None,
+                latest_event_title=latest_draft.title if latest_draft is not None else None,
+                latest_actor=self._format_actor(latest_draft.actor_type, latest_draft.actor_id)
+                if latest_draft is not None
+                else None,
+                latest_reason=latest_draft.detail if latest_draft is not None else None,
+                signal_count=0,
+            )
+
+        summary_state = "incident" if top_signal.severity == "critical" else "watch"
+        summary_detail = top_signal.detail or top_signal.title
+        return OperatorSessionIncidentSummaryResponse(
+            state=summary_state,
+            severity=top_signal.severity,
+            headline=top_signal.title,
+            detail=summary_detail,
+            recommended_action=self._recommended_action_for_signal(top_signal),
+            latest_event_type=latest_draft.event_type if latest_draft is not None else None,
+            latest_event_title=latest_draft.title if latest_draft is not None else None,
+            latest_actor=self._format_actor(latest_draft.actor_type, latest_draft.actor_id)
+            if latest_draft is not None
+            else None,
+            latest_reason=latest_draft.detail if latest_draft is not None else None,
+            signal_count=len(all_signals),
+        )
+
+    def _flatten_signals(
+        self, signals: OperatorSessionActivitySignalsResponse
+    ) -> list[OperatorActivitySignalResponse]:
+        return [
+            *signals.pending_approvals,
+            *signals.recent_errors,
+            *signals.stuck_jobs,
+            *signals.phase_bottlenecks,
+            *signals.runtime_health,
+        ]
+
+    def _top_signal(
+        self, signals: list[OperatorActivitySignalResponse]
+    ) -> OperatorActivitySignalResponse | None:
+        if not signals:
+            return None
+
+        def _severity_rank(signal: OperatorActivitySignalResponse) -> int:
+            if signal.severity == "critical":
+                return 2
+            if signal.severity == "warning":
+                return 1
+            return 0
+
+        return max(
+            signals,
+            key=lambda signal: (
+                _severity_rank(signal),
+                signal.created_at or "",
+                signal.kind,
+                signal.entity_id or "",
+            ),
+        )
+
+    def _recommended_action_for_signal(self, signal: OperatorActivitySignalResponse) -> str | None:
+        if signal.kind in {"recent_error", "stuck_job"}:
+            if signal.entity_type == "job" and signal.entity_id:
+                return f"Inspect job {signal.entity_id} and retry, resume, or cancel as allowed."
+            if signal.entity_type == "session_event":
+                if signal.title == "Loop guard triggered" or signal.entity_id:
+                    return (
+                        "Inspect the session activity feed and loop guard reason, then clear the "
+                        "trigger before resuming queued work."
+                    )
+            return "Inspect the blocked job and recover it from the action panel."
+        if signal.kind == "pending_approval":
+            if signal.entity_id:
+                return f"Review approval {signal.entity_id} and resolve the request."
+            return "Review the pending approval and decide whether to accept or decline it."
+        if signal.kind == "phase_bottleneck":
+            if signal.entity_id:
+                return f"Open phase {signal.entity_id} and clear blocked work or pending reviews."
+            return "Inspect the phase bottleneck and clear blocked work."
+        if signal.kind == "runtime_health":
+            if signal.entity_id:
+                return f"Inspect runtime pool {signal.entity_id} and recover the backing runtime."
+            return "Inspect the runtime pool and recover the backing runtime."
+        return None
+
+    def _format_actor(self, actor_type: str | None, actor_id: str | None) -> str | None:
+        if actor_type is None and actor_id is None:
+            return None
+        if actor_type is None:
+            return actor_id
+        if actor_id is None:
+            return actor_type
+        return f"{actor_type}:{actor_id}"
 
     def _approval_signal(self, approval: Any) -> OperatorActivitySignalResponse:
         return OperatorActivitySignalResponse(

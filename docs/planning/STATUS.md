@@ -1,4 +1,4 @@
-# STATUS.md
+﻿# STATUS.md
 
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-02
@@ -9,6 +9,8 @@
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F49 - Operator console polish và incident workflow - 2026-04-02
+- [x] PR51 - Operator console polish và incident workflow - 2026-04-02
 - [x] F47 - V6 release closure và support baseline - 2026-04-02
 - [x] PR49 - V6 release closure và support baseline - 2026-04-02
 - [x] F48 - Team deployment ergonomics và upgrade path - 2026-04-02
@@ -75,7 +77,7 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] F49 - Operator console polish và incident workflow
+- [ ] F50 - Integration credentials và access lifecycle
 
 ### Blockers / Rủi ro
 - Chưa có blocker hiện tại
@@ -100,3 +102,4 @@
 - `docs/reference/ARCHITECTURE.md`
 - `docs/reference/API.md`
 - `docs/reference/DB_SCHEMA.md`
+

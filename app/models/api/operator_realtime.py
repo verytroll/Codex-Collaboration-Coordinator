@@ -63,6 +63,23 @@ class OperatorActivitySignalResponse(BaseModel):
     created_at: str | None = None
 
 
+class OperatorSessionIncidentSummaryResponse(BaseModel):
+    """Compact incident summary for the selected session."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    state: Literal["healthy", "watch", "incident"]
+    severity: OperatorActivitySeverity
+    headline: str
+    detail: str
+    recommended_action: str | None = None
+    latest_event_type: str | None = None
+    latest_event_title: str | None = None
+    latest_actor: str | None = None
+    latest_reason: str | None = None
+    signal_count: int = 0
+
+
 class OperatorSessionActivitySignalsResponse(BaseModel):
     """Grouped operational signals for the selected session."""
 
@@ -86,4 +103,5 @@ class OperatorSessionActivityResponse(BaseModel):
     total_events: int
     generated_at: str
     events: list[OperatorSessionActivityEventResponse] = Field(default_factory=list)
+    incident_summary: OperatorSessionIncidentSummaryResponse
     signals: OperatorSessionActivitySignalsResponse

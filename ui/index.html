@@ -31,11 +31,11 @@
     .title-2 { margin:0; font-size:1rem; font-weight:800; }
     .note { margin:6px 0 0; color:var(--muted); line-height:1.45; font-size:.92rem; }
     .cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-    .card, .item, .timeline-item, .signal-card, .section-card { padding:14px; border:1px solid var(--line); border-radius:18px; background:#fff; }
+    .card, .item, .timeline-item, .signal-card, .section-card, .incident-card { padding:14px; border:1px solid var(--line); border-radius:18px; background:#fff; }
     .label { margin:0 0 6px; color:var(--muted); font:700 .74rem/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; }
     .value { margin:0; font-size:1.3rem; font-weight:800; }
     .sub { margin:6px 0 0; color:var(--muted); font-size:.88rem; line-height:1.45; }
-    .filters, .list, .section, .timeline, .stacked { display:grid; gap:10px; }
+    .filters, .list, .section, .timeline, .stacked, .incident-summary { display:grid; gap:10px; }
     .field { display:grid; gap:8px; }
     .field-label { color:var(--muted); font:700 .74rem/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; }
     .input, .select { width:100%; padding:11px 14px; outline:none; }
@@ -45,16 +45,31 @@
     .action-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
     .action-message { color:var(--muted); font-size:.9rem; line-height:1.5; }
     .item.active { border-color:rgba(20,109,106,.5); box-shadow:0 0 0 3px rgba(20,109,106,.08); }
-    .item-head, .flex, .timeline-topline, .signal-topline { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap; }
+    .item-head, .flex, .timeline-topline, .signal-topline, .incident-topline, .timeline-group-head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap; }
     .meta-row, .chip-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
     .meta, .chip, .pill { display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.74); color:var(--muted); font:600 .8rem/1 var(--mono); }
     .chip { font:600 .84rem/1 var(--sans); }
     .empty, .error { padding:16px; border-radius:18px; border:1px dashed rgba(24,32,43,.22); background:rgba(255,255,255,.56); color:var(--muted); line-height:1.55; }
     .error { border-style:solid; border-color:rgba(184,92,56,.3); color:#8b3f21; }
-    .status-ok,.status-active,.status-pending,.status-queued,.status-running { color:#0b5c57; background:rgba(20,109,106,.12); }
+    .status-ok,.status-active,.status-healthy,.status-pending,.status-queued,.status-running { color:#0b5c57; background:rgba(20,109,106,.12); }
+    .status-watch { color:#7a5b16; background:rgba(197,156,34,.14); }
+    .status-incident { color:#8b3f21; background:rgba(184,92,56,.12); }
     .status-failed,.status-declined,.status-canceled,.status-archived { color:#8b3f21; background:rgba(184,92,56,.12); }
     .status-paused,.status-input_required,.status-auth_required,.status-blocked { color:#7a5b16; background:rgba(197,156,34,.14); }
     .severity-info { border-color:rgba(20,109,106,.2); } .severity-warning { border-color:rgba(197,156,34,.25); } .severity-critical { border-color:rgba(184,92,56,.3); }
+    .incident-summary { margin:0 0 14px; }
+    .incident-card { background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(244,239,230,.94)); }
+    .incident-card.healthy { border-color:rgba(20,109,106,.16); }
+    .incident-card.watch { border-color:rgba(197,156,34,.28); }
+    .incident-card.incident { border-color:rgba(184,92,56,.34); box-shadow:0 0 0 3px rgba(184,92,56,.08); }
+    .incident-kicker { margin:0; color:var(--muted); font:700 .74rem/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; }
+    .incident-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .incident-stack { display:grid; gap:8px; }
+    .incident-meta { color:var(--muted); font-size:.88rem; line-height:1.45; }
+    .timeline-group { display:grid; gap:8px; padding:12px; border:1px solid var(--line); border-radius:20px; background:rgba(255,255,255,.72); }
+    .timeline-group-head { padding:0 2px; align-items:center; }
+    .timeline-group-head .pill { margin-left:auto; }
+    .action-hint { margin:8px 0 0; color:var(--muted); font-size:.84rem; line-height:1.45; }
     @media (max-width:1100px) { .layout { grid-template-columns:minmax(0,1fr); } .topbar { flex-direction:column; } }
     @media (max-width:720px) { .shell { padding:14px; } .topbar,.panel-head,.panel-body { padding:14px; } .cards { grid-template-columns:minmax(0,1fr); } }
   </style>
@@ -106,6 +121,7 @@
         <article class="panel">
           <div class="panel-head"><div class="flex"><div><h2 class="title-2">Selected session</h2><p class="note">Focused detail for the session chosen from the session rail.</p></div><span class="pill" id="selected-session-pill">No session selected</span></div></div>
           <div class="panel-body">
+            <div id="incident-summary" class="incident-summary"></div>
             <div id="operator-action-panel" class="operator-action-panel">
               <div class="item-head">
                 <div>
@@ -178,6 +194,7 @@
       sessionList: document.getElementById("session-list"),
       selectedSession: document.getElementById("selected-session"),
       selectedSessionPill: document.getElementById("selected-session-pill"),
+      incidentSummary: document.getElementById("incident-summary"),
       dashboardFilterChips: document.getElementById("dashboard-filter-chips"),
       dashboardStatus: document.getElementById("dashboard-status"),
       dashboardBottlenecks: document.getElementById("dashboard-bottlenecks"),
@@ -554,19 +571,20 @@
     }
 
     function renderLoading() {
-      nodes.summaryCards.innerHTML = '<div class="empty">Loading operator shell…</div>';
-      nodes.sessionList.innerHTML = '<div class="empty">Loading sessions…</div>';
+      nodes.summaryCards.innerHTML = '<div class="empty">Loading operator shell...</div>';
+      nodes.sessionList.innerHTML = '<div class="empty">Loading sessions...</div>';
       nodes.dashboardFilterChips.innerHTML = "";
       nodes.dashboardStatus.innerHTML = '<span class="chip">Loading dashboard</span>';
-      nodes.dashboardBottlenecks.innerHTML = '<div class="empty">Loading bottlenecks…</div>';
-      nodes.phaseDistribution.innerHTML = '<div class="empty">Loading phases…</div>';
-      nodes.runtimePools.innerHTML = '<div class="empty">Loading runtime pools…</div>';
-      nodes.operatorActionButtons.innerHTML = '<div class="empty">Loading operator actions…</div>';
-      nodes.selectedSession.innerHTML = '<div class="empty">Loading selected session…</div>';
+      nodes.dashboardBottlenecks.innerHTML = '<div class="empty">Loading bottlenecks...</div>';
+      nodes.phaseDistribution.innerHTML = '<div class="empty">Loading phases...</div>';
+      nodes.runtimePools.innerHTML = '<div class="empty">Loading runtime pools...</div>';
+      nodes.operatorActionButtons.innerHTML = '<div class="empty">Loading operator actions...</div>';
+      nodes.selectedSession.innerHTML = '<div class="empty">Loading selected session...</div>';
       nodes.actionStatusPill.textContent = "Loading";
       nodes.actionMessage.textContent = "Loading operator actions...";
-      nodes.activitySignals.innerHTML = '<div class="empty">Loading live activity…</div>';
-      nodes.activityFeed.innerHTML = '<div class="empty">Loading activity feed…</div>';
+      nodes.incidentSummary.innerHTML = '<div class="empty">Loading incident summary...</div>';
+      nodes.activitySignals.innerHTML = '<div class="empty">Loading live activity...</div>';
+      nodes.activityFeed.innerHTML = '<div class="empty">Loading activity feed...</div>';
       nodes.sessionCountPill.textContent = "0 sessions";
       nodes.selectedSessionPill.textContent = "No session selected";
       syncActivityControls();
@@ -584,6 +602,7 @@
       nodes.runtimePools.innerHTML = html;
       nodes.operatorActionButtons.innerHTML = html;
       nodes.selectedSession.innerHTML = html;
+      nodes.incidentSummary.innerHTML = html;
       nodes.actionStatusPill.textContent = "Error";
       nodes.actionMessage.textContent = message;
       nodes.activitySignals.innerHTML = html;
@@ -723,6 +742,7 @@
       if (!selected) {
         nodes.selectedSessionPill.textContent = "No session selected";
         nodes.selectedSession.innerHTML = '<div class="empty">Select a session from the rail to inspect its detail surface.</div>';
+        renderIncidentSummary();
         return;
       }
       const session = selected.session;
@@ -762,6 +782,7 @@
           <div class="item"><div class="item-head"><strong>${escapeHtml(item.title)}</strong><span class="pill">${escapeHtml(item.artifact_type || item.export_kind || "artifact")}</span></div><div class="sub">${escapeHtml(item.file_name || item.export_format || item.mime_type || "No file metadata")}</div></div>
         `)}
       `;
+      renderIncidentSummary();
     }
 
     function renderOperatorActionPanel() {
@@ -781,9 +802,18 @@
         renderActionSection(
           "Phase transitions",
           renderPhaseActionCards(selected.session, selected.phases || []),
+          "Only inactive phases can be activated.",
         ),
-        renderActionSection("Job controls", renderJobActionCards(selected.jobs || [])),
-        renderActionSection("Approvals", renderApprovalActionCards(approvals)),
+        renderActionSection(
+          "Job controls",
+          renderJobActionCards(selected.jobs || []),
+          "Retry failed, canceled, or loop-paused jobs. Resume queued, input-required, auth-required, or paused jobs. Cancel active jobs.",
+        ),
+        renderActionSection(
+          "Approvals",
+          renderApprovalActionCards(approvals),
+          "Only pending approvals expose operator actions.",
+        ),
       ].filter(Boolean);
       nodes.operatorActionButtons.innerHTML = sections.length
         ? sections.join("")
@@ -791,13 +821,14 @@
       bindActionButtons();
     }
 
-    function renderActionSection(title, content) {
+    function renderActionSection(title, content, hint) {
       if (!content) {
         return "";
       }
       return `
         <section class="section-card">
           <h3>${escapeHtml(title)}</h3>
+          ${hint ? `<div class="action-hint">${escapeHtml(hint)}</div>` : ""}
           <div class="action-grid">${content}</div>
         </section>
       `;
@@ -1019,6 +1050,7 @@
       if (!state.data?.selected_session_id) {
         nodes.activitySignals.innerHTML = '<div class="empty">Select a session to stream live activity.</div>';
         nodes.activityFeed.innerHTML = '<div class="empty">Activity feed appears after a session is selected.</div>';
+        renderIncidentSummary();
         return;
       }
       if (state.activityError) {
@@ -1038,24 +1070,103 @@
       const feed = state.activityFeed || [];
       if (feed.length === 0) {
         nodes.activityFeed.innerHTML = '<div class="empty">No activity events in the selected window.</div>';
+        renderIncidentSummary();
         return;
       }
-      nodes.activityFeed.innerHTML = feed.map((event) => `
-        <article class="timeline-item severity-${escapeHtml(event.severity)}">
-          <div class="timeline-topline">
-            <div><span class="pill">${escapeHtml(event.category)}</span><span class="pill">${escapeHtml(event.severity)}</span></div>
-            <span class="meta">#${event.sequence} · ${escapeHtml(event.created_at)}</span>
+      nodes.activityFeed.innerHTML = renderTimelineFeed(feed);
+      renderIncidentSummary();
+    }
+
+    function renderIncidentSummary() {
+      if (!nodes.incidentSummary) {
+        return;
+      }
+      const incident = state.activity?.incident_summary;
+      if (!state.data?.selected_session_id) {
+        nodes.incidentSummary.innerHTML = '<div class="empty">Select a session to read its incident summary.</div>';
+        return;
+      }
+      if (!incident) {
+        nodes.incidentSummary.innerHTML = '<div class="empty">Incident summary is not available for this session.</div>';
+        return;
+      }
+      const actor = incident.latest_actor ? `<span class="pill">actor ${escapeHtml(incident.latest_actor)}</span>` : "";
+      const reason = incident.latest_reason ? `<span class="pill">reason ${escapeHtml(incident.latest_reason)}</span>` : "";
+      const eventTitle = incident.latest_event_title
+        ? `<span class="pill">${escapeHtml(incident.latest_event_title)}</span>`
+        : "";
+      nodes.incidentSummary.innerHTML = `
+        <section class="incident-card ${escapeHtml(incident.state)} severity-${escapeHtml(incident.severity)}">
+          <div class="incident-topline">
+            <div>
+              <p class="incident-kicker">Incident summary</p>
+              <h3 style="margin:6px 0 0">${escapeHtml(incident.headline)}</h3>
+            </div>
+            <div class="chip-row">
+              <span class="pill status-${escapeHtml(incident.state)}">${escapeHtml(incident.state)}</span>
+              <span class="pill">${escapeHtml(incident.severity)}</span>
+              <span class="pill">signals ${incident.signal_count}</span>
+            </div>
           </div>
-          <div><strong>${escapeHtml(event.title)}</strong></div>
-          <div class="sub">${escapeHtml(formatEventDetail(event))}</div>
-          <div class="meta-row">
-            <span class="meta">${escapeHtml(event.event_type)}</span><span class="meta">${escapeHtml(event.entity_type)}:${escapeHtml(event.entity_id)}</span>
-            ${event.job_id ? `<span class="meta">job ${escapeHtml(event.job_id)}</span>` : ""}
-            ${event.phase_key ? `<span class="meta">phase ${escapeHtml(event.phase_key)}</span>` : ""}
-            ${event.runtime_pool_key ? `<span class="meta">pool ${escapeHtml(event.runtime_pool_key)}</span>` : ""}
+          <div class="incident-grid">
+            <div class="incident-stack">
+              <div class="incident-meta">${escapeHtml(incident.detail)}</div>
+              ${incident.recommended_action ? `<div class="incident-meta"><strong>Recommended:</strong> ${escapeHtml(incident.recommended_action)}</div>` : ""}
+            </div>
+            <div class="incident-stack">
+              <div class="incident-meta"><strong>Latest event:</strong> ${escapeHtml(incident.latest_event_type || "n/a")}${incident.latest_event_title ? ` | ${escapeHtml(incident.latest_event_title)}` : ""}</div>
+              <div class="chip-row">${actor}${eventTitle}${reason}</div>
+            </div>
           </div>
-        </article>
-      `).join("");
+        </section>
+      `;
+    }
+
+    function renderTimelineFeed(feed) {
+      if (!feed || feed.length === 0) {
+        return "";
+      }
+      const grouped = new Map();
+      for (const event of feed) {
+        if (!grouped.has(event.category)) {
+          grouped.set(event.category, []);
+        }
+        grouped.get(event.category).push(event);
+      }
+      return Array.from(grouped.entries())
+        .map(
+          ([category, items]) => `
+            <section class="timeline-group">
+              <div class="timeline-group-head">
+                <strong>${escapeHtml(String(category).replaceAll("_", " "))}</strong>
+                <span class="pill">${escapeHtml(String(items.length))} events</span>
+              </div>
+              <div class="timeline">
+                ${items
+                  .map(
+                    (event) => `
+                      <article class="timeline-item severity-${escapeHtml(event.severity)}">
+                        <div class="timeline-topline">
+                          <div><span class="pill">${escapeHtml(event.category)}</span><span class="pill">${escapeHtml(event.severity)}</span></div>
+                          <span class="meta">#${event.sequence} | ${escapeHtml(event.created_at)}</span>
+                        </div>
+                        <div><strong>${escapeHtml(event.title)}</strong></div>
+                        <div class="sub">${escapeHtml(formatEventDetail(event))}</div>
+                        <div class="meta-row">
+                          <span class="meta">${escapeHtml(event.event_type)}</span><span class="meta">${escapeHtml(event.entity_type)}:${escapeHtml(event.entity_id)}</span>
+                          ${event.job_id ? `<span class="meta">job ${escapeHtml(event.job_id)}</span>` : ""}
+                          ${event.phase_key ? `<span class="meta">phase ${escapeHtml(event.phase_key)}</span>` : ""}
+                          ${event.runtime_pool_key ? `<span class="meta">pool ${escapeHtml(event.runtime_pool_key)}</span>` : ""}
+                        </div>
+                      </article>
+                    `,
+                  )
+                  .join("")}
+              </div>
+            </section>
+          `,
+        )
+        .join("");
     }
 
     function renderSignalBlock(title, items, itemRenderer, emptyText) {

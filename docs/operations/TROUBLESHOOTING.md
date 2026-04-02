@@ -26,6 +26,9 @@
   without the configured access token headers.
 - If reconnects keep resuming from the wrong point, inspect the `Last-Event-ID` header and the
   `since_sequence` query parameter on the stream request.
+- If the incident summary says `healthy` but the shell still looks noisy, check whether the
+  selected session only has informational activity and no pending approvals, blocked jobs,
+  recent errors, or runtime pressure.
 
 ## A2A problems
 

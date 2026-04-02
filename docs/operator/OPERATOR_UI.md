@@ -26,6 +26,7 @@ The operator UI shell is a thin operator surface for the coordinator.
 - transcript exports
 - dashboard summaries for bottlenecks, phases, and runtime pools
 - replayable session activity, including messages, jobs, reviews, approvals, runtime health signals, and operator write actions
+- a compact incident summary for the selected session, derived from the replayable activity and signal feed
 
 ## Filters
 
@@ -64,6 +65,7 @@ The activity endpoint returns a replayable window for a single session.
 - `since_sequence=<cursor>` returns only events after that cursor
 - `next_cursor_sequence` is the cursor you should pass on the next poll
 - the feed includes signals for pending approvals, recent errors, stuck jobs, phase bottlenecks, and runtime health abnormalities
+- the shell groups replayable activity by category so incident reading is easier during triage
 - the stream route uses SSE with `Last-Event-ID` / `since_sequence` resume support
 - the shell prefers SSE in local/trusted modes and falls back to polling when EventSource cannot send the configured access token headers
 

@@ -96,6 +96,8 @@ Before considering the baseline closed, confirm:
    requested action.
 9. Correlate logs by `request_id` from the request headers or the request log.
 10. If the bridge is degraded, check the latest `bridge` samples in telemetry and restart the app after confirming the Codex binary is available.
+11. Use the incident summary card in the operator shell to see the current severity, latest actor, and the recommended recovery path before drilling into the activity feed.
+12. The live activity feed groups events by category, so you can move from recent errors to approvals and runtime pressure without reading raw log output first.
 
 ## SQLite backup and restore
 

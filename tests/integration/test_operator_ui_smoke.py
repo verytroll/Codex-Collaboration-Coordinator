@@ -34,6 +34,7 @@ def test_operator_shell_smoke_contract(tmp_path, monkeypatch) -> None:
             assert page_response.status_code == 200
             assert "Operator Shell" in page_response.text
             assert 'id="summary-cards"' in page_response.text
+            assert 'id="incident-summary"' in page_response.text
             assert 'id="session-list"' in page_response.text
             assert 'id="selected-session"' in page_response.text
             assert 'id="dashboard-bottlenecks"' in page_response.text
@@ -59,6 +60,8 @@ def test_operator_shell_smoke_contract(tmp_path, monkeypatch) -> None:
             activity_payload = activity_response.json()
             assert activity_payload["session_id"] == "ses_demo"
             assert activity_payload["events"]
+            assert activity_payload["incident_summary"]["state"] == "healthy"
+            assert activity_payload["incident_summary"]["headline"] == "No active incident"
             assert activity_payload["signals"]["pending_approvals"] is not None
             assert activity_payload["signals"]["stuck_jobs"] is not None
     finally:
