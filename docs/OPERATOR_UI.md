@@ -51,6 +51,10 @@ The shell also includes an operator action panel for:
 
 Each write action asks for a confirmation step and records a session audit event with actor, target, reason, and result.
 
+The shell renders actor identity defaults into its fetch layer so protected mode writes
+send the configured `X-Actor-*` headers automatically. Direct API clients should use the
+same header names when they call the operator or approval routes.
+
 ## Live activity
 
 The activity endpoint returns a replayable window for a single session.
@@ -67,6 +71,8 @@ The shell uses that contract for its live activity panel and polls it while live
 - `ACCESS_BOUNDARY_MODE=local` and `trusted` allow the shell without a token.
 - `ACCESS_BOUNDARY_MODE=protected` requires `ACCESS_TOKEN`.
 - The shell page injects the configured token into its fetch layer when the page is rendered in protected mode.
+- In protected mode, the shell also injects the configured actor identity headers so
+  operator and approval actions satisfy the RBAC checks.
 
 ## Local use
 

@@ -4,6 +4,7 @@ from app.services.a2a_adapter import A2AAdapterService, A2ATaskProjection
 from app.services.a2a_public_service import A2APublicService
 from app.services.approval_manager import ApprovalDecision, ApprovalManager
 from app.services.artifact_manager import ArtifactBundle, ArtifactManager
+from app.services.authz_service import ActorIdentity, AuthzService
 from app.services.channel_service import DEFAULT_CHANNELS, ChannelService
 from app.services.command_handler import CommandExecutionResult, CommandHandler
 from app.services.job_service import JobService
@@ -85,6 +86,8 @@ __all__ = [
     "A2AAdapterService",
     "A2ATaskProjection",
     "A2APublicService",
+    "ActorIdentity",
+    "AuthzService",
     "PublicEventStreamService",
     "JobService",
     "LoopGuardDecision",

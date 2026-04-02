@@ -19,6 +19,14 @@ DEFAULT_ACCESS_BOUNDARY_MODE_LOCAL = "local"
 DEFAULT_ACCESS_BOUNDARY_MODE_TRUSTED = "trusted"
 DEFAULT_ACCESS_BOUNDARY_MODE_PROTECTED = "protected"
 DEFAULT_ACCESS_TOKEN_HEADER = "X-Access-Token"
+DEFAULT_ACTOR_ID_HEADER = "X-Actor-Id"
+DEFAULT_ACTOR_ROLE_HEADER = "X-Actor-Role"
+DEFAULT_ACTOR_TYPE_HEADER = "X-Actor-Type"
+DEFAULT_ACTOR_LABEL_HEADER = "X-Actor-Label"
+DEFAULT_ACTOR_ID = "local-operator"
+DEFAULT_ACTOR_ROLE = "operator"
+DEFAULT_ACTOR_TYPE = "human"
+DEFAULT_ACTOR_LABEL = "Local operator"
 DEFAULT_DEPLOYMENT_PROFILE_LOCAL_DEV = "local-dev"
 DEFAULT_DEPLOYMENT_PROFILE_TRUSTED_DEMO = "trusted-demo"
 DEFAULT_DEPLOYMENT_PROFILE_SMALL_TEAM = "small-team"
@@ -27,6 +35,7 @@ VALID_DEPLOYMENT_PROFILES = {
     DEFAULT_DEPLOYMENT_PROFILE_TRUSTED_DEMO,
     DEFAULT_DEPLOYMENT_PROFILE_SMALL_TEAM,
 }
+
 
 def _parse_bool(value: str | None, default: bool) -> bool:
     if value is None:
@@ -125,6 +134,14 @@ class AppConfig:
     access_boundary_mode: str = DEFAULT_ACCESS_BOUNDARY_MODE_LOCAL
     access_token: str = ""
     access_token_header: str = DEFAULT_ACCESS_TOKEN_HEADER
+    actor_id_header: str = DEFAULT_ACTOR_ID_HEADER
+    actor_role_header: str = DEFAULT_ACTOR_ROLE_HEADER
+    actor_type_header: str = DEFAULT_ACTOR_TYPE_HEADER
+    actor_label_header: str = DEFAULT_ACTOR_LABEL_HEADER
+    actor_id: str = DEFAULT_ACTOR_ID
+    actor_role: str = DEFAULT_ACTOR_ROLE
+    actor_type: str = DEFAULT_ACTOR_TYPE
+    actor_label: str = DEFAULT_ACTOR_LABEL
 
 
 def load_config() -> AppConfig:
@@ -141,6 +158,10 @@ def load_config() -> AppConfig:
     profile_defaults = get_deployment_profile_defaults(deployment_profile)
     access_boundary_mode_value = os.getenv("ACCESS_BOUNDARY_MODE")
     access_token_header_value = os.getenv("ACCESS_TOKEN_HEADER")
+    actor_id_header_value = os.getenv("ACTOR_ID_HEADER")
+    actor_role_header_value = os.getenv("ACTOR_ROLE_HEADER")
+    actor_type_header_value = os.getenv("ACTOR_TYPE_HEADER")
+    actor_label_header_value = os.getenv("ACTOR_LABEL_HEADER")
     if access_boundary_mode_value is None or not access_boundary_mode_value.strip():
         access_boundary_mode = profile_defaults.access_boundary_mode
     else:
@@ -149,6 +170,22 @@ def load_config() -> AppConfig:
         access_token_header = DEFAULT_ACCESS_TOKEN_HEADER
     else:
         access_token_header = access_token_header_value.strip()
+    if actor_id_header_value is None or not actor_id_header_value.strip():
+        actor_id_header = DEFAULT_ACTOR_ID_HEADER
+    else:
+        actor_id_header = actor_id_header_value.strip()
+    if actor_role_header_value is None or not actor_role_header_value.strip():
+        actor_role_header = DEFAULT_ACTOR_ROLE_HEADER
+    else:
+        actor_role_header = actor_role_header_value.strip()
+    if actor_type_header_value is None or not actor_type_header_value.strip():
+        actor_type_header = DEFAULT_ACTOR_TYPE_HEADER
+    else:
+        actor_type_header = actor_type_header_value.strip()
+    if actor_label_header_value is None or not actor_label_header_value.strip():
+        actor_label_header = DEFAULT_ACTOR_LABEL_HEADER
+    else:
+        actor_label_header = actor_label_header_value.strip()
     return AppConfig(
         app_name=os.getenv("APP_NAME", DEFAULT_APP_NAME),
         app_env=app_env_value or profile_defaults.app_env,
@@ -163,6 +200,14 @@ def load_config() -> AppConfig:
         access_boundary_mode=access_boundary_mode,
         access_token=os.getenv("ACCESS_TOKEN", "").strip(),
         access_token_header=access_token_header,
+        actor_id_header=actor_id_header,
+        actor_role_header=actor_role_header,
+        actor_type_header=actor_type_header,
+        actor_label_header=actor_label_header,
+        actor_id=os.getenv("ACTOR_ID", DEFAULT_ACTOR_ID).strip() or DEFAULT_ACTOR_ID,
+        actor_role=os.getenv("ACTOR_ROLE", DEFAULT_ACTOR_ROLE).strip() or DEFAULT_ACTOR_ROLE,
+        actor_type=os.getenv("ACTOR_TYPE", DEFAULT_ACTOR_TYPE).strip() or DEFAULT_ACTOR_TYPE,
+        actor_label=os.getenv("ACTOR_LABEL", DEFAULT_ACTOR_LABEL).strip() or DEFAULT_ACTOR_LABEL,
     )
 
 

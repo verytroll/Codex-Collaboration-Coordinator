@@ -19,6 +19,14 @@ def test_load_config_uses_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("ACCESS_BOUNDARY_MODE", raising=False)
     monkeypatch.delenv("ACCESS_TOKEN", raising=False)
     monkeypatch.delenv("ACCESS_TOKEN_HEADER", raising=False)
+    monkeypatch.delenv("ACTOR_ID_HEADER", raising=False)
+    monkeypatch.delenv("ACTOR_ROLE_HEADER", raising=False)
+    monkeypatch.delenv("ACTOR_TYPE_HEADER", raising=False)
+    monkeypatch.delenv("ACTOR_LABEL_HEADER", raising=False)
+    monkeypatch.delenv("ACTOR_ID", raising=False)
+    monkeypatch.delenv("ACTOR_ROLE", raising=False)
+    monkeypatch.delenv("ACTOR_TYPE", raising=False)
+    monkeypatch.delenv("ACTOR_LABEL", raising=False)
 
     config = load_config()
 
@@ -35,6 +43,14 @@ def test_load_config_uses_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     assert config.access_boundary_mode == "local"
     assert config.access_token == ""
     assert config.access_token_header == "X-Access-Token"
+    assert config.actor_id_header == "X-Actor-Id"
+    assert config.actor_role_header == "X-Actor-Role"
+    assert config.actor_type_header == "X-Actor-Type"
+    assert config.actor_label_header == "X-Actor-Label"
+    assert config.actor_id == "local-operator"
+    assert config.actor_role == "operator"
+    assert config.actor_type == "human"
+    assert config.actor_label == "Local operator"
 
 
 def test_load_config_reads_environment(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -83,6 +99,14 @@ def test_load_config_applies_small_team_profile_defaults(monkeypatch: pytest.Mon
     monkeypatch.delenv("ACCESS_BOUNDARY_MODE", raising=False)
     monkeypatch.delenv("ACCESS_TOKEN", raising=False)
     monkeypatch.delenv("ACCESS_TOKEN_HEADER", raising=False)
+    monkeypatch.delenv("ACTOR_ID_HEADER", raising=False)
+    monkeypatch.delenv("ACTOR_ROLE_HEADER", raising=False)
+    monkeypatch.delenv("ACTOR_TYPE_HEADER", raising=False)
+    monkeypatch.delenv("ACTOR_LABEL_HEADER", raising=False)
+    monkeypatch.delenv("ACTOR_ID", raising=False)
+    monkeypatch.delenv("ACTOR_ROLE", raising=False)
+    monkeypatch.delenv("ACTOR_TYPE", raising=False)
+    monkeypatch.delenv("ACTOR_LABEL", raising=False)
 
     config = load_config()
 
@@ -92,3 +116,4 @@ def test_load_config_applies_small_team_profile_defaults(monkeypatch: pytest.Mon
     assert config.app_reload is False
     assert config.database_url == "sqlite:///./data/codex_coordinator.db"
     assert config.access_boundary_mode == "trusted"
+    assert config.actor_role == "operator"

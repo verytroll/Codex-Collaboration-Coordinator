@@ -9,11 +9,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.dependencies import (
     get_approval_manager,
     get_approval_repository,
+    get_authz_service,
     get_phase_gate_service,
+    get_review_actor_identity,
 )
 from app.models.api.jobs import ApprovalDecisionRequest, ApprovalRequestResponse
 from app.repositories.approvals import ApprovalRepository
 from app.services.approval_manager import ApprovalManager
+from app.services.authz_service import ActorIdentity, AuthzService
 from app.services.phase_gate_service import PhaseGateService
 
 router = APIRouter(prefix="/api/v1", tags=["approvals"])
@@ -31,8 +34,11 @@ async def accept_approval(
     approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
     approval_manager: Annotated[ApprovalManager, Depends(get_approval_manager)],
     phase_gate_service: Annotated[PhaseGateService, Depends(get_phase_gate_service)],
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+    actor_identity: Annotated[ActorIdentity, Depends(get_review_actor_identity)],
     payload: ApprovalDecisionRequest | None = None,
 ) -> ApprovalRequestResponse:
+    authz_service.require_approval_action(actor_identity, action="accept")
     approval = await approval_repository.get(approval_id)
     if approval is None:
         raise HTTPException(
@@ -59,8 +65,11 @@ async def decline_approval(
     approval_repository: Annotated[ApprovalRepository, Depends(get_approval_repository)],
     approval_manager: Annotated[ApprovalManager, Depends(get_approval_manager)],
     phase_gate_service: Annotated[PhaseGateService, Depends(get_phase_gate_service)],
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+    actor_identity: Annotated[ActorIdentity, Depends(get_review_actor_identity)],
     payload: ApprovalDecisionRequest | None = None,
 ) -> ApprovalRequestResponse:
+    authz_service.require_approval_action(actor_identity, action="decline")
     approval = await approval_repository.get(approval_id)
     if approval is None:
         raise HTTPException(

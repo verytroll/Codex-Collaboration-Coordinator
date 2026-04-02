@@ -3,12 +3,14 @@
 ### Trạng thái hiện tại
 - Ngày cập nhật: 2026-04-02
 - Pha hiện tại: V6 implementation
-- Đang tập trung vào: PR45 / F43 - identity và team RBAC cơ bản
+- Đang tập trung vào: PR46 / F44 - durable runtime và persistence boundary
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] F43 - Identity và team RBAC cơ bản - 2026-04-02
+- [x] PR45 - Identity và team RBAC cơ bản - 2026-04-02
 - [x] F42 - Operator actions và audit trail - 2026-04-02
 - [x] PR44 - Operator actions và audit trail - 2026-04-02
 - [x] F41 - V5 release closure và baseline discipline - 2026-04-02
@@ -60,7 +62,6 @@
 - [x] PR18 - Hoàn thiện MVP, docs và A2A-ready surface - 2026-03-31
 
 ### Tiếp theo
-- [ ] PR45 / F43: identity và team RBAC cơ bản
 - [ ] PR46 / F44: durable runtime và persistence boundary
 - [ ] PR47 / F45: realtime streaming transport
 
@@ -70,7 +71,7 @@
 - Rủi ro phụ là tăng deployment complexity cho small-team profile trước khi smoke/release path đủ rõ
 
 ### Kiểm chứng gần nhất
-- `pytest` - 95 passed - 2026-04-02
+- `pytest` - 98 passed - 2026-04-02
 - `python -m ruff check app tests` - passed - 2026-04-02
 - `python -m compileall app tests` - passed - 2026-04-02
 

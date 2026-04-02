@@ -65,7 +65,7 @@
       <div>
         <p class="eyebrow">Coordinator-first operator view</p>
         <h1>Operator Shell</h1>
-        <p class="subtitle">A thin read-only surface for sessions, participants, messages, jobs, approvals, artifacts, and live activity.</p>
+        <p class="subtitle">A thin operator surface for sessions, participants, messages, jobs, approvals, artifacts, and live activity.</p>
       </div>
       <div class="actions">
         <span class="pill" id="access-pill">Access boundary ready</span>
@@ -137,6 +137,14 @@
     const BOOTSTRAP_PATH = __BOOTSTRAP_PATH__;
     const ACCESS_TOKEN = __ACCESS_TOKEN__;
     const ACCESS_TOKEN_HEADER = __ACCESS_TOKEN_HEADER__;
+    const ACTOR_ID_HEADER = __ACTOR_ID_HEADER__;
+    const ACTOR_ROLE_HEADER = __ACTOR_ROLE_HEADER__;
+    const ACTOR_TYPE_HEADER = __ACTOR_TYPE_HEADER__;
+    const ACTOR_LABEL_HEADER = __ACTOR_LABEL_HEADER__;
+    const ACTOR_ID = __ACTOR_ID__;
+    const ACTOR_ROLE = __ACTOR_ROLE__;
+    const ACTOR_TYPE = __ACTOR_TYPE__;
+    const ACTOR_LABEL = __ACTOR_LABEL__;
     const ACTIVITY_LIMIT = 25;
     const ACTIVITY_POLL_MS = 5000;
 
@@ -360,6 +368,18 @@
 
     function buildHeaders() {
       const headers = { Accept: "application/json" };
+      if (ACTOR_ID) {
+        headers[ACTOR_ID_HEADER] = ACTOR_ID;
+      }
+      if (ACTOR_ROLE) {
+        headers[ACTOR_ROLE_HEADER] = ACTOR_ROLE;
+      }
+      if (ACTOR_TYPE) {
+        headers[ACTOR_TYPE_HEADER] = ACTOR_TYPE;
+      }
+      if (ACTOR_LABEL) {
+        headers[ACTOR_LABEL_HEADER] = ACTOR_LABEL;
+      }
       if (ACCESS_TOKEN) {
         if (String(ACCESS_TOKEN_HEADER).toLowerCase() === "authorization") {
           headers.Authorization = `Bearer ${ACCESS_TOKEN}`;

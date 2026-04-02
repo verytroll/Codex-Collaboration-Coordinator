@@ -39,6 +39,11 @@ class OperatorActionAuditResponse(BaseModel):
     event_type: str
     actor_type: str | None = None
     actor_id: str | None = None
+    actor_role: str | None = None
+    actor_label: str | None = None
+    identity_source: str | None = None
+    auth_mode: str | None = None
+    client_host: str | None = None
     session_id: str
     target_type: OperatorActionTargetType
     target_id: str

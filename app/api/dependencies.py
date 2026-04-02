@@ -38,6 +38,7 @@ from app.services.a2a_public_service import A2APublicService
 from app.services.access_boundary import AccessBoundaryService
 from app.services.approval_manager import ApprovalManager
 from app.services.artifact_manager import ArtifactManager
+from app.services.authz_service import ActorIdentity, AuthzService
 from app.services.channel_service import ChannelService
 from app.services.command_handler import CommandHandler
 from app.services.debug_service import DebugService
@@ -90,6 +91,11 @@ def get_access_boundary_service() -> AccessBoundaryService:
     )
 
 
+def get_authz_service() -> AuthzService:
+    """Provide the actor authorization service."""
+    return AuthzService(config=get_config())
+
+
 async def require_operator_access(
     request: Request,
     access_boundary_service: Annotated[
@@ -110,6 +116,30 @@ async def require_public_access(
 ) -> None:
     """Authorize access to public and A2A routes."""
     await access_boundary_service.require_public_access(request)
+
+
+async def get_operator_actor_identity(
+    request: Request,
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+) -> ActorIdentity:
+    """Resolve an identity for operator write actions."""
+    return await authz_service.resolve_operator_identity(request)
+
+
+async def get_public_actor_identity(
+    request: Request,
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+) -> ActorIdentity:
+    """Resolve an identity for public write actions."""
+    return await authz_service.resolve_public_identity(request)
+
+
+async def get_review_actor_identity(
+    request: Request,
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+) -> ActorIdentity:
+    """Resolve an identity for review and approval writes."""
+    return await authz_service.resolve_review_identity(request)
 
 
 def get_session_repository(
@@ -840,6 +870,10 @@ def get_a2a_public_service(
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     artifact_repository: Annotated[ArtifactRepository, Depends(get_artifact_repository)],
     session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
+    session_event_repository: Annotated[
+        SessionEventRepository,
+        Depends(get_session_event_repository),
+    ],
     phase_service: Annotated[PhaseService, Depends(get_phase_service)],
     event_stream_service: Annotated[
         PublicEventStreamService,
@@ -857,6 +891,7 @@ def get_a2a_public_service(
         ),
         task_repository=task_repository,
         session_repository=session_repository,
+        session_event_repository=session_event_repository,
         event_stream_service=event_stream_service,
     )
 

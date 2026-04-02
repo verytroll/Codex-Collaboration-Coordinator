@@ -21,6 +21,9 @@ pip install -e .[dev]
 ```
 
 4. Open `http://127.0.0.1:8000/operator` to inspect the thin operator shell and action panel.
+5. If you are calling write routes directly in `protected` mode, include the actor
+   identity headers (`X-Actor-Id`, `X-Actor-Role`, optionally `X-Actor-Type` and
+   `X-Actor-Label`) along with the access token.
 
 ## Prod-like startup
 
@@ -39,6 +42,8 @@ pip install -e .[dev]
    returns the bootstrap payload for a selected session.
 10. Confirm the operator action routes work for retry, resume, cancel, approve, reject,
     and phase activation, and that the session event log records the matching audit trail.
+11. Confirm protected direct clients send actor identity headers, or rely on the shell's
+    rendered defaults when using the operator UI page.
 
 ## Release candidate
 
@@ -76,8 +81,12 @@ Before considering the baseline closed, confirm:
 4. Check `GET /operator` if you want the shell view instead of raw JSON.
 5. If operator/public routes return `401`, verify `ACCESS_TOKEN` and the request header name.
 6. If operator/public routes return `403`, verify the token value being sent.
-7. Correlate logs by `request_id` from the request headers or the request log.
-8. If the bridge is degraded, check the latest `bridge` samples in telemetry and restart the app after confirming the Codex binary is available.
+7. If a protected write route returns `401` with a valid token, check the actor identity
+   headers first.
+8. If a protected write route returns `403`, verify the actor role is allowed for the
+   requested action.
+9. Correlate logs by `request_id` from the request headers or the request log.
+10. If the bridge is degraded, check the latest `bridge` samples in telemetry and restart the app after confirming the Codex binary is available.
 
 ## SQLite backup and restore
 

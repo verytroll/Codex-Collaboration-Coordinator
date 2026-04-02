@@ -8,8 +8,10 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import (
+    get_authz_service,
     get_job_repository,
     get_phase_gate_service,
+    get_review_actor_identity,
     get_review_mode_service,
     get_session_repository,
 )
@@ -25,6 +27,7 @@ from app.models.api.review import (
 )
 from app.repositories.jobs import JobRepository
 from app.repositories.sessions import SessionRepository
+from app.services.authz_service import ActorIdentity, AuthzService
 from app.services.phase_gate_service import PhaseGateService
 from app.services.review_mode import ReviewModeService
 
@@ -137,7 +140,10 @@ async def create_review(
     session_repository: Annotated[SessionRepository, Depends(get_session_repository)],
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     review_mode_service: Annotated[ReviewModeService, Depends(get_review_mode_service)],
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+    actor_identity: Annotated[ActorIdentity, Depends(get_review_actor_identity)],
 ) -> ReviewEnvelope:
+    authz_service.require_approval_action(actor_identity, action="create_review")
     await _ensure_session_exists(session_repository, session_id)
     job = await job_repository.get(payload.source_job_id)
     if job is None or job.session_id != session_id:
@@ -180,7 +186,10 @@ async def submit_review_decision(
     payload: ReviewDecisionRequest,
     review_mode_service: Annotated[ReviewModeService, Depends(get_review_mode_service)],
     phase_gate_service: Annotated[PhaseGateService, Depends(get_phase_gate_service)],
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+    actor_identity: Annotated[ActorIdentity, Depends(get_review_actor_identity)],
 ) -> ReviewEnvelope:
+    authz_service.require_approval_action(actor_identity, action="submit_review_decision")
     try:
         result = await review_mode_service.submit_decision(
             review_id=review_id,

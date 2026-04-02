@@ -34,6 +34,14 @@ def _render_operator_shell_page() -> str:
         "__ACCESS_TOKEN_HEADER__",
         json.dumps(config.access_token_header),
     )
+    rendered = rendered.replace("__ACTOR_ID_HEADER__", json.dumps(config.actor_id_header))
+    rendered = rendered.replace("__ACTOR_ROLE_HEADER__", json.dumps(config.actor_role_header))
+    rendered = rendered.replace("__ACTOR_TYPE_HEADER__", json.dumps(config.actor_type_header))
+    rendered = rendered.replace("__ACTOR_LABEL_HEADER__", json.dumps(config.actor_label_header))
+    rendered = rendered.replace("__ACTOR_ID__", json.dumps(config.actor_id))
+    rendered = rendered.replace("__ACTOR_ROLE__", json.dumps(config.actor_role))
+    rendered = rendered.replace("__ACTOR_TYPE__", json.dumps(config.actor_type))
+    rendered = rendered.replace("__ACTOR_LABEL__", json.dumps(config.actor_label))
     return rendered
 
 

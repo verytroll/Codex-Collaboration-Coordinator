@@ -17,6 +17,7 @@ from app.repositories.phases import PhaseRecord
 from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRecord, SessionRepository
 from app.services.approval_manager import ApprovalManager
+from app.services.authz_service import ActorIdentity
 from app.services.offline_queue import OfflineQueueService
 from app.services.phase_service import PhaseService
 from app.services.relay_engine import RelayEngine
@@ -46,6 +47,11 @@ class OperatorActionAuditRecord:
     event_type: str
     actor_type: str | None
     actor_id: str | None
+    actor_role: str | None
+    actor_label: str | None
+    identity_source: str | None
+    auth_mode: str | None
+    client_host: str | None
     session_id: str
     target_type: OperatorActionTargetType
     target_id: str
@@ -103,7 +109,7 @@ class OperatorActionService:
         self,
         approval_id: str,
         *,
-        actor_id: str | None = None,
+        actor_identity: ActorIdentity | None = None,
         reason: str | None = None,
         note: str | None = None,
         context: dict[str, object] | None = None,
@@ -119,7 +125,7 @@ class OperatorActionService:
                 target_type="approval",
                 target_id=approval_id,
                 result="failed",
-                actor_id=actor_id,
+                actor_identity=actor_identity,
                 reason=reason,
                 note=note,
                 failure_mode="invalid_state",
@@ -130,7 +136,7 @@ class OperatorActionService:
             )
             raise ConflictError(f"Approval request already resolved: {approval_id}")
         decision_payload = self._build_decision_payload(
-            actor_id=actor_id,
+            actor_identity=actor_identity,
             reason=reason,
             note=note,
             context=context,
@@ -147,7 +153,7 @@ class OperatorActionService:
             target_type="approval",
             target_id=approval_id,
             result="applied",
-            actor_id=actor_id,
+            actor_identity=actor_identity,
             reason=reason,
             note=note,
             target_state_before=before_status,
@@ -172,7 +178,7 @@ class OperatorActionService:
         self,
         approval_id: str,
         *,
-        actor_id: str | None = None,
+        actor_identity: ActorIdentity | None = None,
         reason: str | None = None,
         note: str | None = None,
         context: dict[str, object] | None = None,
@@ -188,7 +194,7 @@ class OperatorActionService:
                 target_type="approval",
                 target_id=approval_id,
                 result="failed",
-                actor_id=actor_id,
+                actor_identity=actor_identity,
                 reason=reason,
                 note=note,
                 failure_mode="invalid_state",
@@ -199,7 +205,7 @@ class OperatorActionService:
             )
             raise ConflictError(f"Approval request already resolved: {approval_id}")
         decision_payload = self._build_decision_payload(
-            actor_id=actor_id,
+            actor_identity=actor_identity,
             reason=reason,
             note=note,
             context=context,
@@ -216,7 +222,7 @@ class OperatorActionService:
             target_type="approval",
             target_id=approval_id,
             result="applied",
-            actor_id=actor_id,
+            actor_identity=actor_identity,
             reason=reason,
             note=note,
             target_state_before=before_status,
@@ -241,7 +247,7 @@ class OperatorActionService:
         self,
         job_id: str,
         *,
-        actor_id: str | None = None,
+        actor_identity: ActorIdentity | None = None,
         reason: str | None = None,
         note: str | None = None,
         context: dict[str, object] | None = None,
@@ -255,7 +261,7 @@ class OperatorActionService:
                 target_type="job",
                 target_id=job.id,
                 result="duplicate",
-                actor_id=actor_id,
+                actor_identity=actor_identity,
                 reason=reason,
                 note=note,
                 target_state_before=job.status,
@@ -281,7 +287,7 @@ class OperatorActionService:
                 target_type="job",
                 target_id=job.id,
                 result="failed",
-                actor_id=actor_id,
+                actor_identity=actor_identity,
                 reason=reason,
                 note=note,
                 failure_mode="invalid_state",
@@ -300,7 +306,7 @@ class OperatorActionService:
             target_type="job",
             target_id=job.id,
             result="applied",
-            actor_id=actor_id,
+            actor_identity=actor_identity,
             reason=reason,
             note=note,
             target_state_before=before_status,
@@ -324,7 +330,7 @@ class OperatorActionService:
         self,
         job_id: str,
         *,
-        actor_id: str | None = None,
+        actor_identity: ActorIdentity | None = None,
         reason: str | None = None,
         note: str | None = None,
         context: dict[str, object] | None = None,
@@ -338,7 +344,7 @@ class OperatorActionService:
                 target_type="job",
                 target_id=job.id,
                 result="duplicate",
-                actor_id=actor_id,
+                actor_identity=actor_identity,
                 reason=reason,
                 note=note,
                 target_state_before=job.status,
@@ -364,7 +370,7 @@ class OperatorActionService:
                 target_type="job",
                 target_id=job.id,
                 result="failed",
-                actor_id=actor_id,
+                actor_identity=actor_identity,
                 reason=reason,
                 note=note,
                 failure_mode="invalid_state",
@@ -383,7 +389,7 @@ class OperatorActionService:
             target_type="job",
             target_id=job.id,
             result="applied",
-            actor_id=actor_id,
+            actor_identity=actor_identity,
             reason=reason,
             note=note,
             target_state_before=before_status,
@@ -407,7 +413,7 @@ class OperatorActionService:
         self,
         job_id: str,
         *,
-        actor_id: str | None = None,
+        actor_identity: ActorIdentity | None = None,
         reason: str | None = None,
         note: str | None = None,
         context: dict[str, object] | None = None,
@@ -421,7 +427,7 @@ class OperatorActionService:
                 target_type="job",
                 target_id=job.id,
                 result="duplicate",
-                actor_id=actor_id,
+                actor_identity=actor_identity,
                 reason=reason,
                 note=note,
                 target_state_before=job.status,
@@ -447,7 +453,7 @@ class OperatorActionService:
                 target_type="job",
                 target_id=job.id,
                 result="failed",
-                actor_id=actor_id,
+                actor_identity=actor_identity,
                 reason=reason,
                 note=note,
                 failure_mode="invalid_state",
@@ -464,7 +470,7 @@ class OperatorActionService:
                 target_type="job",
                 target_id=job.id,
                 result="failed",
-                actor_id=actor_id,
+                actor_identity=actor_identity,
                 reason=reason,
                 note=note,
                 failure_mode="invalid_state",
@@ -490,7 +496,7 @@ class OperatorActionService:
             target_type="job",
             target_id=job.id,
             result="applied",
-            actor_id=actor_id,
+            actor_identity=actor_identity,
             reason=reason,
             note=note,
             target_state_before=before_status,
@@ -515,7 +521,7 @@ class OperatorActionService:
         session_id: str,
         phase_key: str,
         *,
-        actor_id: str | None = None,
+        actor_identity: ActorIdentity | None = None,
         reason: str | None = None,
         note: str | None = None,
         context: dict[str, object] | None = None,
@@ -529,7 +535,7 @@ class OperatorActionService:
                 target_type="phase",
                 target_id=phase_key,
                 result="failed",
-                actor_id=actor_id,
+                actor_identity=actor_identity,
                 reason=reason,
                 note=note,
                 failure_mode="inactive_session",
@@ -548,7 +554,7 @@ class OperatorActionService:
                 target_type="phase",
                 target_id=phase_key,
                 result="failed",
-                actor_id=actor_id,
+                actor_identity=actor_identity,
                 reason=reason,
                 note=note,
                 failure_mode="missing_phase",
@@ -566,7 +572,7 @@ class OperatorActionService:
                 target_type="phase",
                 target_id=phase.id,
                 result="duplicate",
-                actor_id=actor_id,
+                actor_identity=actor_identity,
                 reason=reason,
                 note=note,
                 target_state_before=before_phase,
@@ -592,7 +598,7 @@ class OperatorActionService:
             target_type="phase",
             target_id=result.phase.id,
             result="applied",
-            actor_id=actor_id,
+            actor_identity=actor_identity,
             reason=reason,
             note=note,
             target_state_before=before_phase,
@@ -620,7 +626,7 @@ class OperatorActionService:
         target_type: OperatorActionTargetType,
         target_id: str,
         result: OperatorActionOutcome,
-        actor_id: str | None,
+        actor_identity: ActorIdentity | None,
         reason: str | None,
         note: str | None,
         failure_mode: str | None = None,
@@ -634,13 +640,19 @@ class OperatorActionService:
             self.session_event_repository,
             session_id=session_id,
             event_type=event_type,
-            actor_type="operator",
-            actor_id=actor_id,
+            actor_type=actor_identity.actor_role if actor_identity is not None else "operator",
+            actor_id=actor_identity.actor_id if actor_identity is not None else None,
             payload={
                 "action": action,
                 "target_type": target_type,
                 "target_id": target_id,
                 "result": result,
+                "actor_role": actor_identity.actor_role if actor_identity is not None else None,
+                "actor_type": actor_identity.actor_type if actor_identity is not None else None,
+                "actor_label": actor_identity.display_label if actor_identity is not None else None,
+                "identity_source": actor_identity.source if actor_identity is not None else None,
+                "auth_mode": actor_identity.auth_mode if actor_identity is not None else None,
+                "client_host": actor_identity.client_host if actor_identity is not None else None,
                 "reason": reason,
                 "note": note,
                 "failure_mode": failure_mode,
@@ -655,6 +667,11 @@ class OperatorActionService:
             event_type=event.event_type,
             actor_type=event.actor_type,
             actor_id=event.actor_id,
+            actor_role=actor_identity.actor_role if actor_identity is not None else None,
+            actor_label=actor_identity.display_label if actor_identity is not None else None,
+            identity_source=actor_identity.source if actor_identity is not None else None,
+            auth_mode=actor_identity.auth_mode if actor_identity is not None else None,
+            client_host=actor_identity.client_host if actor_identity is not None else None,
             session_id=event.session_id,
             target_type=target_type,
             target_id=target_id,
@@ -669,14 +686,14 @@ class OperatorActionService:
     @staticmethod
     def _build_decision_payload(
         *,
-        actor_id: str | None,
+        actor_identity: ActorIdentity | None,
         reason: str | None,
         note: str | None,
         context: dict[str, object] | None,
     ) -> dict[str, object] | None:
         payload: dict[str, object] = {}
-        if actor_id is not None:
-            payload["actor_id"] = actor_id
+        if actor_identity is not None:
+            payload["actor"] = actor_identity.as_payload()
         if reason is not None:
             payload["reason"] = reason
         if note is not None:

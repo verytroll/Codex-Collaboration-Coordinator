@@ -46,6 +46,11 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
         request.state.request_id = request_id
         request.state.request_method = request.method
         request.state.request_path = request.url.path
+        request.state.actor_identity = None
+        request.state.actor_role = None
+        request.state.actor_id = None
+        request.state.actor_type = None
+        request.state.actor_source = None
         started_at = perf_counter()
         logger.info("request.start")
         try:

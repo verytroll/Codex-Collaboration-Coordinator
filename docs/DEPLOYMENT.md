@@ -48,6 +48,17 @@ Access boundary profiles:
 If you enable `protected`, set `ACCESS_TOKEN` and optionally `ACCESS_TOKEN_HEADER`
 (`X-Access-Token` by default).
 
+Protected write paths also expect actor identity headers:
+
+- `ACTOR_ID_HEADER` / `X-Actor-Id`
+- `ACTOR_ROLE_HEADER` / `X-Actor-Role`
+- `ACTOR_TYPE_HEADER` / `X-Actor-Type`
+- `ACTOR_LABEL_HEADER` / `X-Actor-Label`
+
+The operator shell injects these headers from the rendered config defaults so the
+protected UI flow stays usable without manual header setup. Direct API clients should
+send the same headers explicitly.
+
 The operator shell lives at `GET /operator` and bootstraps from
 `GET /api/v1/operator/shell`. Both routes follow the same access boundary rules as the
 rest of the operator/public surface.
@@ -114,4 +125,6 @@ seed reset behavior, smoke coverage, and then builds the release bundle.
   operator diagnostics.
 - Protected operator/public routes return `401` when the token is missing and `403` when
   the token is wrong.
+- Protected write routes return `401` when actor identity headers are missing and `403`
+  when the role is not allowed for the requested action.
 - If you need a new migration, add a new `.sql` file instead of editing an existing one in place.

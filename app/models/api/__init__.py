@@ -43,6 +43,13 @@ from app.models.api.channels import (
     ChannelListEnvelope,
     ChannelResponse,
 )
+from app.models.api.identity import (
+    ActorIdentity,
+    ActorIdentityResponse,
+    ActorRole,
+    ActorType,
+    IdentitySource,
+)
 from app.models.api.jobs import (
     ApprovalDecisionRequest,
     ApprovalRequestListEnvelope,
@@ -207,6 +214,11 @@ __all__ = [
     "AgentListEnvelope",
     "AgentResponse",
     "AgentUpdateRequest",
+    "ActorIdentity",
+    "ActorIdentityResponse",
+    "ActorRole",
+    "ActorType",
+    "IdentitySource",
     "SessionArtifactEnvelope",
     "A2AAdapterArtifactResponse",
     "A2ATaskEnvelope",

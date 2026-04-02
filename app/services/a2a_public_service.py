@@ -12,9 +12,12 @@ from app.models.api.a2a_public import (
     A2APublicTaskStatusResponse,
 )
 from app.repositories.a2a_tasks import A2ATaskRecord, A2ATaskRepository
+from app.repositories.session_events import SessionEventRepository
 from app.repositories.sessions import SessionRepository
 from app.services.a2a_adapter import A2AAdapterService, A2ATaskProjection
+from app.services.authz_service import ActorIdentity
 from app.services.public_event_stream import PublicEventStreamService
+from app.services.session_events import record_session_event
 
 _PUBLIC_STATUS_BY_INTERNAL_STATUS: dict[str, str] = {
     "queued": "queued",
@@ -152,18 +155,42 @@ class A2APublicService:
         adapter_service: A2AAdapterService,
         task_repository: A2ATaskRepository,
         session_repository: SessionRepository,
+        session_event_repository: SessionEventRepository | None = None,
         event_stream_service: PublicEventStreamService | None = None,
     ) -> None:
         self.adapter_service = adapter_service
         self.task_repository = task_repository
         self.session_repository = session_repository
+        self.session_event_repository = session_event_repository
         self.event_stream_service = event_stream_service
 
-    async def create_task(self, job_id: str) -> A2APublicTaskResponse:
+    async def create_task(
+        self,
+        job_id: str,
+        *,
+        actor_identity: ActorIdentity | None = None,
+    ) -> A2APublicTaskResponse:
         """Create or refresh the public task projection for a job."""
         previous_projection = await self.adapter_service.get_task_by_job(job_id)
         projection = await self.adapter_service.project_job(job_id)
         task = self._response_from_projection(projection)
+        if self.session_event_repository is not None:
+            await record_session_event(
+                self.session_event_repository,
+                session_id=task.session_id,
+                event_type="public.task.projected",
+                actor_type=(
+                    actor_identity.actor_role
+                    if actor_identity is not None
+                    else "integration_client"
+                ),
+                actor_id=actor_identity.actor_id if actor_identity is not None else None,
+                payload={
+                    "job_id": task.job_id,
+                    "task_id": task.task_id,
+                    "actor": actor_identity.as_payload() if actor_identity is not None else None,
+                },
+            )
         if self.event_stream_service is not None:
             previous_task = (
                 self._response_from_projection(previous_projection)

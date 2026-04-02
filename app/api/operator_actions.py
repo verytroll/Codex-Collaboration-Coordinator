@@ -7,7 +7,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from app.api.dependencies import get_operator_action_service
+from app.api.dependencies import (
+    get_authz_service,
+    get_operator_action_service,
+    get_operator_actor_identity,
+)
 from app.models.api.jobs import ApprovalRequestResponse, JobResponse
 from app.models.api.operator_actions import (
     OperatorActionAuditResponse,
@@ -16,6 +20,7 @@ from app.models.api.operator_actions import (
     OperatorActionResponse,
 )
 from app.models.api.phases import PhaseResponse
+from app.services.authz_service import ActorIdentity, AuthzService
 from app.services.operator_actions import OperatorActionService
 
 router = APIRouter(prefix="/api/v1/operator", tags=["operator"])
@@ -47,6 +52,11 @@ def _build_response(result) -> OperatorActionEnvelope:
                 event_type=result.audit.event_type,
                 actor_type=result.audit.actor_type,
                 actor_id=result.audit.actor_id,
+                actor_role=result.audit.actor_role,
+                actor_label=result.audit.actor_label,
+                identity_source=result.audit.identity_source,
+                auth_mode=result.audit.auth_mode,
+                client_host=result.audit.client_host,
                 session_id=result.audit.session_id,
                 target_type=result.audit.target_type,
                 target_id=result.audit.target_id,
@@ -105,12 +115,15 @@ def _build_response(result) -> OperatorActionEnvelope:
 async def retry_job(
     job_id: str,
     action_service: Annotated[OperatorActionService, Depends(get_operator_action_service)],
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+    actor_identity: Annotated[ActorIdentity, Depends(get_operator_actor_identity)],
     payload: OperatorActionRequest | None = None,
 ) -> OperatorActionEnvelope:
+    authz_service.require_operator_action(actor_identity, action="retry")
     return _build_response(
         await action_service.retry_job(
             job_id,
-            actor_id=payload.actor_id if payload is not None else None,
+            actor_identity=actor_identity,
             reason=payload.reason if payload is not None else None,
             note=payload.note if payload is not None else None,
             context=payload.context if payload is not None else None,
@@ -122,12 +135,15 @@ async def retry_job(
 async def resume_job(
     job_id: str,
     action_service: Annotated[OperatorActionService, Depends(get_operator_action_service)],
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+    actor_identity: Annotated[ActorIdentity, Depends(get_operator_actor_identity)],
     payload: OperatorActionRequest | None = None,
 ) -> OperatorActionEnvelope:
+    authz_service.require_operator_action(actor_identity, action="resume")
     return _build_response(
         await action_service.resume_job(
             job_id,
-            actor_id=payload.actor_id if payload is not None else None,
+            actor_identity=actor_identity,
             reason=payload.reason if payload is not None else None,
             note=payload.note if payload is not None else None,
             context=payload.context if payload is not None else None,
@@ -139,12 +155,15 @@ async def resume_job(
 async def cancel_job(
     job_id: str,
     action_service: Annotated[OperatorActionService, Depends(get_operator_action_service)],
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+    actor_identity: Annotated[ActorIdentity, Depends(get_operator_actor_identity)],
     payload: OperatorActionRequest | None = None,
 ) -> OperatorActionEnvelope:
+    authz_service.require_operator_action(actor_identity, action="cancel")
     return _build_response(
         await action_service.cancel_job(
             job_id,
-            actor_id=payload.actor_id if payload is not None else None,
+            actor_identity=actor_identity,
             reason=payload.reason if payload is not None else None,
             note=payload.note if payload is not None else None,
             context=payload.context if payload is not None else None,
@@ -156,12 +175,15 @@ async def cancel_job(
 async def approve_approval(
     approval_id: str,
     action_service: Annotated[OperatorActionService, Depends(get_operator_action_service)],
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+    actor_identity: Annotated[ActorIdentity, Depends(get_operator_actor_identity)],
     payload: OperatorActionRequest | None = None,
 ) -> OperatorActionEnvelope:
+    authz_service.require_approval_action(actor_identity, action="approve")
     return _build_response(
         await action_service.approve_approval(
             approval_id,
-            actor_id=payload.actor_id if payload is not None else None,
+            actor_identity=actor_identity,
             reason=payload.reason if payload is not None else None,
             note=payload.note if payload is not None else None,
             context=payload.context if payload is not None else None,
@@ -173,12 +195,15 @@ async def approve_approval(
 async def reject_approval(
     approval_id: str,
     action_service: Annotated[OperatorActionService, Depends(get_operator_action_service)],
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+    actor_identity: Annotated[ActorIdentity, Depends(get_operator_actor_identity)],
     payload: OperatorActionRequest | None = None,
 ) -> OperatorActionEnvelope:
+    authz_service.require_approval_action(actor_identity, action="reject")
     return _build_response(
         await action_service.reject_approval(
             approval_id,
-            actor_id=payload.actor_id if payload is not None else None,
+            actor_identity=actor_identity,
             reason=payload.reason if payload is not None else None,
             note=payload.note if payload is not None else None,
             context=payload.context if payload is not None else None,
@@ -194,13 +219,16 @@ async def activate_phase(
     session_id: str,
     phase_key: str,
     action_service: Annotated[OperatorActionService, Depends(get_operator_action_service)],
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+    actor_identity: Annotated[ActorIdentity, Depends(get_operator_actor_identity)],
     payload: OperatorActionRequest | None = None,
 ) -> OperatorActionEnvelope:
+    authz_service.require_operator_action(actor_identity, action="activate_phase")
     return _build_response(
         await action_service.activate_phase(
             session_id,
             phase_key,
-            actor_id=payload.actor_id if payload is not None else None,
+            actor_identity=actor_identity,
             reason=payload.reason if payload is not None else None,
             note=payload.note if payload is not None else None,
             context=payload.context if payload is not None else None,

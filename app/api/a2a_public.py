@@ -6,13 +6,18 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.dependencies import get_a2a_public_service
+from app.api.dependencies import (
+    get_a2a_public_service,
+    get_authz_service,
+    get_public_actor_identity,
+)
 from app.models.api.a2a_public import (
     A2APublicTaskCreateRequest,
     A2APublicTaskEnvelope,
     A2APublicTaskListEnvelope,
 )
 from app.services.a2a_public_service import A2APublicService
+from app.services.authz_service import ActorIdentity, AuthzService
 
 router = APIRouter(prefix="/api/v1/a2a", tags=["a2a"])
 
@@ -21,9 +26,15 @@ router = APIRouter(prefix="/api/v1/a2a", tags=["a2a"])
 async def create_task(
     payload: A2APublicTaskCreateRequest,
     public_service: Annotated[A2APublicService, Depends(get_a2a_public_service)],
+    authz_service: Annotated[AuthzService, Depends(get_authz_service)],
+    actor_identity: Annotated[ActorIdentity, Depends(get_public_actor_identity)],
 ) -> A2APublicTaskEnvelope:
+    authz_service.require_public_write(actor_identity, action="create_task")
     try:
-        task = await public_service.create_task(payload.job_id)
+        task = await public_service.create_task(
+            payload.job_id,
+            actor_identity=actor_identity,
+        )
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     return A2APublicTaskEnvelope(task=task)

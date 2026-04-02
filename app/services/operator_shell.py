@@ -285,10 +285,7 @@ class OperatorShellService:
         if not messages:
             return {}
         mentions = await asyncio.gather(
-            *[
-                self.message_mention_repository.list_by_message(message.id)
-                for message in messages
-            ]
+            *[self.message_mention_repository.list_by_message(message.id) for message in messages]
         )
         return {
             message.id: [mention.mentioned_agent_id for mention in mention_rows]
@@ -312,9 +309,7 @@ class OperatorShellService:
         filtered = list(sessions)
         if filters.template_key is not None:
             filtered = [
-                session
-                for session in filtered
-                if session.template_key == filters.template_key
+                session for session in filtered if session.template_key == filters.template_key
             ]
         if filters.phase_key is not None:
             active_phase_by_session_id = self._active_phase_key_by_session_id(phases, sessions)

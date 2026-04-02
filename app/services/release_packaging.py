@@ -165,9 +165,7 @@ def build_release_package(
             deployment_profile=normalized_profile,
         ),
         "profile_defaults": asdict(profile_defaults),
-        "included_paths": sorted(
-            included_paths + [f"profiles/{normalized_profile}.env"]
-        ),
+        "included_paths": sorted(included_paths + [f"profiles/{normalized_profile}.env"]),
         "verification": {
             "checklist": [
                 "package bundle created",
@@ -225,10 +223,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_dir=Path(args.output_dir),
         deployment_profile=args.deployment_profile,
     )
-    print(
-        f"{result.package_name} archive={result.archive_path} "
-        f"manifest={result.manifest_path}"
-    )
+    print(f"{result.package_name} archive={result.archive_path} manifest={result.manifest_path}")
     return 0
 
 
