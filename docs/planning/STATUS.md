@@ -1,14 +1,15 @@
 ﻿# STATUS.md
 
 ### Trạng thái hiện tại
-- Ngày cập nhật: 2026-04-02
+- Ngày cập nhật: 2026-04-04
 - Pha hiện tại: V8 planning
-- Đã hoàn tất: Chốt thứ tự triển khai V8 (`docs/planning/IMPLEMENTATION_ORDER_V8.md`), sau khi chuẩn bị backlog V8 (`docs/planning/IMPLEMENTATION_TASKS_V8.md`)
+- Đã hoàn tất: Chuẩn hóa planning docs V8 theo format 2-file: `docs/planning/PLAN_V8.md` + `docs/planning/IMPLEMENTATION_V8.md` (gộp backlog + order)
 - Người thực hiện: Codex
 
 ### Đang làm
 
 ### Vừa hoàn thành
+- [x] Chuẩn hóa docs V8 theo format 2-file (`docs/planning/IMPLEMENTATION_V8.md`) - 2026-04-04
 - [x] Chốt thứ tự triển khai V8 (`docs/planning/IMPLEMENTATION_ORDER_V8.md`) - 2026-04-02
 - [x] Chuẩn bị backlog V8 (`docs/planning/IMPLEMENTATION_TASKS_V8.md`) - 2026-04-02
 - [x] Chốt kế hoạch V8 (`docs/planning/PLAN_V8.md`) - 2026-04-02
@@ -106,8 +107,7 @@
 - `docs/planning/INDEX.md`
 - `docs/planning/archive/INDEX.md`
 - `docs/planning/PLAN_V8.md`
-- `docs/planning/IMPLEMENTATION_TASKS_V8.md`
-- `docs/planning/IMPLEMENTATION_ORDER_V8.md`
+- `docs/planning/IMPLEMENTATION_V8.md`
 - `docs/planning/archive/PLAN_V7.md`
 - `docs/planning/archive/IMPLEMENTATION_TASKS_V7.md`
 - `docs/planning/archive/IMPLEMENTATION_ORDER_V7.md`

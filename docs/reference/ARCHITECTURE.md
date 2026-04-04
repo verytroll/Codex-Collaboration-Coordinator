@@ -2,6 +2,28 @@
 
 # Kiến trúc hệ thống: Codex Collaboration Coordinator
 
+## 0. TL;DR (đọc trước để tiết kiệm context)
+
+Khi nào cần mở doc này:
+
+- bạn đang sửa/thiết kế luồng điều phối (relay, routing, job lifecycle, approvals, streaming)
+- bạn cần biết **ranh giới** API → services → repositories → CodexBridge
+
+Invariants (điểm không được phá):
+
+- **coordinator-first**: agents không gọi nhau trực tiếp; coordinator là trung tâm routing/audit/policy/loop-guard
+- **Codex là execution engine**: mọi tương tác với Codex đi qua `CodexBridge` (không gọi trực tiếp từ API routes)
+- **API routes mỏng**: logic chính ở `app/services/`, persistence ở `app/repositories/`
+- **event/audit trước**: thay đổi quan trọng phải có event/audit để operator/debug đọc lại được
+
+Hot files để bám luồng:
+
+- app bootstrap + wiring: `app/main.py`, `app/api/__init__.py`
+- mention/command: `app/services/message_parser.py`, `app/services/mention_router.py`, `app/services/command_handler.py`
+- relay/runtime: `app/services/relay_engine.py`, `app/services/durable_runtime.py`, `app/codex_bridge/*`
+
+Nếu bạn chỉ cần “cách gọi endpoint / payload”, ưu tiên mở `docs/reference/API.md` thay vì đọc toàn bộ doc này.
+
 ## 1. Mục tiêu kiến trúc
 
 Tài liệu này mô tả kiến trúc đề xuất cho hệ thống điều phối nhiều Codex agent có thể:

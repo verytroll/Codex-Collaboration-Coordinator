@@ -2,6 +2,23 @@
 
 # Đặc tả API: Codex Collaboration Coordinator
 
+## 0. TL;DR (đọc trước để tiết kiệm context)
+
+Khi nào cần mở doc này:
+
+- bạn đang thêm/sửa endpoint, payload, status code, streaming behavior
+- bạn cần biết “luồng người dùng” (tạo session → add participants → gửi message → theo dõi job → lấy artifacts)
+
+Các quy ước quan trọng:
+
+- base prefix: `/api/v1/...`, JSON, `snake_case`
+- mention format: `#<name>` (resolve theo `display_name` → `role` → `id`)
+- command format: message bắt đầu bằng `/new`, `/interrupt`, `/compact`, `/review`
+- approvals: job có thể chuyển `auth_required` và cần accept/decline (public) hoặc approve/reject (operator)
+- streaming: SSE cho session/job streams và operator activity streams
+
+Nếu bạn chỉ cần “chạy local và nhìn operator UI”, mở `docs/operations/LOCAL_SETUP.md` + `docs/operator/OPERATOR_UI.md` là đủ.
+
 ## 1. Mục tiêu của tài liệu
 
 Tài liệu này định nghĩa API cho hệ thống **Codex Collaboration Coordinator** theo hướng:

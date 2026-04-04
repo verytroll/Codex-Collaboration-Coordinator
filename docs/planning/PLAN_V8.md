@@ -326,5 +326,4 @@ Nếu bạn làm theo sprint:
 Nếu bạn dùng cùng các tài liệu triển khai tiếp theo:
 
 * `docs/planning/PLAN_V8.md` trả lời câu hỏi: phase V8 nhằm giải quyết vấn đề gì
-* `docs/planning/IMPLEMENTATION_TASKS_V8.md` nên trả lời câu hỏi: cần làm cụ thể những gì để hoàn tất từng feature slice của V8
-* `docs/planning/IMPLEMENTATION_ORDER_V8.md` nên trả lời câu hỏi: nên merge các PR theo thứ tự nào để giữ baseline ổn định
+* `docs/planning/IMPLEMENTATION_V8.md` nên trả lời câu hỏi: cần làm cụ thể những gì và nên merge theo thứ tự nào để giữ baseline ổn định

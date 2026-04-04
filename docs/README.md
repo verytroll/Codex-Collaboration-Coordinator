@@ -11,10 +11,11 @@ This repository keeps documentation in three layers:
 For most coding tasks:
 
 1. `README.md`
-2. `docs/planning/INDEX.md`
-3. `docs/planning/STATUS.md`
-4. the active phase docs named there
-5. `docs/reference/INDEX.md` only if product, contract, schema, or architecture context is needed
+2. `docs/_meta/CONTEXT_PACK_256K.md` (compact onboarding + context budgeting)
+3. `docs/planning/INDEX.md`
+4. `docs/planning/STATUS.md`
+5. the active phase docs named there
+6. `docs/reference/INDEX.md` only if product, contract, schema, or architecture context is needed
 
 Only open `docs/planning/archive/` when the task explicitly depends on historical progression from MVP through V7.
 
@@ -24,10 +25,14 @@ Only open `docs/planning/archive/` when the task explicitly depends on historica
 docs/
 |-- README.md
 |-- _meta/
+|   |-- CONTEXT_PACK_256K.md
+|   |-- documents.yaml
+|   `-- frontmatter.template.yaml
 |-- planning/
 |   |-- INDEX.md
 |   |-- STATUS.md
 |   |-- PLAN_V8.md
+|   |-- IMPLEMENTATION_V8.md
 |   |-- IMPLEMENTATION_TASKS_V8.md
 |   |-- IMPLEMENTATION_ORDER_V8.md
 |   `-- archive/

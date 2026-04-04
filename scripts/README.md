@@ -5,6 +5,7 @@ Local helper scripts:
 - `run.ps1` start the app with the `small-team` deployment profile and a non-loopback host; runtime recovery comes from the profile defaults
 - `dev.ps1` start the app with the `local-dev` deployment profile and reload enabled
 - `seed.ps1` apply migrations and seed demo data, default channels, and planning phase presets
+- `context_pack.ps1` build a copy/paste-friendly docs bundle for a ~256K context window; use `-Mode minimal|implementation|full`
 - `smoke.ps1` validate health, readiness, agent card, seed data, phase presets, finalize activation, operator shell anchors/bootstrap, public A2A discovery/task flow, and realtime operator activity while waiting for the app to become ready
 - `a2a_quickstart.ps1` run a guided public A2A demo that creates a task, replays events, and prints discovery metadata
 - `a2a_conformance.ps1` verify the supported early-adopter A2A baseline end-to-end with managed credentials, replay/SSE, and managed outbound webhooks

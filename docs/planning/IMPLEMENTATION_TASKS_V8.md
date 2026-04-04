@@ -1,5 +1,9 @@
 # IMPLEMENTATION_TASKS_V8.md
 
+> Note (2026-04-04): Planning format V8 chuyển sang 2-file.  
+> Nội dung canonical đã được gộp vào `docs/planning/IMPLEMENTATION_V8.md` (backlog + order).  
+> File này được giữ lại để tránh gãy link cũ; vui lòng đọc `docs/planning/IMPLEMENTATION_V8.md` trước.
+
 ## 1. Mục tiêu của tài liệu
 
 Tài liệu này chuyển `docs/planning/PLAN_V8.md` thành backlog thực thi chi tiết cho phase V8.

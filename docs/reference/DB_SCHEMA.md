@@ -2,6 +2,21 @@
 
 # Thiết kế cơ sở dữ liệu: Codex Collaboration Coordinator
 
+## 0. TL;DR (đọc trước để tiết kiệm context)
+
+Khi nào cần mở doc này:
+
+- bạn đang sửa migration / thêm bảng / thay constraint
+- bạn đang debug bug “state drift” (session/job/events/artifacts/approvals) hoặc recovery/replay
+
+Invariants (điểm không được phá):
+
+- persistence đi qua `app/repositories/*` (services không viết raw SQL)
+- migrations ở `app/db/migrations/*.sql`
+- các thực thể core: sessions, agents, participants, messages (+ mentions), jobs (+ events), artifacts, approvals, relay edges, session events, presence, runtimes/thread mappings
+
+Nếu bạn chỉ cần “endpoint nào trả cái gì”, ưu tiên mở `docs/reference/API.md` thay vì đọc toàn bộ doc này.
+
 ## 1. Mục tiêu của tài liệu
 
 Tài liệu này chốt thiết kế cơ sở dữ liệu cho **Codex Collaboration Coordinator** theo hướng:

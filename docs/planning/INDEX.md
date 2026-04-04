@@ -6,15 +6,13 @@ Use this file to decide which planning docs to open.
 
 1. [Current status](STATUS.md)
 2. [Active plan](PLAN_V8.md)
-3. [Active implementation backlog](IMPLEMENTATION_TASKS_V8.md)
-4. [Active implementation order](IMPLEMENTATION_ORDER_V8.md)
+3. [Active implementation (backlog + order)](IMPLEMENTATION_V8.md)
 
 ## Which File Answers What
 
 - [STATUS.md](STATUS.md): what phase is active right now, what just finished, and what comes next
 - [PLAN_V8.md](PLAN_V8.md): why the next phase exists and what outcomes it targets
-- [IMPLEMENTATION_TASKS_V8.md](IMPLEMENTATION_TASKS_V8.md): what concrete work items exist in the active V8 phase
-- [IMPLEMENTATION_ORDER_V8.md](IMPLEMENTATION_ORDER_V8.md): what order active V8 work should land in
+- [IMPLEMENTATION_V8.md](IMPLEMENTATION_V8.md): what concrete work exists and what order it should land in
 
 ## Historical Progression
 

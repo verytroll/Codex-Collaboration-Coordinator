@@ -19,9 +19,8 @@ documents:
     depends_on:
       - docs/planning/STATUS.md
       - docs/planning/PLAN_V8.md
-      - docs/planning/IMPLEMENTATION_TASKS_V8.md
-      - docs/planning/IMPLEMENTATION_ORDER_V8.md
-    last_updated: 2026-04-02
+      - docs/planning/IMPLEMENTATION_V8.md
+    last_updated: 2026-04-04
     supersedes: []
     superseded_by: []
 
@@ -50,7 +49,7 @@ documents:
     source_of_truth: self
     depends_on:
       - README.md
-    last_updated: 2026-04-02
+    last_updated: 2026-04-04
     supersedes: []
     superseded_by: []
 
@@ -64,12 +63,11 @@ documents:
     source_of_truth: self
     depends_on:
       - docs/planning/PLAN_V8.md
-      - docs/planning/IMPLEMENTATION_TASKS_V8.md
-      - docs/planning/IMPLEMENTATION_ORDER_V8.md
+      - docs/planning/IMPLEMENTATION_V8.md
       - docs/planning/archive/PLAN_V7.md
       - docs/planning/archive/IMPLEMENTATION_TASKS_V7.md
       - docs/planning/archive/IMPLEMENTATION_ORDER_V7.md
-    last_updated: 2026-04-02
+    last_updated: 2026-04-04
     supersedes: []
     superseded_by: []
 
@@ -84,13 +82,12 @@ documents:
     depends_on:
       - docs/planning/STATUS.md
       - docs/planning/PLAN_V8.md
-      - docs/planning/IMPLEMENTATION_TASKS_V8.md
-      - docs/planning/IMPLEMENTATION_ORDER_V8.md
+      - docs/planning/IMPLEMENTATION_V8.md
       - docs/planning/archive/PLAN_V7.md
       - docs/planning/archive/IMPLEMENTATION_TASKS_V7.md
       - docs/planning/archive/IMPLEMENTATION_ORDER_V7.md
       - docs/planning/archive/INDEX.md
-    last_updated: 2026-04-02
+    last_updated: 2026-04-04
     supersedes: []
     superseded_by: []
 
@@ -117,7 +114,7 @@ documents:
     source_of_truth: self
     depends_on:
       - docs/reference/PRD.md
-    last_updated: 2026-04-02
+    last_updated: 2026-04-04
     supersedes: []
     superseded_by: []
 
@@ -132,7 +129,7 @@ documents:
     depends_on:
       - docs/reference/PRD.md
       - docs/reference/ARCHITECTURE.md
-    last_updated: 2026-04-02
+    last_updated: 2026-04-04
     supersedes: []
     superseded_by: []
 
@@ -147,7 +144,7 @@ documents:
     depends_on:
       - docs/reference/ARCHITECTURE.md
       - docs/reference/API.md
-    last_updated: 2026-04-02
+    last_updated: 2026-04-04
     supersedes: []
     superseded_by: []
 
@@ -417,7 +414,7 @@ documents:
     supersedes:
       - docs/planning/archive/IMPLEMENTATION_TASKS_V6.md
     superseded_by:
-      - docs/planning/IMPLEMENTATION_TASKS_V8.md
+      - docs/planning/IMPLEMENTATION_V8.md
 
   - path: docs/planning/archive/IMPLEMENTATION_ORDER.md
     title: MVP Implementation Order
@@ -543,7 +540,7 @@ documents:
       - docs/planning/archive/IMPLEMENTATION_ORDER_V5.md
       - docs/planning/archive/IMPLEMENTATION_ORDER_V6.md
       - docs/planning/archive/IMPLEMENTATION_ORDER_V7.md
-    last_updated: 2026-04-02
+    last_updated: 2026-04-04
     supersedes: []
     superseded_by: []
 
@@ -561,7 +558,7 @@ documents:
     supersedes:
       - docs/planning/archive/IMPLEMENTATION_ORDER_V6.md
     superseded_by:
-      - docs/planning/IMPLEMENTATION_ORDER_V8.md
+      - docs/planning/IMPLEMENTATION_V8.md
 
   - path: docs/README.md
     title: Documentation Index
@@ -572,7 +569,26 @@ documents:
     owner: project-maintainers
     source_of_truth: self
     depends_on: []
-    last_updated: 2026-04-02
+    last_updated: 2026-04-04
+    supersedes: []
+    superseded_by: []
+
+  - path: docs/_meta/CONTEXT_PACK_256K.md
+    title: Context Pack (256K)
+    doc_type: onboarding-pack
+    domain: documentation
+    version: v1
+    status: active
+    owner: project-maintainers
+    source_of_truth: self
+    depends_on:
+      - README.md
+      - AGENTS.md
+      - docs/planning/STATUS.md
+      - docs/reference/INDEX.md
+      - docs/operations/LOCAL_SETUP.md
+      - docs/operator/OPERATOR_UI.md
+    last_updated: 2026-04-04
     supersedes: []
     superseded_by: []
 
@@ -949,9 +965,26 @@ documents:
       - docs/reference/ARCHITECTURE.md
       - docs/reference/API.md
       - docs/reference/DB_SCHEMA.md
-    last_updated: 2026-04-02
+    last_updated: 2026-04-04
     supersedes:
       - docs/planning/archive/PLAN_V7.md
+    superseded_by: []
+
+  - path: docs/planning/IMPLEMENTATION_V8.md
+    title: V8 Implementation (Backlog + Order)
+    doc_type: implementation
+    domain: planning
+    version: v8
+    status: active
+    owner: project-maintainers
+    source_of_truth: docs/planning/PLAN_V8.md
+    depends_on:
+      - docs/planning/PLAN_V8.md
+      - docs/planning/STATUS.md
+    last_updated: 2026-04-04
+    supersedes:
+      - docs/planning/IMPLEMENTATION_TASKS_V8.md
+      - docs/planning/IMPLEMENTATION_ORDER_V8.md
     superseded_by: []
 
   - path: docs/planning/IMPLEMENTATION_TASKS_V8.md
@@ -959,30 +992,29 @@ documents:
     doc_type: backlog
     domain: planning
     version: v8
-    status: active
+    status: historical
     owner: project-maintainers
-    source_of_truth: docs/planning/PLAN_V8.md
+    source_of_truth: docs/planning/IMPLEMENTATION_V8.md
     depends_on:
-      - docs/planning/PLAN_V8.md
-      - docs/planning/STATUS.md
-    last_updated: 2026-04-02
+      - docs/planning/IMPLEMENTATION_V8.md
+    last_updated: 2026-04-04
     supersedes:
       - docs/planning/archive/IMPLEMENTATION_TASKS_V7.md
-    superseded_by: []
+    superseded_by:
+      - docs/planning/IMPLEMENTATION_V8.md
 
   - path: docs/planning/IMPLEMENTATION_ORDER_V8.md
     title: V8 Implementation Order
     doc_type: implementation-order
     domain: planning
     version: v8
-    status: active
+    status: historical
     owner: project-maintainers
-    source_of_truth: docs/planning/PLAN_V8.md
+    source_of_truth: docs/planning/IMPLEMENTATION_V8.md
     depends_on:
-      - docs/planning/PLAN_V8.md
-      - docs/planning/IMPLEMENTATION_TASKS_V8.md
-      - docs/planning/STATUS.md
-    last_updated: 2026-04-02
+      - docs/planning/IMPLEMENTATION_V8.md
+    last_updated: 2026-04-04
     supersedes:
       - docs/planning/archive/IMPLEMENTATION_ORDER_V7.md
-    superseded_by: []
+    superseded_by:
+      - docs/planning/IMPLEMENTATION_V8.md
